@@ -31,7 +31,6 @@ process.out = cms.OutputModule("PoolOutputModule",
 )
 
 process.p = cms.Path(process.siPixelRecHits*process.siStripMatchedRecHits)
-#process.p = cms.Path(process.localrecotracker)
 
 process.e = cms.EndPath(process.out)
 
