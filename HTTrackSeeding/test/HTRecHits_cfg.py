@@ -26,7 +26,7 @@ process.out = cms.OutputModule("PoolOutputModule",
   #     'keep *_siStripClusters_*_*'
   # ),
     fileName = cms.untracked.string(
-        'file:siRecoHitsOnly.root'
+        'file:siRecHitsOnly.root'
     )
 )
 
