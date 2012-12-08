@@ -4,6 +4,8 @@
 <use name="FWCore/Utilities"/>
 <use name="DataFormats/SiPixelCluster"/>
 <use name="DataFormats/SiStripCluster"/>
+<use name="DataFormats/TrackerRecHit2D"/>
+
 <flags EDM_PLUGIN="1"/>
 <export>
    <lib name="MLoVetereHTTrackSeeding"/>
