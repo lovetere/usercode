@@ -5,7 +5,7 @@ process = cms.Process("GetRecHitsTest")
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = 'START60_V4::All'
+process.GlobalTag.globaltag = 'START61_V11::All'
 process.load('Configuration.StandardSequences.Geometry_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load("Configuration.StandardSequences.Reconstruction_cff")
@@ -14,7 +14,7 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 process.source = cms.Source("PoolSource",
   fileNames = cms.untracked.vstring(
-    # '/store/relval/CMSSW_6_0_0-START60_V4/RelValSingleMuPt10/GEN-SIM-RECO/v1/0000/48B4E0F9-6AF3-E111-A775-0018F3D09624.root'
+    # '/store/relval/CMSSW_6_1_1-START61_V11/RelValSingleMuPt10/GEN-SIM-RECO/v1/00000/C4EFC40B-FD76-E211-875E-002590489AC6.root'
     'file:siRecHitsOnly.root'
   )
 )

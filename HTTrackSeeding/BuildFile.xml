@@ -5,8 +5,10 @@
 <use name="DataFormats/SiPixelCluster"/>
 <use name="DataFormats/SiStripCluster"/>
 <use name="DataFormats/TrackerRecHit2D"/>
+<use name="Geometry/Records"/>
+<use name="RecoTracker/TkSeedingLayers"/>
+<use name="TrackingTools/Records"/>
+<use name="TrackingTools/TransientTrackingRecHit"/>
 
 <flags EDM_PLUGIN="1"/>
-<export>
-   <lib name="MLoVetereHTTrackSeeding"/>
-</export>
+
