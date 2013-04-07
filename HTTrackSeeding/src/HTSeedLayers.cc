@@ -13,7 +13,7 @@
 //
 // Original Author:  Maurizio Lo Vetere,559 R-009,+41227675905,
 //         Created:  Fri Nov 30 21:19:49 CET 2012
-// $Id: HTSeedLayers.cc,v 1.1 2012/12/06 22:29:23 mlv Exp $
+// $Id: HTSeedLayers.cc,v 1.1 2013/04/07 17:21:52 mlv Exp $
 //
 //
 
@@ -184,6 +184,17 @@ HTSeedLayers::beginRun(edm::Run const& run, edm::EventSetup const& setup)
   edm::ESHandle<SeedingLayerSetsBuilder> layerBuilder;
   setup.get<TrackerDigiGeometryRecord>().get(layerListName_.c_str(),layerBuilder);
   theLayerSets_ = layerBuilder->layers(setup); 
+  int i=0;
+  for ( ctfseeding::SeedingLayerSets::const_iterator theSet = theLayerSets_.begin(); 
+        theSet != theLayerSets_.end();
+        theSet++ ) {
+    std::cout << "SeedingLayerSet number " << ++i << std::endl;
+    for ( ctfseeding::SeedingLayers::const_iterator theLayer = theSet->begin(); 
+           theLayer != theSet->end();
+           theLayer++ ) {
+      std::cout << "  " << theLayer->name() << std::endl; 
+    }
+  }
 }
 
 
