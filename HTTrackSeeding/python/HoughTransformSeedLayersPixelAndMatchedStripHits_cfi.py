@@ -21,7 +21,8 @@ houghTransformSeedLayersPixelAndMatchedHitsTwoSets = cms.ESProducer("SeedingLaye
         useErrorsFromParam = cms.bool (True),
         hitErrorRZ      = cms.double  (0.0060),
         hitErrorRPhi    = cms.double  (0.0027),
-        TTRHBuilder     = cms.string  ('WithTrackAngleComputeCoarse'),
+        TTRHBuilder     = cms.string  ('WithTrackAngle'),
+      # TTRHBuilder     = cms.string  ('WithTrackAngleComputeCoarse'),
       # skipClusters    = cms.InputTag('houghTransformStepClusters' )
     ),
     FPix = cms.PSet(
@@ -29,12 +30,14 @@ houghTransformSeedLayersPixelAndMatchedHitsTwoSets = cms.ESProducer("SeedingLaye
         useErrorsFromParam = cms.bool (True),
         hitErrorRPhi    = cms.double  (0.0051),
         hitErrorRZ      = cms.double  (0.0036),
-        TTRHBuilder     = cms.string  ('WithTrackAngleComputeCoarse'),
+        TTRHBuilder     = cms.string  ('WithTrackAngle'),
+      # TTRHBuilder     = cms.string  ('WithTrackAngleComputeCoarse'),
       # skipClusters    = cms.InputTag('houghTransformStepClusters' )
     ),
     TIB = cms.PSet(
         matchedRecHits  = cms.InputTag('siStripMatchedRecHits','matchedRecHit'),
-        TTRHBuilder     = cms.string  ('WithTrackAngleComputeCoarse'),
+        TTRHBuilder     = cms.string  ('WithTrackAngle'),
+      # TTRHBuilder     = cms.string  ('WithTrackAngleComputeCoarse'),
       # skipClusters    = cms.InputTag('houghTransformStepClusters' )
     ),
     TID = cms.PSet(
@@ -42,12 +45,14 @@ houghTransformSeedLayersPixelAndMatchedHitsTwoSets = cms.ESProducer("SeedingLaye
         useRingSlector  = cms.bool    (True),
         minRing         = cms.int32   (1),
         maxRing         = cms.int32   (2),
-        TTRHBuilder     = cms.string  ('WithTrackAngleComputeCoarse'),
+        TTRHBuilder     = cms.string  ('WithTrackAngle'),
+      # TTRHBuilder     = cms.string  ('WithTrackAngleComputeCoarse'),
       # skipClusters    = cms.InputTag('houghTransformStepClusters' )
     ),
     TOB = cms.PSet(
         matchedRecHits  = cms.InputTag('siStripMatchedRecHits','matchedRecHit'),
-        TTRHBuilder     = cms.string  ('WithTrackAngleComputeCoarse'),
+        TTRHBuilder     = cms.string  ('WithTrackAngle'),
+      # TTRHBuilder     = cms.string  ('WithTrackAngleComputeCoarse'),
       # skipClusters    = cms.InputTag('houghTransformStepClusters' )
     ),
     TEC = cms.PSet(
@@ -55,7 +60,8 @@ houghTransformSeedLayersPixelAndMatchedHitsTwoSets = cms.ESProducer("SeedingLaye
         useRingSlector  = cms.bool    (True),
         minRing         = cms.int32   (1),
         maxRing         = cms.int32   (5),
-        TTRHBuilder     = cms.string  ('WithTrackAngleComputeCoarse'),
+        TTRHBuilder     = cms.string  ('WithTrackAngle'),
+      # TTRHBuilder     = cms.string  ('WithTrackAngleComputeCoarse'),
       # skipClusters    = cms.InputTag('houghTransformStepClusters' )
     )
 )

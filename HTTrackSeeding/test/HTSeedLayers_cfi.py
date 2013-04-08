@@ -15,9 +15,7 @@ process.load('Configuration.StandardSequences.Geometry_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 
-process.load('MLoVetere.HTTrackSeeding.TTRHWithTrackAngleButComputeCoarse_cfi')
-process.load('MLoVetere.HTTrackSeeding.HoughTransformSeedLayersAllHits_cfi')
-process.load('MLoVetere.HTTrackSeeding.HoughTransformSeedLayersPixelAndMatchedStripHits_cfi')
+process.load('MLoVetere.HTTrackSeeding.HoughTransformSeedLayers_cfi')
 
 process.source = cms.Source("PoolSource",
   fileNames = cms.untracked.vstring(
