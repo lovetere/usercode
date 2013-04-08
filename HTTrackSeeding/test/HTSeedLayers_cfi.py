@@ -22,7 +22,7 @@ process.load('MLoVetere.HTTrackSeeding.HoughTransformSeedLayersPixelAndMatchedSt
 process.source = cms.Source("PoolSource",
   fileNames = cms.untracked.vstring(
     # '/store/relval/CMSSW_6_1_1-START61_V11/RelValSingleMuPt10/GEN-SIM-RECO/v1/00000/C4EFC40B-FD76-E211-875E-002590489AC6.root'
-      'file:siClustersOnly.root'
+    'file:siClustersOnly.root'
   )
 )
  
@@ -36,5 +36,5 @@ process.demo = cms.EDAnalyzer('HTSeedLayers'
   , hfile = cms.untracked.string('outfile.root')
 )
 
-process.p = cms.Path(process.demo)
+process.p = cms.Path(process.siPixelRecHits*process.siStripMatchedRecHits*process.demo)
 

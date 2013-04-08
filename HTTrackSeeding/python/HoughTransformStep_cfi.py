@@ -19,8 +19,9 @@ houghTransformStepClusters = cms.EDProducer("TrackClusterRemover",
 )
 
 # SEEDING LAYERS
-import MLoVetere.HTRHTrackSeedingWithAngleButComputeCoarse_cfi
-import MLoVetere.HTTrackSeeding.HoughTransformAllHis_cfi
+import MLoVetere.HTRHTrackAngleButComputeCoarse_cfi
+import MLoVetere.HTTrackSeeding.HoughTransformAllHits_cfi
+import MLoVetere.HTTrackSeeding.HoughTransformPixelAndMatchedStripHits_cfi
 
 # SEEDS
 from RecoPixelVertexing.PixelTriplets.PixelTripletLargeTipGenerator_cfi import *
