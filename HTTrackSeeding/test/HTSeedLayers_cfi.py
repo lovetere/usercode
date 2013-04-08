@@ -15,13 +15,24 @@ process.load('Configuration.StandardSequences.Geometry_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 
-process.load('MLoVetere.HTTrackSeeding.HoughTransformSeedLayers_cfi')
+process.load('MLoVetere.HTTrackSeeding.HoughTransformSeedLayersSingleStep_cfi')
+# process.load('MLoVetere.HTTrackSeeding.HoughTransformSeedLayersMultiStep_cfi')
 
 process.source = cms.Source("PoolSource",
-  fileNames = cms.untracked.vstring(
-    # '/store/relval/CMSSW_6_1_1-START61_V11/RelValSingleMuPt10/GEN-SIM-RECO/v1/00000/C4EFC40B-FD76-E211-875E-002590489AC6.root'
-    'file:siClustersOnly.root'
-  )
+    fileNames = cms.untracked.vstring(
+      # '/store/relval/CMSSW_6_1_1-START61_V11/RelValSingleMuPt10/GEN-SIM-RECO/v1/00000/C4EFC40B-FD76-E211-875E-002590489AC6.root'
+        'file:siDigisAndClustersOnly.root'
+    ),
+    dropDescendantsOfDroppedBranches=cms.untracked.bool(False),
+    inputCommands=cms.untracked.vstring(
+        'drop *',
+        'keep *_siPixelDigis_*_RECO',
+        'keep *_siPixelClusters_*_RECO',
+        'keep *_siStripDigis_*_RECO',
+        'keep *_siStripClusters_*_RECO',
+        'keep *_offlineBeamSpot_*_RECO',
+        'keep *_pixelVertices_*_RECO'
+    )
 )
  
 process.demo = cms.EDAnalyzer('HTSeedLayers'
@@ -31,8 +42,8 @@ process.demo = cms.EDAnalyzer('HTSeedLayers'
   # , seedingLayers  =  cms.string('HoughTransformSeedLayersPixelAndMatchedHitsTwoSets')
   # , seedingLayers  =  cms.string('HoughTransformSeedLayersPixelAndMatchedHitsOneSet' )
   # , seedingLayers  =  cms.string('HoughTransformSeedLayersPixelAndMatchedHitsBarrelOnly')
-  , hfile = cms.untracked.string('outfile.root')
+  # , hfile = cms.untracked.string('outfile.root')
 )
 
-process.p = cms.Path(process.siPixelRecHits*process.siStripMatchedRecHits*process.demo)
+process.p = cms.Path(process.htSeedLayers*process.demo)
 

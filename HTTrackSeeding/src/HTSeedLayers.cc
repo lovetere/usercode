@@ -13,7 +13,7 @@
 //
 // Original Author:  Maurizio Lo Vetere,559 R-009,+41227675905,
 //         Created:  Fri Nov 30 21:19:49 CET 2012
-// $Id: HTSeedLayers.cc,v 1.2 2013/04/07 19:15:56 mlv Exp $
+// $Id: HTSeedLayers.cc,v 1.3 2013/04/08 00:41:14 mlv Exp $
 //
 //
 
@@ -51,6 +51,7 @@ class HTSeedLayers : public edm::EDAnalyzer {
                  ~HTSeedLayers     ( );
     static  void  fillDescriptions ( edm::ConfigurationDescriptions& descriptions );
   private:
+    void          produceSeeds   ( ctfseeding::SeedingLayer::Hits hits );
     virtual void  analyze  ( const edm::Event&, const edm::EventSetup& );
     virtual void  beginRun ( edm::Run const&  , edm::EventSetup const& );
     virtual void  beginJob ( );
@@ -78,49 +79,55 @@ HTSeedLayers::~HTSeedLayers()
 
 
 void
-HTSeedLayers::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+HTSeedLayers::produceSeeds(ctfseeding::SeedingLayer::Hits hits)
 {
-  int nset=0;
-  for ( ctfseeding::SeedingLayerSets::const_iterator theSet = theLayerSets_.begin(); 
-        theSet != theLayerSets_.end();
-        theSet++ ) {
-    std::cout << "SeedingLayerSet number " << ++nset << std::endl;
-    for ( ctfseeding::SeedingLayers::const_iterator theLayer = theSet->begin(); 
-           theLayer != theSet->end();
-           theLayer++ ) {
-      ctfseeding::SeedingLayer::Hits hits = theLayer->hits(iEvent,iSetup);
-      if ( hits.size()!=0 ) {
-        std::cout << "  " << hits.size() << " hits in " << theLayer->name() << std::endl; 
-        int nhit = 0;
-        for ( ctfseeding::SeedingLayer::Hits::const_iterator hit = hits.begin(); 
-              hit != hits.end();
-              hit++ ) {
-          std::cout << "    hit # " << nhit;
-          DetId hitId = (*hit)->geographicalId();
-          if ( hitId.det() == DetId::Tracker ) {
-            if ( hitId.subdetId() == StripSubdetector::TIB )  
+  std::cout << "  " << hits.size() << " hits in this LayerSet" << std::endl; 
+  if ( hits.size()==0 ) return;
+  int nhit = 0;
+  for ( ctfseeding::SeedingLayer::Hits::const_iterator hit = hits.begin(); 
+        hit != hits.end();
+        hit++ ) {
+    std::cout << "    hit # " << nhit;
+    DetId hitId = (*hit)->geographicalId();
+    if ( hitId.det() == DetId::Tracker ) {
+            if      ( hitId.subdetId() == StripSubdetector::TIB )  
               std::cout << " - TIB " << TIBDetId(hitId).layer();
             else if ( hitId.subdetId() == StripSubdetector::TOB ) 
               std::cout << " - TOB " << TOBDetId(hitId).layer();
+            else if ( hitId.subdetId() == StripSubdetector::TID ) 
+              std::cout << " - TID " << TIDDetId(hitId).wheel();
             else if ( hitId.subdetId() == StripSubdetector::TEC ) 
               std::cout << " - TEC " << TECDetId(hitId).wheel();
-            else if ( hitId.subdetId() == StripSubdetector::TID ) 
-              std::cout << " - TID " << TIDDetId(hitId).wheel();
-            else if ( hitId.subdetId() == StripSubdetector::TID ) 
-              std::cout << " - TID " << TIDDetId(hitId).wheel();
-            else if ( hitId.subdetId() == (int) PixelSubdetector::PixelBarrel ) 
+            else if ( hitId.subdetId() == PixelSubdetector::PixelBarrel ) 
               std::cout << " - PixBar " << PXBDetId(hitId).layer();
-            else if ( hitId.subdetId() == (int) PixelSubdetector::PixelEndcap )
+            else if ( hitId.subdetId() == PixelSubdetector::PixelEndcap )
               std::cout << " - PixFwd " << PXFDetId(hitId).disk();
             else 
               std::cout << " UNKNOWN TRACKER HIT TYPE ";
-          }
-          if ( (*hit)->isValid() ) std::cout << " - globalPos =" << (*hit)->globalPosition() << std::endl;
-          else std::cout << " - invalid hit" << std::endl;
-          nhit++;
-        }
-      }
     }
+    if ( (*hit)->isValid() ) std::cout << " - globalPos =" << (*hit)->globalPosition() << std::endl;
+    else std::cout << " - invalid hit" << std::endl;
+    nhit++;
+  }
+}
+
+
+void
+HTSeedLayers::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+  // int nset=0;
+  for ( ctfseeding::SeedingLayerSets::const_iterator aSet = theLayerSets_.begin(); 
+        aSet != theLayerSets_.end();
+        aSet++ ) {
+    // std::cout << "SeedingLayerSet number " << ++nset << std::endl;
+    ctfseeding::SeedingLayer::Hits oneLayerSetHits; 
+    for ( ctfseeding::SeedingLayers::const_iterator aLayer = aSet->begin(); 
+          aLayer != aSet->end();
+          aLayer++ ) {
+      ctfseeding::SeedingLayer::Hits hits = aLayer->hits(iEvent,iSetup);
+      oneLayerSetHits.insert(oneLayerSetHits.end(),hits.begin(),hits.end());
+    }
+    produceSeeds(oneLayerSetHits);
   }
 }
 
