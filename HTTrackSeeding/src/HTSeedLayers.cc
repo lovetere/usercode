@@ -13,7 +13,7 @@
 //
 // Original Author:  Maurizio Lo Vetere,559 R-009,+41227675905,
 //         Created:  Fri Nov 30 21:19:49 CET 2012
-// $Id: HTSeedLayers.cc,v 1.4 2013/04/08 21:06:13 mlv Exp $
+// $Id: HTSeedLayers.cc,v 1.5 2013/04/09 07:30:54 mlv Exp $
 //
 //
 
@@ -90,20 +90,20 @@ HTSeedLayers::produceSeeds(ctfseeding::SeedingLayer::Hits hits)
     std::cout << "    hit # " << nhit;
     DetId hitId = (*hit)->geographicalId();
     if ( hitId.det() == DetId::Tracker ) {
-            if      ( hitId.subdetId() == StripSubdetector::TIB )  
-              std::cout << " - TIB " << TIBDetId(hitId).layer();
-            else if ( hitId.subdetId() == StripSubdetector::TOB ) 
-              std::cout << " - TOB " << TOBDetId(hitId).layer();
-            else if ( hitId.subdetId() == StripSubdetector::TID ) 
-              std::cout << " - TID " << TIDDetId(hitId).wheel();
-            else if ( hitId.subdetId() == StripSubdetector::TEC ) 
-              std::cout << " - TEC " << TECDetId(hitId).wheel();
-            else if ( hitId.subdetId() == PixelSubdetector::PixelBarrel ) 
-              std::cout << " - PixBar " << PXBDetId(hitId).layer();
-            else if ( hitId.subdetId() == PixelSubdetector::PixelEndcap )
-              std::cout << " - PixFwd " << PXFDetId(hitId).disk();
-            else 
-              std::cout << " UNKNOWN TRACKER HIT TYPE ";
+      if      ( hitId.subdetId() == StripSubdetector::TIB )  
+         std::cout << " - TIB " << TIBDetId(hitId).layer();
+      else if ( hitId.subdetId() == StripSubdetector::TOB ) 
+         std::cout << " - TOB " << TOBDetId(hitId).layer();
+      else if ( hitId.subdetId() == StripSubdetector::TID ) 
+         std::cout << " - TID " << TIDDetId(hitId).wheel();
+      else if ( hitId.subdetId() == StripSubdetector::TEC ) 
+         std::cout << " - TEC " << TECDetId(hitId).wheel();
+      else if ( hitId.subdetId() == PixelSubdetector::PixelBarrel ) 
+         std::cout << " - PixBar " << PXBDetId(hitId).layer();
+      else if ( hitId.subdetId() == PixelSubdetector::PixelEndcap )
+         std::cout << " - PixFwd " << PXFDetId(hitId).disk();
+      else 
+         std::cout << " UNKNOWN TRACKER HIT TYPE ";
     }
     if ( (*hit)->isValid() ) std::cout << " - globalPos =" << (*hit)->globalPosition() << std::endl;
     else std::cout << " - invalid hit" << std::endl;
