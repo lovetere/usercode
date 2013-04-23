@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("HoughTransformStepTest")
+process = cms.Process("HoughTransformAloneStepTest")
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger = cms.Service("MessageLogger") 
@@ -15,7 +15,7 @@ process.load('Configuration.StandardSequences.Geometry_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 
-process.load('MLoVetere.HTTrackSeeding.HoughTransformStep_cfi')
+process.load('MLoVetere.HTTrackSeeding.HoughTransformAloneStep_cfi')
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
@@ -36,14 +36,10 @@ process.source = cms.Source("PoolSource",
  
 from RecoLocalTracker.Configuration.RecoLocalTracker_cff import *
 from RecoTracker.IterativeTracking.iterativeTk_cff import *
-from MLoVetere.HTTrackSeeding.HoughTransformStep_cfi import *
+from MLoVetere.HTTrackSeeding.HoughTransformAloneStep_cfi import *
 
 process.p = cms.Path(siPixelRecHits*
                      siStripMatchedRecHits*
-                     InitialStep*
-                     LowPtTripletStep*
-                     PixelPairStep*
-                     DetachedTripletStep*
                      HoughTransformStep
 )
 
