@@ -22,37 +22,48 @@ houghTransformStepClusters = cms.EDProducer("TrackClusterRemover",
 from MLoVetere.HTTrackSeeding.HoughTransformSeedLayers_cfi import *
 
 # SEEDS
-from RecoPixelVertexing.PixelTriplets.PixelTripletLargeTipGenerator_cfi import *
-PixelTripletLargeTipGenerator.extraHitRZtolerance = 0.0
-PixelTripletLargeTipGenerator.extraHitRPhitolerance = 0.0
+HoughTransformSeedGeneratorPset = cms.PSet(
+    DivPSet = cms.PSet(
+        nBinsCurv = cms.uint32(4),
+        nBinsEta  = cms.uint32(4),
+        nBinsPhi  = cms.uint32(4),
+        nBinsTip  = cms.uint32(4),
+        nBinsLip  = cms.uint32(4)
+    ),
+    MinResPSet = cms.PSet(
+        resCurv = cms.double(1e-2),
+        resEta  = cms.double(1.00),
+        resPhi  = cms.double(3.14), 
+        resTip  = cms.double(10.0),
+        resLip  = cms.double(10.0)
+    ),
+    MaxResPSet = cms.PSet(
+        resCurv = cms.double(3e-4),
+        resEta  = cms.double(0.09),
+        resPhi  = cms.double(0.03),
+        resTip  = cms.double(1.00),
+        resLip  = cms.double(8.00)
+    ),
+)
 import RecoTracker.TkSeedGenerator.GlobalSeedsFromTriplets_cff
-houghTransformStepSeedsA = RecoTracker.TkSeedGenerator.GlobalSeedsFromTriplets_cff.globalSeedsFromTriplets.clone()
-houghTransformStepSeedsA.OrderedHitsFactoryPSet.SeedingLayers = 'houghTransformStepSeedLayersA'
-houghTransformStepSeedsA.OrderedHitsFactoryPSet.GeneratorPSet = cms.PSet(PixelTripletLargeTipGenerator)
-houghTransformStepSeedsA.SeedCreatorPSet.ComponentName = 'SeedFromConsecutiveHitsTripletOnlyCreator'
-houghTransformStepSeedsA.RegionFactoryPSet.RegionPSet.ptMin = 0.4
-houghTransformStepSeedsA.RegionFactoryPSet.RegionPSet.originHalfLength = 15.0
-houghTransformStepSeedsA.RegionFactoryPSet.RegionPSet.originRadius = 1.5
-
-houghTransformStepSeedsA.SeedComparitorPSet = cms.PSet(
+houghTransformStepSeeds = RecoTracker.TkSeedGenerator.GlobalSeedsFromTriplets_cff.globalSeedsFromTriplets.clone()
+houghTransformStepSeeds.RegionFactoryPSet.RegionPSet.ptMin = 0.4
+houghTransformStepSeeds.RegionFactoryPSet.RegionPSet.originHalfLength = 15.0
+houghTransformStepSeeds.RegionFactoryPSet.RegionPSet.originRadius = 1.5
+houghTransformStepSeeds.OrderedHitsFactoryPSet = cms.PSet(
+        HoughTransformSeedGeneratorPset,
+        ComponentName = cms.string('HTTripletGenerator'),
+        SeedingLayers = cms.string('HoughTransformSeedLayersPixelAndMatchedHitsTwoSets'),
+        maxElement = cms.uint32(100000)
+    )
+houghTransformStepSeeds.SeedComparitorPSet = cms.PSet(
         ComponentName = cms.string('PixelClusterShapeSeedComparitor'),
         FilterAtHelixStage = cms.bool(False),
         FilterPixelHits = cms.bool(True),
         FilterStripHits = cms.bool(True),
         ClusterShapeHitFilterName = cms.string('ClusterShapeHitFilter')
     )
-
-import RecoTracker.TkSeedGenerator.GlobalCombinedSeeds_cfi
-houghTransformStepSeeds = RecoTracker.TkSeedGenerator.GlobalCombinedSeeds_cfi.globalCombinedSeeds.clone()
-houghTransformStepSeeds.seedCollections = cms.VInputTag(
-        cms.InputTag('houghTransformStepSeedsA'),
-        cms.InputTag('houghTransformStepSeedsB'),
-        )
-
-# ........ Attenzione ai Seed sono limitati a soli 4 hits !!!
-# ........ Sostituire a iter4 il valore giusto 
-# ........ Correggere la sequenza HoughTransformStep
-# Propagator taking into account momentum uncertainty in multiple scattering calculation.
+houghTransformStepSeeds.SeedCreatorPSet.ComponentName = 'SeedFromConsecutiveHitsTripletOnlyCreator'
 
 # QUALITY CUTS DURING TRACK BUILDING
 import TrackingTools.TrajectoryFiltering.TrajectoryFilterESProducer_cfi
@@ -121,7 +132,7 @@ houghTransformStepTrackCandidates.TrajectoryCleaner = 'houghTransformStepTraject
 # TRACK FITTING
 import RecoTracker.TrackProducer.TrackProducer_cfi
 houghTransformStepTracks = RecoTracker.TrackProducer.TrackProducer_cfi.TrackProducer.clone(
-    AlgorithmName = cms.string('iter4'),
+    AlgorithmName = cms.string('iter3.5'),
     src = 'houghTransformStepTrackCandidates',
     Fitter = cms.string('FlexibleKFFittingSmoother')
 )
@@ -229,8 +240,7 @@ houghTransformStep = RecoTracker.FinalTrackSelectors.trackListMerger_cfi.trackLi
 
 
 HoughTransformStep = cms.Sequence(houghTransformStepClusters*
-                                  houghTransformStepSeedsA*
-                                  houghTransformStepSeedsB*
+                                  houghTransformStepSeeds*
                                   houghTransformStepSeeds*
                                   houghTransformStepTrackCandidates*
                                   houghTransformStepTracks*

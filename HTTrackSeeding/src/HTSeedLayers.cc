@@ -13,7 +13,7 @@
 //
 // Original Author:  Maurizio Lo Vetere,559 R-009,+41227675905,
 //         Created:  Fri Nov 30 21:19:49 CET 2012
-// $Id: HTSeedLayers.cc,v 1.5 2013/04/09 07:30:54 mlv Exp $
+// $Id: HTSeedLayers.cc,v 1.6 2013/04/09 07:39:09 mlv Exp $
 //
 //
 
@@ -44,6 +44,8 @@
 #include "TH1.h"
 #include "TFile.h"
 
+#include "RecoTracker/TkHitPairs/interface/LayerHitMapCache.h"
+
 
 class HTSeedLayers : public edm::EDAnalyzer {
   public:
@@ -57,7 +59,7 @@ class HTSeedLayers : public edm::EDAnalyzer {
     virtual void  beginJob ( );
     virtual void  endJob   ( );
   private:
-    std::string  layerListName_;
+    std::string  theLayerListName_;
     std::string  fileName_;
     TFile     *  file_;
     TH1F      *  numPixelClusters_;
@@ -67,8 +69,8 @@ class HTSeedLayers : public edm::EDAnalyzer {
 
 
 HTSeedLayers::HTSeedLayers(const edm::ParameterSet& iConfig)
-  : layerListName_ (iConfig.getParameter<std::string> ("seedingLayers")),
-    fileName_      (iConfig.getUntrackedParameter<std::string>("hfile"))
+  : theLayerListName_ (iConfig.getParameter<std::string> ("seedingLayers")),
+    fileName_         (iConfig.getUntrackedParameter<std::string>("hfile"))
 {
 }
 
@@ -133,19 +135,19 @@ HTSeedLayers::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 void
 HTSeedLayers::beginRun(edm::Run const& run, edm::EventSetup const& setup)
 {
-  std::cout << "SeedingLayerSetsBuilder name: " << layerListName_ << std::endl;
+  std::cout << "SeedingLayerSetsBuilder name: " << theLayerListName_ << std::endl;
   edm::ESHandle<SeedingLayerSetsBuilder> layerBuilder;
-  setup.get<TrackerDigiGeometryRecord>().get(layerListName_.c_str(),layerBuilder);
+  setup.get<TrackerDigiGeometryRecord>().get(theLayerListName_.c_str(),layerBuilder);
   theLayerSets_ = layerBuilder->layers(setup); 
   int i=0;
-  for ( ctfseeding::SeedingLayerSets::const_iterator theSet = theLayerSets_.begin(); 
-        theSet != theLayerSets_.end();
-        theSet++ ) {
+  for ( ctfseeding::SeedingLayerSets::const_iterator aSet = theLayerSets_.begin(); 
+        aSet != theLayerSets_.end();
+        aSet++ ) {
     std::cout << "SeedingLayerSet number " << ++i << std::endl;
-    for ( ctfseeding::SeedingLayers::const_iterator theLayer = theSet->begin(); 
-           theLayer != theSet->end();
-           theLayer++ ) {
-      std::cout << "  " << theLayer->name() << std::endl; 
+    for ( ctfseeding::SeedingLayers::const_iterator aLayer = aSet->begin(); 
+           aLayer != aSet->end();
+           aLayer++ ) {
+      std::cout << "  " << aLayer->name() << std::endl; 
     }
   }
 }
