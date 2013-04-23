@@ -8,7 +8,6 @@
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "RecoTracker/TkSeedingLayers/interface/SeedingLayerSetsBuilder.h"
 
-// #include "RecoTracker/TkSeedGenerator/interface/FastCircle.h"
 
 typedef TransientTrackingRecHit::ConstRecHitPointer SeedingHit;
 
@@ -28,11 +27,11 @@ HTTripletGenerator::HTTripletGenerator( const edm::ParameterSet & cfg )
     unsigned int theDivPhi  = nBinsPSet.getParameter<unsigned int>("nBinsPhi" );
     unsigned int theDivTip  = nBinsPSet.getParameter<unsigned int>("nBinsTip" );
     unsigned int theDivLip  = nBinsPSet.getParameter<unsigned int>("nBinsLip" );
-    std::cout << "theDivCurv " << theDivCurv 
-              << " theDivEta " << theDivEta 
-              << " theDivPhi " << theDivPhi 
-              << " theDivTip " << theDivTip 
-              << " theDivLip " << theDivLip << std::endl;
+    std::cout << "theDivCurv=" << theDivCurv 
+              << " theDivEta=" << theDivEta 
+              << " theDivPhi=" << theDivPhi 
+              << " theDivTip=" << theDivTip 
+              << " theDivLip=" << theDivLip << std::endl;
   }
   if ( theConfig.exists("MinResPSet") ) { 
     edm::ParameterSet minResPSet = theConfig.getParameter<edm::ParameterSet>("MinResPSet");
@@ -41,24 +40,24 @@ HTTripletGenerator::HTTripletGenerator( const edm::ParameterSet & cfg )
     double theMinResPhi  = minResPSet.getParameter<double>("resPhi" );
     double theMinResTip  = minResPSet.getParameter<double>("resTip" );
     double theMinResLip  = minResPSet.getParameter<double>("resLip" );
-    std::cout << "theMinResCurv " << theMinResCurv 
-              << " theMinResEta " << theMinResEta 
-              << " theMinResPhi " << theMinResPhi 
-              << " theMinResTip " << theMinResTip 
-              << " theMinResLip " << theMinResLip << std::endl;
+    std::cout << "theMinResCurv=" << theMinResCurv 
+              << " theMinResEta=" << theMinResEta 
+              << " theMinResPhi=" << theMinResPhi 
+              << " theMinResTip=" << theMinResTip 
+              << " theMinResLip=" << theMinResLip << std::endl;
   }
   if ( theConfig.exists("MaxResPSet") ) { 
-    edm::ParameterSet maxResPSet = theConfig.getParameter<edm::ParameterSet>("MinResPSet");
+    edm::ParameterSet maxResPSet = theConfig.getParameter<edm::ParameterSet>("MaxResPSet");
     double theMaxResCurv = maxResPSet.getParameter<double>("resCurv");
     double theMaxResEta  = maxResPSet.getParameter<double>("resEta" );
     double theMaxResPhi  = maxResPSet.getParameter<double>("resPhi" );
     double theMaxResTip  = maxResPSet.getParameter<double>("resTip" );
     double theMaxResLip  = maxResPSet.getParameter<double>("resLip" );
-    std::cout << "theMaxResCurv " << theMaxResCurv 
-              << " theMaxResEta " << theMaxResEta 
-              << " theMaxResPhi " << theMaxResPhi 
-              << " theMaxResTip " << theMaxResTip 
-              << " theMaxResLip " << theMaxResLip << std::endl;
+    std::cout << "theMaxResCurv=" << theMaxResCurv 
+              << " theMaxResEta=" << theMaxResEta 
+              << " theMaxResPhi=" << theMaxResPhi 
+              << " theMaxResTip=" << theMaxResTip 
+              << " theMaxResLip=" << theMaxResLip << std::endl;
    }
 }
 
@@ -83,10 +82,10 @@ void  HTTripletGenerator::init( const TrackingRegion & reg )
   float theCurvBound = theField/reg.ptMin();  // k in [-cu,+cu]
   float theZBound    = reg.originZBound();    // z in [-zb,+zb]
   float theRBound    = reg.originRBound();    // d in [-rb,+rb]
-  std::cout << "X " << theRefPoint.x() << " Y " << theRefPoint.y() << " Z " << theRefPoint.z() 
-            << " theCurvBound " << theCurvBound 
-            << " theZBound " << theZBound 
-            << " theRBound " << theRBound << std::endl;
+  std::cout << "X=" << theRefPoint.x() << " Y=" << theRefPoint.y() << " Z=" << theRefPoint.z() 
+            << " theCurvBound=" << theCurvBound 
+            << " theZBound=" << theZBound 
+            << " theRBound=" << theRBound << std::endl;
   /*
   Range theEtaRange;
   Range thePhiRange;
