@@ -7,6 +7,7 @@
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "RecoTracker/TkSeedingLayers/interface/SeedingLayerSetsBuilder.h"
+#include "RecoTracker/TkTrackingRegions/interface/RectangularEtaPhiTrackingRegion.h"
 
 
 typedef TransientTrackingRecHit::ConstRecHitPointer SeedingHit;
@@ -86,18 +87,18 @@ void  HTTripletGenerator::init( const TrackingRegion & reg )
             << " theCurvBound=" << theCurvBound 
             << " theZBound=" << theZBound 
             << " theRBound=" << theRBound << std::endl;
-  /*
-  Range theEtaRange;
-  Range thePhiRange;
+  TrackingRegion::Range theEtaRange;
+  TrackingRegion::Range thePhiRange;
   if ( const RectangularEtaPhiTrackingRegion * etaPhiReg = dynamic_cast<const RectangularEtaPhiTrackingRegion * >(&reg) ) {
     theEtaRange = etaPhiReg->etaRange();
-    Range phiMargin = etaPhiReg->phiMargin();
-    AngularRange thePhiRange( reg.direction().phi()-phiMargin.left(),reg.direction().phi()+phiMargin().right );
+    RectangularEtaPhiTrackingRegion::Margin phiMargin = etaPhiReg->phiMargin();
+    thePhiRange = TrackingRegion::Range(reg.direction().phi()-phiMargin.left(),reg.direction().phi()+phiMargin.right());
   } else {
-    theEtaRange = Range( -2.5, 2.5);
-    thePhiRange = Range(-M_PI,M_PI);
+    theEtaRange = TrackingRegion::Range( -2.5, 2.5);
+    thePhiRange = TrackingRegion::Range(-M_PI,M_PI);
   }
-  *//*
+  std::cout << "theEtaRange=" << theEtaRange << " thePhiRange=" << thePhiRange << std::endl;
+  /*
     unsigned int       _nPhi;
     unsigned int       _nDoca;
     unsigned int       _nKappa;
