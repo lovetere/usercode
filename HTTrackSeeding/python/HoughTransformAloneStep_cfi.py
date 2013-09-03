@@ -54,6 +54,7 @@ houghTransformStepSeeds.OrderedHitsFactoryPSet = cms.PSet(
         HoughTransformSeedGeneratorPset,
         ComponentName = cms.string('HTTripletGenerator'),
         SeedingLayers = cms.string('HoughTransformSeedLayersPixelAndMatchedHitsOneSet'),
+      # SeedingLayers = cms.string('HoughTransformSeedLayersAllHitsOneSet'),
         maxElement = cms.uint32(100000)
     )
 houghTransformStepSeeds.SeedComparitorPSet = cms.PSet(

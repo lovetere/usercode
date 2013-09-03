@@ -34,7 +34,7 @@ HTTripletGenerator::HTTripletGenerator( const edm::ParameterSet & cfg )
     unsigned int theDivPhi  = nBinsPSet.getParameter<unsigned int>("nBinsPhi" );
     unsigned int theDivTip  = nBinsPSet.getParameter<unsigned int>("nBinsTip" );
     unsigned int theDivLip  = nBinsPSet.getParameter<unsigned int>("nBinsLip" );
-    std::cout << "theDivCurv=" << theDivCurv 
+    std::cout << "theDivCurv="  << theDivCurv 
               << "; theDivEta=" << theDivEta 
               << "; theDivPhi=" << theDivPhi 
               << "; theDivTip=" << theDivTip 
@@ -65,7 +65,7 @@ HTTripletGenerator::HTTripletGenerator( const edm::ParameterSet & cfg )
               << " theMaxResPhi=" << theMaxResPhi  << "rad;"
               << " theMaxResTip=" << theMaxResTip  << "cm;"
               << " theMaxResLip=" << theMaxResLip  << "cm" << std::endl;
-   }
+  }
 }
 
 
@@ -146,7 +146,7 @@ void  HTTripletGenerator::hitTriplets ( const TrackingRegion & reg, OrderedHitTr
               << " and layer set number " << i  
               << " with " << hits.size()  << " hits in the set" << std::endl;
     int nhit = 0;
-    for ( ctfseeding::SeedingLayer::Hits::const_iterator hit = hits.begin(); 
+    for ( TrackingRegion::Hits::const_iterator hit = hits.begin(); 
           hit != hits.end();
           hit++ ) {
       std::cout << "    hit # " << nhit;
@@ -167,8 +167,14 @@ void  HTTripletGenerator::hitTriplets ( const TrackingRegion & reg, OrderedHitTr
         else 
            std::cout << " UNKNOWN TRACKER HIT TYPE ";
       }
-      if ( (*hit)->isValid() ) std::cout << " - globalPos =" << (*hit)->globalPosition() << std::endl;
-      else std::cout << " - invalid hit" << std::endl;
+      if ( (*hit)->isValid() )
+        std::cout << " - globalPos =" << (*hit)->globalPosition() 
+                  << " +/- (" << sqrt((*hit)->globalPositionError().cxx())
+                  << ","      << sqrt((*hit)->globalPositionError().cyy())
+                  << ","      << sqrt((*hit)->globalPositionError().czz()) 
+                  << ")"      << std::endl;
+      else
+        std::cout << " - invalid hit" << std::endl;
       nhit++;
     }
     //OrderedHitTriplet oht;
