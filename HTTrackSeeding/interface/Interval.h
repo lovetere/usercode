@@ -43,7 +43,7 @@ class Interval {
     bool            operator< ( const Interval & other ) const;
     const Interval  operator+ ( const Interval & other ) const;
     const Interval  operator- ( const Interval & other ) const;
-    bool            overlaps  ( const Interval & other ) const  { return ! ( *this<other || other<*this ); }
+    bool            overlaps  ( const Interval & other ) const;
     Interval &      scale     ( double factor );
     Interval &      shift     ( double factor );
   private:
@@ -71,14 +71,14 @@ inline Interval &  Interval::setLowerBound ( double value )
 }
 
 
-bool  Interval::operator< ( const Interval & other ) const  
+inline bool  Interval::operator< ( const Interval & other ) const  
 { 
   if ( other.isEmpty() || this->isEmpty() ) return false;
   return ( _sup<=other._inf ); 
 }
 
 
-const Interval Interval::operator+ ( const Interval & other ) const
+inline const Interval Interval::operator+ ( const Interval & other ) const
 {
   if ( other.isEmpty() ) return *this;
   if ( this->isEmpty() ) return other;
@@ -86,11 +86,18 @@ const Interval Interval::operator+ ( const Interval & other ) const
 }
 
 
-const Interval Interval::operator- ( const Interval & other ) const
+inline const Interval Interval::operator- ( const Interval & other ) const
 {
   if ( other.isEmpty() ) return *this;
   if ( this->isEmpty() ) return Interval( -other.upper(), -other.lower() ) ;
   return Interval( this->lower()-other.upper(), this->upper()-other.lower() );
+}
+
+
+inline bool  Interval::overlaps ( const Interval & other ) const  
+{ 
+  if ( other.isEmpty() || this->isEmpty() ) return false;
+  return ! ( *this<other || other<*this ); 
 }
 
 
