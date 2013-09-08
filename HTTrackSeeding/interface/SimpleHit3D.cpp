@@ -281,6 +281,20 @@ std::vector<Interval>  SimpleHit3D::arcLengthRangeGivenNormTipCurv ( Interval ti
 
 
 /*
+ *  This function return the pseudorapidity of the track given dz, the distance of hit from the poca in z, and arcl, the transverse 
+ *  plane arc length between poca and the hit. When arc length is positive, the track is assumed to go from the poca to the hit. 
+ *  When arc length is negative, the track is assumed to go from the hit to the poca.
+ */
+
+double  SimpleHit3D::etaGivenDzArcLength ( double dz, double arcl )
+{
+  if ( arcl<0. ) dz=-dz;
+  double ds = sqrt(arcl*arcl+dz*dz); 
+  return 0.5*log((ds+dz)/(ds-dz));
+}
+
+
+/*
  *  This function returns a list of eta ranges as a function of range of normalized lip of the poca and the allowed arc lengths
  *  in the transverse plane between the poca and the hit.
  */
@@ -307,20 +321,6 @@ std::vector<Interval>  SimpleHit3D::etaRangeGivenDzArcLength ( Interval dz, Inte
     if ( min_eta<max_eta ) addToPairWiseDisjointIntervalSet(alist,Interval(min_eta,max_eta));
   }
   return alist;
-}
-
-
-/*
- *  This function return the pseudorapidity of the track given dz, the distance of hit from the poca in z, and arcl, the transverse 
- *  plane arc length between poca and the hit. When arc length is positive, the track is assumed to go from the poca to the hit. 
- *  When arc length is negative, the track is assumed to go from the hit to the poca.
- */
-
-double  SimpleHit3D::etaGivenDzArcLength ( double dz, double arcl )
-{
-  if ( arcl<0. ) dz=-dz;
-  double ds = sqrt(arcl*arcl+dz*dz); 
-  return 0.5*log((ds+dz)/(ds-dz));
 }
 
 
@@ -379,6 +379,20 @@ std::vector<Interval>  SimpleHit3D::sinPhiRangeGivenNormTipCurv ( Interval tip, 
 
 
 /*
+ *  This function return the theta angle of the track given dz, the distance of hit from the poca in z, and arcl, the transverse 
+ *  plane arc length between poca and the hit. When arc length is positive, the track is assumed to go from the poca to the hit. 
+ *  When arc length is negative, the track is assumed to go from the hit to the poca.
+ */
+
+double  SimpleHit3D::thetaGivenDzArcLength ( double dz, double arcl )
+{
+  if ( arcl<0. ) dz=-dz;
+  double ds = sqrt(arcl*arcl+dz*dz); 
+  return acos(dz/ds);
+}
+
+
+/*
  *  This function returns a list of theta ranges as a function of range of normalized lip of the poca and the allowed arc lengths
  *  in the transverse plane between the poca and the hit.
  */
@@ -406,15 +420,3 @@ std::vector<Interval>  SimpleHit3D::thetaRangeGivenDzArcLength ( Interval dz, In
 }
 
 
-/*
- *  This function return the theta angle of the track given dz, the distance of hit from the poca in z, and arcl, the transverse 
- *  plane arc length between poca and the hit. When arc length is positive, the track is assumed to go from the poca to the hit. 
- *  When arc length is negative, the track is assumed to go from the hit to the poca.
- */
-
-double  SimpleHit3D::thetaGivenDzArcLength ( double dz, double arcl )
-{
-  if ( arcl<0. ) dz=-dz;
-  double ds = sqrt(arcl*arcl+dz*dz); 
-  return acos(dz/ds);
-}

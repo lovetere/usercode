@@ -58,12 +58,12 @@ class SimpleHit3D
     static double                 arcLengthGivenNormTipCurv            ( double   tip, double   curv );
     static double                 arcLengthMinimumEstimateGivenNormTip ( double   tip  );
     static std::vector<Interval>  arcLengthRangeGivenNormTipCurv       ( Interval tip, Interval curv );
-    static std::vector<Interval>  etaRangeGivenDzArcLength             ( Interval dz , Interval arcl );
     static double                 etaGivenDzArcLength                  ( double   dz , double   arcl );
+    static std::vector<Interval>  etaRangeGivenDzArcLength             ( Interval dz , Interval arcl );
     static double                 sinPhiGivenNormTipCurv               ( double   tip, double   curv );
     static std::vector<Interval>  sinPhiRangeGivenNormTipCurv          ( Interval tip, Interval curv );
-    static std::vector<Interval>  thetaRangeGivenDzArcLength           ( Interval dz , Interval arcl );
     static double                 thetaGivenDzArcLength                ( double   dz , double   arcl );
+    static std::vector<Interval>  thetaRangeGivenDzArcLength           ( Interval dz , Interval arcl );
   private:  
     GlobalPoint    theRefPoint;
     double        _x;
