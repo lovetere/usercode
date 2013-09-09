@@ -54,16 +54,10 @@ class SimpleHit3D
   private:
     std::vector<std::pair<AngularInterval,Interval> > phiAndArcLengthPhiGivenTipAndCurv() ( Interval tip, Interval curv, int hfturns, int hbturns );
   private:
-    static bool                   arcLengthDerCurvSignGivenNormTipCurv ( double   tip, double   curv );
-    static double                 arcLengthGivenNormTipCurv            ( double   tip, double   curv );
-    static double                 arcLengthMinimumEstimateGivenNormTip ( double   tip  );
-    static std::vector<Interval>  arcLengthRangeGivenNormTipCurv       ( Interval tip, Interval curv );
-    static double                 etaGivenDzArcLength                  ( double   dz , double   arcl );
-    static std::vector<Interval>  etaRangeGivenDzArcLength             ( Interval dz , Interval arcl );
-    static double                 sinPhiGivenNormTipCurv               ( double   tip, double   curv );
-    static std::vector<Interval>  sinPhiRangeGivenNormTipCurv          ( Interval tip, Interval curv );
-    static double                 thetaGivenDzArcLength                ( double   dz , double   arcl );
-    static std::vector<Interval>  thetaRangeGivenDzArcLength           ( Interval dz , Interval arcl );
+    static double                 etaGivenDzArcLength        ( double   dz , double   arcl );
+    static std::vector<Interval>  etaRangeGivenDzArcLength   ( Interval dz , Interval arcl );
+    static double                 thetaGivenDzArcLength      ( double   dz , double   arcl );
+    static std::vector<Interval>  thetaRangeGivenDzArcLength ( Interval dz , Interval arcl );
   private:  
     GlobalPoint    theRefPoint;
     double        _x;

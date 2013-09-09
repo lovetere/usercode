@@ -1,6 +1,6 @@
 
 
-#include "TransversePlaneNormalizedRanges.h"
+#include "RangeFinder2DNorm.h"
 
 #include "Interval.h"
 
@@ -15,29 +15,96 @@
 
 
 /*
- *  This function set tip and curv intervals and compute and caches some values in order to speed ranges calculations other computations returns the arc length and phi range combinations compatible with given tip and curv ranges.
+ *  This function set tip and curv intervals and compute and caches some values in order to speed ranges calculations
+ *  other computations returns the arc length and phi range combinations compatible with given tip and curv ranges.
  *  The case hfturns>1 and hbturns>1 could be improved... but for the moment I don't have time.
  *  In general we can improve computation caching values...
  */
 
-TransversePlaneNormalizedRanges::TransversePlaneNormalizedRanges ( Interval tip, Interval curv )
+RangeFinder2DNorm::RangeFinder2DNorm ( Interval tip, Interval curv )
   : _tip(tip), _curv(curv), _arcLenghRange(), _forwPhiRange(), _backPhiRange();
 {
   _tip.bound(Interval(-1.,1.));
-  std::vector<Interval> slist = arcLengthRange();
-  std::vector<Interval> plist =    sinPhiRange();
-  assert ( slist.size()<2 );
-  assert ( plist.size()<2 );
-  assert ( slist.size()==plist.size() );
-  if ( ( slist==1 ) && ( plist==1 ) ) {
-    double phi_l = asin(plist[0].lower());
-    double phi_h = asin(plist[0].upper());
-    _arcLenghRange = slist[0];
-    _forwPhiRange ( phi_l, phi_h );
-    _backPhiRange ( M_PI-phi_h, M_PI-phi_l );
-  }
+  cacheInitPhiRange();
+  cacheInitArcLengthRange();
 }
 
+
+/*
+ *  This function returns the arc length and phi range combinations compatible with given tip and curv ranges.
+ *  The case hfturns>1 and hbturns>1 could be improved... but for the moment I don't have time.
+ */
+
+std::vector<std::pair<AngularInterval,Interval> >  RangeFinder2DNorm::phiAndArcLengthRange ( int hfturns, int hbturns )
+{
+  std::vector<std::pair<AngularInterval,Interval> > alist;
+  for ( int i=0; i<std::max(hfturns,hbturns) ; i++ ) {
+    Interval delta_s;
+    if ( i!=0 ) {
+      if ( _curv.lower()*_curv.upper()>0 ) {
+        double sup = 1./std::min( std:abs(_curv.lower()), std::abs(_curv.upper()) );
+        double inf = 1./std::max( std:abs(_curv.lower()), std::abs(_curv.upper()) );
+        delta_s = Interval(inf,sup);
+      } else {
+        double sup = std::numeric_limits<float>::max();
+        double inf = 1./std::max( std::abs(_curv.lower()), std::abs(_curv.upper()) );
+        delta_s = Interval(inf,sup);
+      }
+    }
+    div_t res = std::div(i+1,2);
+    delta_s.scale(2*M_PI*res.quot);
+    if ( res.rem==1 ) {
+      delta_s += slist[0]; 
+    } else {
+      delta_s -= slist[0];
+    }
+    if ( i<hfturns ) alist.push_back(std::pair<AngularInterval,Interval>( forwPhiRange, delta_s ) );
+    if ( i<hbturns ) alist.push_back(std::pair<AngularInterval,Interval>( backPhiRange, delta_s.scale(-1.) ) );
+  }
+  return alist;
+}
+
+
+/*
+ *  This function returns the arc length and phi range combinations compatible with given tip and curv ranges.
+ *  The case turns>1 and turns<-1 could be improved... but for the moment I don't have time.
+ */
+
+std::vector<std::pair<AngularInterval,Interval> >  RangeFinder2DNorm::phiAndArcLengthRange ( int hfturn )  const
+{
+  std::vector<std::pair<AngularInterval,Interval> > alist;
+  if (   _forwPhiRange.isEmpty() ) return;
+  if ( _arcLengthRange.isEmpty() ) return;
+  Interval delta_s;
+  div_t res = std::div(hfturn+1,2);
+  if ( res.rem==1 ) {
+    delta_s += _arcLengthRange; 
+  } else {
+    delta_s -= _arcLengthRange;
+  }
+  if ( res.quot!=0 ) {
+    double sup = ( _curv.lower()*_curv.upper()>0 )
+               ? 1./std::min( std::abs(_curv.lower()), std::abs(_curv.upper()) )
+               : std::numeric_limits<float>::max();
+    double inf = 1./std::max( std::abs(_curv.lower()), std::abs(_curv.upper()) );
+    delta_s += Interval(inf,sup).scale(2*M_PI*res.quot);
+  }
+  alist.push_back(std::pair<AngularInterval,Interval>( phiRange(hfturn), delta_s ) );
+  return alist;
+}
+
+
+/*
+ *  This function returns the phi range compatible with given tip and curv ranges and turns number.
+ */
+
+AngularInterval  RangeFinder2DNorm::phiRange ( int hfturn )  const
+{
+  return ( hfturn<0 ) ? _backPhiRange : _forwPhiRange;
+}
+
+
+/*  **************************************************************************************************************************  */
 
 /*
  *  This function return the list of arc length ranges in the transverse plane between the poca and the hit as a function of
@@ -45,7 +112,7 @@ TransversePlaneNormalizedRanges::TransversePlaneNormalizedRanges ( Interval tip,
  *  approximated to best value. It returns a list of ranges. Null measure intervals are discarded.
  */
 
-std::vector<Interval>   TransversePlaneNormalizedRanges::arcLengthRange ( )  const
+std::vector<Interval>   RangeFinder2DNorm::cacheInitArcLengthRange ( )
 {
   const double epsilon = 1e-15;
   double max_t = std::max( std::min(_tip.upper(),1.),-1.);
@@ -56,8 +123,7 @@ std::vector<Interval>   TransversePlaneNormalizedRanges::arcLengthRange ( )  con
   sValues.reserve(12);
   std::vector<Interval> alist;
   if ( ( max_t==1. && max_c>=1. && min_c<=1. ) || ( max_t==-1. && max_c>=-1. && min_c<=-1. ) ) {
-     alist.push_back(Interval(0,M_PI));
-     return alist;
+     _arcLengthRange = Interval(0,M_PI);
   }
   // the function doesn't have any minima or maxima inside the tip, curv range minima and maxima
   // on the horizontal boundaries
@@ -112,48 +178,12 @@ std::vector<Interval>   TransversePlaneNormalizedRanges::arcLengthRange ( )  con
   if ( !sValues.empty() ) { 
     double min_s = *min_element( sValues.begin(), sValues.end() );
     double max_s = *max_element( sValues.begin(), sValues.end() );
-    if ( min_s<max_s ) alist.push_back(Interval(min_s,max_s));
+    if ( min_s<max_s ) _arcLengthRange = Interval(min_s,max_s);
   }
-  return alist;  
 }
 
 
-/*
- *  This function returns the arc length and phi range combinations compatible with given tip and curv ranges.
- *  The case hfturns>1 and hbturns>1 could be improved... but for the moment I don't have time.
- */
-
-std::vector<std::pair<AngularInterval,Interval> >  TransversePlaneNormalizedRanges::phiAndArcLengthRange ( int hfturns, int hbturns )
-{
-  std::vector<std::pair<AngularInterval,Interval> > alist;
-  for ( int i=0; i<std::max(hfturns,hbturns) ; i++ ) {
-    Interval delta_s;
-    if ( i!=0 ) {
-      if ( _curv.lower()*_curv.upper()>0 ) {
-        double sup = 1./std::min( std:abs(_curv.lower()), std::abs(_curv.upper()) );
-        double inf = 1./std::max( std:abs(_curv.lower()), std::abs(_curv.upper()) );
-        delta_s = Interval(inf,sup);
-      } else {
-        double sup = std::numeric_limits<float>::max();
-        double inf = 1./std::max( std::abs(_curv.lower()), std::abs(_curv.upper()) );
-        delta_s = Interval(inf,sup);
-      }
-    }
-    div_t res = std::div(i+1,2);
-    delta_s.scale(2*M_PI*res.quot);
-    if ( res.rem==1 ) {
-      delta_s += slist[0]; 
-    } else {
-      delta_s -= slist[0];
-    }
-    if ( i<hfturns ) alist.push_back(std::pair<AngularInterval,Interval>( forwPhiRange, delta_s ) );
-    if ( i<hbturns ) alist.push_back(std::pair<AngularInterval,Interval>( backPhiRange, delta_s.scale(-1.) ) );
-  }
-  return alist;
-}
-
-
-std::vector<Interval>   TransversePlaneNormalizedRanges::sinPhiRange ( )  const
+void  RangeFinder2DNorm::cacheInitPhiRange ( )
 {
   double min_t =  _tip.lower();
   double max_t =  _tip.upper();
@@ -181,18 +211,23 @@ std::vector<Interval>   TransversePlaneNormalizedRanges::sinPhiRange ( )  const
     double tip   = inv_c+sqrt(1.-inv_c*inv_c);
     if ( (min_t<tip) && (tip<max_t) ) min_s = std::min( min_s, sinPhiGivenNormTipCurv(tip,max_c) );
   }
-  std::vector<Interval>  alist;
-  if ( min_s<max_s ) alist.push_back(Interval(min_s,max_s));
-  return alist;
+  if ( min_s<max_s ) {
+    double  phi_l = asin(min_s);
+    double  phi_h = asin(max_s);
+    _forwPhiRange = AngularInterval( phi_l, phi_h );
+    _backPhiRange = AngularInterval( M_PI-phi_h, M_PI-phi_l );
+  }
 }
 
+
+/*  **************************************************************************************************************************  */
 
 /*
  *  This function is a utility used by arcLengthRangeGivenNormTipCurv. It returns the sign of the derivative of the
  *  arc length with respect to the curvature at fixed tip.
  */
 
-bool  TransversePlaneNormalizedRanges::arcLengthDerCurvSignGivenNormTipCurv ( double tip, double curv )
+bool  RangeFinder2DNorm::arcLengthDerCurvSignGivenNormTipCurv ( double tip, double curv )
 {
   const double arg0 = tip*curv;
   bool  pos = true;
@@ -210,7 +245,7 @@ bool  TransversePlaneNormalizedRanges::arcLengthDerCurvSignGivenNormTipCurv ( do
  *  In other words it must be granted: -1<=tip<=1<=|tip-2./curv|, 1-tip*curv>=0.
  */
 
-double  TransversePlaneNormalizedRanges::arcLengthGivenNormTipCurv ( double tip, double curv )
+double  RangeFinder2DNorm::arcLengthGivenNormTipCurv ( double tip, double curv )
 {
   assert ( tip>=-1. );
   assert ( tip<= 1. );
@@ -234,7 +269,7 @@ double  TransversePlaneNormalizedRanges::arcLengthGivenNormTipCurv ( double tip,
  *  of the arc length at fixed tip. The estimate is better than 1e-8.
  */
 
-double   TransversePlaneNormalizedRanges::arcLengthMinimumEstimateGivenNormTip ( double tip )
+double   RangeFinder2DNorm::arcLengthMinimumEstimateGivenNormTip ( double tip )
 {
   double x = fabs(tip);
   assert ( x<=1. );
@@ -310,58 +345,13 @@ double   TransversePlaneNormalizedRanges::arcLengthMinimumEstimateGivenNormTip (
 }
 
 
-
-/*
- *  This function return the pseudorapidity of the track given dz, the distance of hit from the poca in z, and arcl, the transverse 
- *  plane arc length between poca and the hit. When arc length is positive, the track is assumed to go from the poca to the hit. 
- *  When arc length is negative, the track is assumed to go from the hit to the poca.
- */
-
-double   TransversePlaneNormalizedRanges::etaGivenDzArcLength ( double dz, double arcl )
-{
-  if ( arcl<0. ) dz=-dz;
-  double ds = sqrt(arcl*arcl+dz*dz); 
-  return 0.5*log((ds+dz)/(ds-dz));
-}
-
-
-/*
- *  This function returns a list of eta ranges as a function of range of normalized lip of the poca and the allowed arc lengths
- *  in the transverse plane between the poca and the hit.
- */
-
-std::vector<Interval>   TransversePlaneNormalizedRanges::etaRangeGivenDzArcLength ( Interval dz, Interval arcl )
-{
-  std::vector<Interval> alist;
-  Interval parcl = arcl;
-  parcl.setLowerBound(0.);
-  if ( !parcl.isEmpty() ) {
-    double min_eta = (    dz.lower() >0. ) ? etaGivenDzArcLength(dz.lower(),parcl.upper()) : 
-                     ( parcl.lower()!=0. ) ? etaGivenDzArcLength(dz.lower(),parcl.lower()) : -std::numeric_limits<float>::max();
-    double max_eta = (    dz.upper() <0. ) ? etaGivenDzArcLength(dz.upper(),parcl.upper()) : 
-                     ( parcl.lower()!=0. ) ? etaGivenDzArcLength(dz.upper(),parcl.lower()) :  std::numeric_limits<float>::max();
-    if ( min_eta<max_eta ) addToPairWiseDisjointIntervalSet(alist,Interval(min_eta,max_eta));
-  }
-  Interval narcl = arcl;
-  narcl.setUpperBound(0.);
-  if ( !narcl.isEmpty() ) {
-    double min_eta = (    dz.upper() <0. ) ? etaGivenDzArcLength(dz.upper(),narcl.lower()) :
-                     ( narcl.upper()!=0. ) ? etaGivenDzArcLength(dz.upper(),narcl.upper()) : -std::numeric_limits<float>::max();
-    double max_eta = (    dz.lower() >0. ) ? etaGivenDzArcLength(dz.lower(),narcl.lower()) : 
-                     ( narcl.upper()!=0. ) ? etaGivenDzArcLength(dz.lower(),narcl.upper()) :  std::numeric_limits<float>::max();
-    if ( min_eta<max_eta ) addToPairWiseDisjointIntervalSet(alist,Interval(min_eta,max_eta));
-  }
-  return alist;
-}
-
-
 /*
  *  This function return the sine of the angle between the direction of the charged particle transverse momentum and the direction 
  *  of the hit in the transverse plane. It assume tip and curv in adimensional units ( d/D, kD ) and assume -1<=tip<=1. 
  *  When there are no solutions, this function returns -1. for positive curvature and 1. for negative curvature.
  */
 
-double   TransversePlaneNormalizedRanges::sinPhiGivenNormTipCurv ( double tip, double curv )
+double   RangeFinder2DNorm::sinPhiGivenNormTipCurv ( double tip, double curv )
 {
   assert( tip>=-1. );
   assert( tip<= 1. );
@@ -373,5 +363,4 @@ double   TransversePlaneNormalizedRanges::sinPhiGivenNormTipCurv ( double tip, d
   if ( sinphi<-1. ) sinphi=-1.;
   return sinphi;
 }
-
 

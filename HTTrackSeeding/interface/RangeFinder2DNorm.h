@@ -1,7 +1,7 @@
 // -*- C++ -*-
 //
 // Package:    HTSeedLayers
-// Class:      TransversePlaneNormalizedRanges
+// Class:      RangeFinder2DNorm
 // 
 /**\class HTSeedLayers HTSeedLayers.cc MLoVetere/HTSeedLayers/src/HTSeedLayers.cc
 
@@ -17,8 +17,8 @@
 //
 //
 
-#ifndef __TRANSVERSE_PLANE_NORMALIZED_RANGES__
-#define __TRANSVERSE_PLANE_NORMALIZED_RANGES__
+#ifndef __RANGE_FINDER_2D_NORM__
+#define __RANGE_FINDER_2D_NORM__
 
 #include "DataFormat/GeometryVector/interface/GlobalPoint.h"
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
@@ -26,13 +26,16 @@
 #include <cmath>
 
 
-class TransversePlaneNormalizedRanges
+class RangeFinder2DNorm
 {
   public:
-    TransversePlaneNormalizedRanges ( Interval tip, Interval curv );
-    std::vector<Interval>                                    arcLengthRange ( )                            const;
+    RangeFinder2DNorm ( Interval tip, Interval curv );
     std::vector<std::pair<AngularInterval,Interval> >  phiAndArcLengthRange ( int hfturns, int  hbturns )  const;
-    std::vector<Interval>                                       sinPhiRange ( )                            const;
+    std::vector<std::pair<AngularInterval,Interval> >  phiAndArcLengthRange ( int hfturn =0 )  const;
+    AngularInterval  phiRange ( int hfturn =0 )  const;
+  private:
+    void  cacheInitArcLengthRange ( );
+    void  cacheInitPhiRange       ( );
   private:
     static bool     arcLengthDerCurvSignGivenNormTipCurv ( double  tip, double  curv );
     static double   arcLengthGivenNormTipCurv            ( double  tip, double  curv );
@@ -41,11 +44,11 @@ class TransversePlaneNormalizedRanges
   private:  
     Interval        _tip;
     Interval        _curv;
-    Interval        _arcLenghRange;
+    Interval        _arcLengthRange;
     AngularInterval _forwPhiRange;
     AngularInterval _backPhiRange;
 };
 
 
-#endif // __TRANSVERSE_PLANE_NORMALIZED_RANGES__
+#endif // __RANGE_FINDER_2D_NORM__
 
