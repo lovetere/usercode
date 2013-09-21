@@ -1,24 +1,12 @@
-// -*- C++ -*-
-//
-// Package:    HTTrackSeeding
-// Class:      Interval
-// 
-/**\class HTSeedLayers HTSeedLayers.cc MLoVetere/HTSeedLayers/src/Interval.h
+#ifndef HTTrackSeeding_Interval_H
+#define HTTrackSeeding_Interval_H
 
- Description: [one line class summary]
-
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Maurizio Lo Vetere, 559 R-009,+41227675905,
-//         Created:  Fri Nov 30 21:19:49 CET 2012
-// $Id: HTSeedLayers.cc,v 1.6 2013/04/09 07:39:09 mlv Exp $
-//
-//
-
-#ifndef __INTERVAL_H__
-#define __INTERVAL_H__
+/*** \class  Interval
+  *
+  *  Only sets of non null meausure are relevant in this context therefore we consider open intervals  
+  *
+  *  \author Maurizio Lo Vetere
+  */
 
 #include <algorithm>
 #include <assert.h>
@@ -26,13 +14,9 @@
 #include <vector>
 
 
-/*
- *  We are only interested in sets of non null meausure; so we consider only open intervals.
- */
-
 class Interval {
   public:
-    Interval ( ) { _inf = _sup = 0; }
+    Interval ( )                        : _inf(0  ), _sup(0  ) { }
     Interval ( double inf, double sup ) : _inf(inf), _sup(sup) { }
     Interval &  setBound      ( Interval range );
     Interval &  setUpperBound ( double   value );
@@ -43,6 +27,7 @@ class Interval {
     bool            operator< ( const Interval & other ) const;
     const Interval  operator+ ( const Interval & other ) const;
     const Interval  operator- ( const Interval & other ) const;
+    const Interval  operator- (                        ) const;
     bool            overlaps  ( const Interval & other ) const;
     Interval &      scale     ( double factor );
     Interval &      shift     ( double factor );
@@ -91,6 +76,12 @@ inline const Interval Interval::operator- ( const Interval & other ) const
   if ( other.isEmpty() ) return *this;
   if ( this->isEmpty() ) return Interval( -other.upper(), -other.lower() ) ;
   return Interval( this->lower()-other.upper(), this->upper()-other.lower() );
+}
+
+
+inline const Interval Interval::operator- ( ) const
+{
+  return Interval( -this->upper(), -this->lower() );
 }
 
 
@@ -159,5 +150,4 @@ inline static int seed_bin ( std::vector<Interval>& bins, double val )
 }
 
 
-#endif // __INTERVAL_H__
-
+#endif // HTTrackSeeding_Interval_H

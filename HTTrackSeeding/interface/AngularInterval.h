@@ -1,34 +1,18 @@
-// -*- C++ -*-
-//
-// Package:    HTTrackSeeding
-// Class:      AngularInterval
-// 
-/**\class HTSeedLayers HTSeedLayers.cc MLoVetere/HTSeedLayers/src/AngularInterval.h
+#ifndef HTTrackSeeding_AngularInterval_H
+#define HTTrackSeeding_AngularInterval_H
 
- Description: [one line class summary]
-
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Maurizio Lo Vetere, 559 R-009,+41227675905,
-//         Created:  Fri Nov 30 21:19:49 CET 2012
-// $Id: HTSeedLayers.cc,v 1.6 2013/04/09 07:39:09 mlv Exp $
-//
-//
-
-#ifndef __ANGULAR_INTERVAL_H__
-#define __ANGULAR_INTERVAL_H__
+/*** \class  AngularInterval
+  *
+  *  Only sets of non null meausure are relevant in this context therefore we consider open intervals  
+  *
+  *  \author Maurizio Lo Vetere
+  */
 
 #include <algorithm>
 #include <assert.h>
 #include <cmath>
 #include <vector>
 
-
-/*
- *  We are only interested in sets of non null meausure; so we consider only open intervals.
- */
 
 class AngularInterval {
   public:
@@ -149,5 +133,4 @@ inline AngularInterval &  AngularInterval::turnCounterClockWise ( double angle )
 }
 
 
-#endif // __ANGULAR_INTERVAL_H__
-
+#endif //  HTTrackSeeding_AngularInterval_H

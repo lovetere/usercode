@@ -1,8 +1,14 @@
+#ifndef HTTrackSeeding_HelixParRange_H
+#define HTTrackSeeding_HelixParRange_H
 
+/*** \class  HelixParRange
+  *
+  *  Helix segment parameters, including limits on positive and negative half turns 
+  *
+  *  \author Maurizio Lo Vetere
+  */
 
-#ifndef __HELIX_PAR_RANGE_H__
-#define __HELIX_PAR_RANGE_H__
-
+#include "MLoVetere/HTTrackSeeding/AngularInterval.h"
 #include "MLoVetere/HTTrackSeeding/Interval.h"
 
 
@@ -10,48 +16,58 @@ class HelixParRange
 {
   public:
     HelixParRange ( ) { }
-    HelixParRange ( Interval rCurv, Interval rEta, Interval rLip , Interval rPhi, Interval rTip )
-      : _rCurv(rCurv), _rEta (rEta ), _rLip (rLip ), _rPhi (rPhi ), _rTip (rTip )  { }
-    HelixParRange ( double minCurv, double maxCurv,
-                    double minEta , double maxEta ,
-                    double minLip , double maxLip ,
-                    double minPhi , double maxPhi ,
-                    double minTip , double maxTip )
-      : _minCurv(minCurv), _maxCurv(maxCurv),
-        _minEta (minEta ), _maxEta (maxEta ),
-        _minLip (minLip ), _maxLip (maxLip ),
-        _minPhi (minPhi ), _maxPhi (maxPhi ),
-        _minTip (minTip ), _maxTip (maxTip )
+    HelixParRange ( Interval rCurv, Interval rEta, Interval rLip , AngularInterval rPhi, Interval rTip,
+                    unsigned int pHTurns =1, unsigned int nHTurns =0 )
+      : _rCurv(rCurv), _rEta (rEta ), _rLip (rLip ), _rPhi (rPhi ), _rTip (rTip ),
+        _pHTurns(pHTurn), _nHTurns(nHTurns)
+    { }
+    HelixParRange ( float minCurv, float maxCurv,
+                    float minEta , float maxEta ,
+                    float minLip , float maxLip ,
+                    float minPhi , float maxPhi ,
+                    float minTip , float maxTip ,
+                    unsigned int pHTurns =1     ,
+                    unsigned int nHTurns =0     )
+      : _rCurv(minCurv,maxCurv),
+        _rEta (minEta ,maxEta ),
+        _rLip (minLip ,maxLip ),
+        _rPhi (minPhi ,maxPhi ),
+        _rTip (minTip ,maxTip ),
+        _pHTurns(pHTurns)      ,
+        _nHTurns(nHTurns)
     { }
    ~HelixParRange ( ) { }
-    double  DCurv   ( )  const  { return _rCurv.upper() - _rCurv.lower(); }
-    double  DEta    ( )  const  { return _rEta .upper() - _rEta .lower(); }
-    double  DLip    ( )  const  { return _rLip .upper() - _rLip .lower(); }
-    double  DPhi    ( )  const  { return _rPhi .upper() - _rPhi .lower(); }
-    double  DTip    ( )  const  { return _rTip .upper() - _rTip .lower(); }
-    double  maxCurv ( )  const  { return _rCurv.upper(); }
-    double  maxEta  ( )  const  { return _rEta .upper(); }
-    double  maxLip  ( )  const  { return _rLip .upper(); }
-    double  maxPhi  ( )  const  { return _rPhi .upper(); } 
-    double  maxTip  ( )  const  { return _rTip .upper(); }
-    double  minCurv ( )  const  { return _rCurv.lower(); }
-    double  minEta  ( )  const  { return _rEta .lower(); }
-    double  minLip  ( )  const  { return _rLip .lower(); }
-    double  minPhi  ( )  const  { return _rPhi .lower(); }
-    double  minTip  ( )  const  { return _rTip .lower(); }
-    void    setCurv ( double min, double delta )  { _minCurv = min; _maxCurv = min+delta; }   // bisogna tenerseli cosi'?
-    void    setEta  ( double min, double delta )  { _minEta  = min; _maxEta  = min+delta; }   // bisogna tenerseli cosi'?
-    void    setLip  ( double min, double delta )  { _minLip  = min; _maxLip  = min+delta; }   // bisogna tenerseli cosi'?
-    void    setPhi  ( double min, double delta )  { _minPhi  = min; _maxPhi  = min+delta; }   // bisogna tenerseli cosi'?
-    void    setTip  ( double min, double delta )  { _minTip  = min; _maxTip  = min+delta; }   // bisogna tenerseli cosi'?
+    float  DCurv   ( )  const  { return _rCurv.upper() - _rCurv.lower(); }
+    float  DEta    ( )  const  { return _rEta .upper() - _rEta .lower(); }
+    float  DLip    ( )  const  { return _rLip .upper() - _rLip .lower(); }
+    float  DPhi    ( )  const  { return _rPhi .upper() - _rPhi .lower(); }
+    float  DTip    ( )  const  { return _rTip .upper() - _rTip .lower(); }
+    float  maxCurv ( )  const  { return _rCurv.upper(); }
+    float  maxEta  ( )  const  { return _rEta .upper(); }
+    float  maxLip  ( )  const  { return _rLip .upper(); }
+    float  maxPhi  ( )  const  { return _rPhi .upper(); } 
+    float  maxTip  ( )  const  { return _rTip .upper(); }
+    float  minCurv ( )  const  { return _rCurv.lower(); }
+    float  minEta  ( )  const  { return _rEta .lower(); }
+    float  minLip  ( )  const  { return _rLip .lower(); }
+    float  minPhi  ( )  const  { return _rPhi .lower(); }
+    float  minTip  ( )  const  { return _rTip .lower(); }
+    float  pHTurns ( )  const  { return _pHTurns;       }
+    float  nHTurns ( )  const  { return _nHTurns;       }
+    void   setCurv ( float min, float delta )  { _minCurv = min; _maxCurv = min+delta; }   // bisogna tenerseli cosi'?
+    void   setEta  ( float min, float delta )  { _minEta  = min; _maxEta  = min+delta; }   // bisogna tenerseli cosi'?
+    void   setLip  ( float min, float delta )  { _minLip  = min; _maxLip  = min+delta; }   // bisogna tenerseli cosi'?
+    void   setPhi  ( float min, float delta )  { _minPhi  = min; _maxPhi  = min+delta; }   // bisogna tenerseli cosi'?
+    void   setTip  ( float min, float delta )  { _minTip  = min; _maxTip  = min+delta; }   // bisogna tenerseli cosi'?
   private:
-    Interval  _rCurv;
-    Interval  _rEta;
-    Interval  _rLip;
-    Interval  _rPhi;
-    Interval  _rTip;
+    Interval        _rCurv;
+    Interval        _rEta;
+    Interval        _rLip;
+    AngularInterval _rPhi;
+    Interval        _rTip;
+    unsigned int    _pHTurns;
+    unsigned int    _nHTurns;
 };
 
 
-#endif //  __HELIX_PAR_RANGE_H__
-
+#endif // HTTrackSeeding_HelixParRange_H
