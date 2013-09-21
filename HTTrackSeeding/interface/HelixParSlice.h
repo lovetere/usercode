@@ -1,6 +1,12 @@
+#ifndef HTTrackSeeding_HelixParSlice_H
+#define HTTrackSeeding_HelixParSlice_H
 
-#ifndef __HELIX_PAR_SLICE_H__
-#define __HELIX_PAR_SLICE_H__
+/*** \class  HelixParSlice
+  *
+  *  Identifier of the 5D parameter space bin
+  *
+  *  \author Maurizio Lo Vetere
+  */
 
 
 class HelixParSlice
@@ -68,5 +74,4 @@ void  HelixParSlice::nTip ( unsigned int value )
 }
 
 
-#endif // __HELIX_PAR_SLICE_H__
-
+#endif // HTTrackSeeding_HelixParSlice_H
