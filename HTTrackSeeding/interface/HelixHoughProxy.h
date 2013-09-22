@@ -38,7 +38,7 @@ class HelixHoughProxy
         float                              minCurv,
         float                              maxCurv,
         float                              minEta ,
-        float                              maxEta )  const  { return _context.phiError(hit,min_curv,max_curv,min_eta,max_eta); }
+        float                              maxEta )  const  { return _context.phiError(hit,minCurv,maxCurv,minEta,maxEta); }
     const HelixRange      &  topRange           ( )  const  { return _context.topRange  ();        } 
     SimpleTimer           &  voteTime           ( )  const  { return _context.voteTime  ();        }
     SimpleTimer           &  voteTimeXY         ( )  const  { return _context.voteTimeXY();        }
@@ -46,12 +46,12 @@ class HelixHoughProxy
     void                     findTracks
       ( const std::vector<SimpleHit3D>   & hits   ,
         std::vector<SimpleTrack3D>       & tracks ,
-        const HelixRange                 & range  )         { return _context.findTracks(hits,tracks,range); }
+        const HelixRange                 & range  )  { return _context.findTracks(hits,tracks,range); }
     void                     findSeededTracks
       ( const std::vector<SimpleTrack3D> & seeds  ,
         const std::vector<SimpleHit3D>   & hits   ,
         std::vector<SimpleTrack3D>       & tracks ,
-        const HelixRange                 & range  )         { return _context.findSeededTracks(seeds,hits,tracks,range); }
+        const HelixRange                 & range  )  { return _context.findSeededTracks(seeds,hits,tracks,range); }
   private:
     HelixHough &  _context;
 };
