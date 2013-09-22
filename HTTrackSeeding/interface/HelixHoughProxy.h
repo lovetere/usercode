@@ -21,32 +21,37 @@ class HelixHoughProxy
   public:
     HelixHoughProxy ( HelixHough      & context );
     HelixHoughProxy ( HelixHoughProxy & other   );
-    float                    decreasePerZoom   ( )  const  { return _context.decreasePerZoom  (); } 
-    const HelixResolution &  maximumResolution ( )  const  { return _context.maximumResolution(); }
-    const HelixResolution &  minimumResolution ( )  const  { return _context.minimumResolution(); }
-    const HelixRange      &  topRange          ( )  const  { return _context.topRange  ();        } 
-    SimpleTimer           &  voteTime          ( )  const  { return _context.voteTime  ();        }
-    SimpleTimer           &  voteTimeXY        ( )  const  { return _context.voteTimeXY();        }
-    SimpleTimer           &  voteTimeZ         ( )  const  { return _context.voteTimeZ ();        }
-    bool   breakRecursion   ( const std::vector<SimpleHit3D>   & hits   ,
-                              const HelixRange                 & range  )  const  { return _context.breakRecursion(hits,range); }
-    float  etaError         ( const SimpleHit3D                & hit    ,
-                              float                              minCurv,
-                              float                              maxCurv,
-                              float                              minEta ,
-                              float                              maxEta )  const  { return _context.etaError(hit,minCurv,maxCurv,minEta,maxEta); }
-    float  phiError         ( const SimpleHit3D                & hit    ,
-                              float                              minCurv,
-                              float                              maxCurv,
-                              float                              minEta ,
-                              float                              maxEta )  const  { return _context.phiError(hit,min_curv,max_curv,min_eta,max_eta); }
-    void   findTracks       ( const std::vector<SimpleHit3D>   & hits   ,
-                              std::vector<SimpleTrack3D>       & tracks ,
-                              const HelixRange                 & range  )         { return _context.findTracks(hits,tracks,range); }
-    void   findSeededTracks ( const std::vector<SimpleTrack3D> & seeds  ,
-                              const std::vector<SimpleHit3D>   & hits   ,
-                              std::vector<SimpleTrack3D>       & tracks ,
-                              const HelixRange                 & range  )         { return _context.findSeededTracks(seeds,hits,tracks,range); }
+    bool                     breakRecursion
+      ( const std::vector<SimpleHit3D>   & hits   ,
+        const HelixRange                 & range  )  const  { return _context.breakRecursion(hits,range); }
+    float                    decreasePerZoom    ( )  const  { return _context.decreasePerZoom  (); } 
+    float                    etaError
+      ( const SimpleHit3D                & hit    ,
+        float                              minCurv,
+        float                              maxCurv,
+        float                              minEta ,
+        float                              maxEta )  const  { return _context.etaError(hit,minCurv,maxCurv,minEta,maxEta); }
+    const HelixResolution &  maximumResolution  ( )  const  { return _context.maximumResolution(); }
+    const HelixResolution &  minimumResolution  ( )  const  { return _context.minimumResolution(); }
+    float                    phiError
+      ( const SimpleHit3D                & hit    ,
+        float                              minCurv,
+        float                              maxCurv,
+        float                              minEta ,
+        float                              maxEta )  const  { return _context.phiError(hit,min_curv,max_curv,min_eta,max_eta); }
+    const HelixRange      &  topRange           ( )  const  { return _context.topRange  ();        } 
+    SimpleTimer           &  voteTime           ( )  const  { return _context.voteTime  ();        }
+    SimpleTimer           &  voteTimeXY         ( )  const  { return _context.voteTimeXY();        }
+    SimpleTimer           &  voteTimeZ          ( )  const  { return _context.voteTimeZ ();        }
+    void                     findTracks
+      ( const std::vector<SimpleHit3D>   & hits   ,
+        std::vector<SimpleTrack3D>       & tracks ,
+        const HelixRange                 & range  )         { return _context.findTracks(hits,tracks,range); }
+    void                     findSeededTracks
+      ( const std::vector<SimpleTrack3D> & seeds  ,
+        const std::vector<SimpleHit3D>   & hits   ,
+        std::vector<SimpleTrack3D>       & tracks ,
+        const HelixRange                 & range  )         { return _context.findSeededTracks(seeds,hits,tracks,range); }
   private:
     HelixHough &  _context;
 };
