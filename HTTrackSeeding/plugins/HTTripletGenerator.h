@@ -18,12 +18,10 @@
 
 class HTTripletGenerator : public HitTripletGenerator {
   public:
-    typedef LayerHitMapCache  LayerCacheType;
-  public:
-    HTTripletGenerator ( const edm::ParameterSet & conf );
+    HTTripletGenerator          ( const edm::ParameterSet & cfg );
     virtual ~HTTripletGenerator ( ) { };
-    virtual void  hitTriplets ( const TrackingRegion & reg, OrderedHitTriplets & prs, const edm::Event & ev, const edm::EventSetup & es );
-    void          init        ( const edm::EventSetup & es, const TrackingRegion & reg );
+    virtual void  hitTriplets   ( const TrackingRegion & reg, OrderedHitTriplets & prs, const edm::Event & ev, const edm::EventSetup & es );
+    void          init          ( const edm::EventSetup & es, const TrackingRegion & reg );
   private:
     edm::ParameterSet             theConfig;
     HelixParSlice                 theNumBins;
