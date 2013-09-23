@@ -5,7 +5,7 @@
 #include "Interval.h"
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <cfloat>
 #include <cmath>
 #include <limits>
@@ -22,11 +22,10 @@
  */
 
 RangeFinder2DNorm::RangeFinder2DNorm ( Interval tip, Interval curv )
-  : _tip(tip), _curv(curv), _arcLenghRange(), _forwPhiRange(), _backPhiRange();
+  : _tip(tip), _curv(curv), _forwPhiRange(), _backPhiRange(),  _arcLengthInit(false), _arcLenghRange();
 {
   _tip.bound(Interval(-1.,1.));
   cacheInitPhiRange();
-  cacheInitArcLengthRange();
 }
 
 
@@ -34,7 +33,7 @@ RangeFinder2DNorm::RangeFinder2DNorm ( Interval tip, Interval curv )
  *  This function returns the arc length and phi range combinations compatible with given tip and curv ranges.
  *  The case hfturns>1 and hbturns>1 could be improved... but for the moment I don't have time.
  */
-
+/*
 std::vector<std::pair<AngularInterval,Interval> >  RangeFinder2DNorm::phiAndArcLengthRange ( int hfturns, int hbturns )
 {
   std::vector<std::pair<AngularInterval,Interval> > alist;
@@ -64,17 +63,30 @@ std::vector<std::pair<AngularInterval,Interval> >  RangeFinder2DNorm::phiAndArcL
   return alist;
 }
 
-
+*/
 /*
  *  This function returns the arc length and phi range combinations compatible with given tip and curv ranges.
  *  The case turns>1 and turns<-1 could be improved... but for the moment I don't have time.
  */
-
+ /*
 std::vector<std::pair<AngularInterval,Interval> >  RangeFinder2DNorm::phiAndArcLengthRange ( int hfturn )  const
 {
   std::vector<std::pair<AngularInterval,Interval> > alist;
-  if (   _forwPhiRange.isEmpty() ) return;
-  if ( _arcLengthRange.isEmpty() ) return;
+  AngularInterval phi = phiRange(hfturn);
+  Interval    delta_s = arcLengthRange(hfturn);
+  if ( !_phi.isEmpty() && !_delta_s.isEmpty() ) alist.push_back( std::pair<AngularInterval,Interval>(phi,delta_s) );
+  return alist;
+}
+
+ */
+/*
+ *  This function returns the arc length compatible with given tip and curv  tip and curv ranges and turns number.
+ */
+
+Interval  RangeFinder2DNorm::arcLengthRange ( int hfturn )  const
+{
+  cacheInitArcLengthRange();
+  if ( _forwPhiRange.isEmpty() || _arcLengthRange.isEmpty() ) return Interval();
   Interval delta_s;
   div_t res = std::div(hfturn+1,2);
   if ( res.rem==1 ) {
@@ -89,8 +101,7 @@ std::vector<std::pair<AngularInterval,Interval> >  RangeFinder2DNorm::phiAndArcL
     double inf = 1./std::max( std::abs(_curv.lower()), std::abs(_curv.upper()) );
     delta_s += Interval(inf,sup).scale(2*M_PI*res.quot);
   }
-  alist.push_back(std::pair<AngularInterval,Interval>( phiRange(hfturn), delta_s ) );
-  return alist;
+  return delta_s;
 }
 
 
@@ -112,8 +123,10 @@ AngularInterval  RangeFinder2DNorm::phiRange ( int hfturn )  const
  *  approximated to best value. It returns a list of ranges. Null measure intervals are discarded.
  */
 
-std::vector<Interval>   RangeFinder2DNorm::cacheInitArcLengthRange ( )
+void  RangeFinder2DNorm::cacheInitArcLengthRange ( )
 {
+  if ( _arcLengthInit ) return;
+  _arcLengthInit = true;
   const double epsilon = 1e-15;
   double max_t = std::max( std::min(_tip.upper(),1.),-1.);
   double min_t = std::max( std::min(_tip.lower(),1.),-1.);
@@ -351,7 +364,7 @@ double   RangeFinder2DNorm::arcLengthMinimumEstimateGivenNormTip ( double tip )
  *  When there are no solutions, this function returns -1. for positive curvature and 1. for negative curvature.
  */
 
-double   RangeFinder2DNorm::sinPhiGivenNormTipCurv ( double tip, double curv )
+double  RangeFinder2DNorm::sinPhiGivenNormTipCurv ( double tip, double curv )
 {
   assert( tip>=-1. );
   assert( tip<= 1. );

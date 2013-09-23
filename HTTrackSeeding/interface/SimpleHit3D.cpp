@@ -6,7 +6,7 @@
 #include "RangeFinder2DNorm.h"
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <cfloat>
 #include <cmath>
 #include <limits>
