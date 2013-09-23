@@ -22,6 +22,7 @@ class AngularInterval {
     bool      include  ( double angle )  const;
     bool      isEmpty  ( )               const;
     bool      isFull   ( )               const;
+    double    length   ( )               const;
     double    lower    ( )               const;
     double    upper    ( )               const;
     bool      overlaps ( const AngularInterval & other ) const;
@@ -83,6 +84,12 @@ inline bool  AngularInterval::isFull( )  const
 { 
   return _delta>M_PI; 
 } 
+
+
+inline double  AngularInterval::length ( )  const
+{
+  return 2.*std::min(std::max(_delta,0.),M_PI);
+}
 
 
 inline double  AngularInterval::lower ( )  const

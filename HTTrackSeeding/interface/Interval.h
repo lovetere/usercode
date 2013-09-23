@@ -21,6 +21,7 @@ class Interval {
     Interval &  setBound      ( Interval range );
     Interval &  setUpperBound ( double   value );
     Interval &  setLowerBound ( double   value );
+    double   length   ( )  const  { return std::max(_sup-_inf,0.); }
     double   lower    ( )  const  { return _inf; }
     double   upper    ( )  const  { return _sup; }
     bool     isEmpty  ( )  const  { return _sup<=_inf; }

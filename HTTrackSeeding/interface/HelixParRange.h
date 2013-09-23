@@ -37,28 +37,36 @@ class HelixParRange
         _nHTurns(nHTurns)
     { }
    ~HelixParRange ( ) { }
-    float  DCurv   ( )  const  { return _rCurv.upper() - _rCurv.lower(); }
-    float  DEta    ( )  const  { return _rEta .upper() - _rEta .lower(); }
-    float  DLip    ( )  const  { return _rLip .upper() - _rLip .lower(); }
-    float  DPhi    ( )  const  { return _rPhi .upper() - _rPhi .lower(); }
-    float  DTip    ( )  const  { return _rTip .upper() - _rTip .lower(); }
-    float  maxCurv ( )  const  { return _rCurv.upper(); }
-    float  maxEta  ( )  const  { return _rEta .upper(); }
-    float  maxLip  ( )  const  { return _rLip .upper(); }
-    float  maxPhi  ( )  const  { return _rPhi .upper(); } 
-    float  maxTip  ( )  const  { return _rTip .upper(); }
-    float  minCurv ( )  const  { return _rCurv.lower(); }
-    float  minEta  ( )  const  { return _rEta .lower(); }
-    float  minLip  ( )  const  { return _rLip .lower(); }
-    float  minPhi  ( )  const  { return _rPhi .lower(); }
-    float  minTip  ( )  const  { return _rTip .lower(); }
-    float  pHTurns ( )  const  { return _pHTurns;       }
-    float  nHTurns ( )  const  { return _nHTurns;       }
-    void   setCurv ( float min, float delta )  { _minCurv = min; _maxCurv = min+delta; }   // bisogna tenerseli cosi'?
-    void   setEta  ( float min, float delta )  { _minEta  = min; _maxEta  = min+delta; }   // bisogna tenerseli cosi'?
-    void   setLip  ( float min, float delta )  { _minLip  = min; _maxLip  = min+delta; }   // bisogna tenerseli cosi'?
-    void   setPhi  ( float min, float delta )  { _minPhi  = min; _maxPhi  = min+delta; }   // bisogna tenerseli cosi'?
-    void   setTip  ( float min, float delta )  { _minTip  = min; _maxTip  = min+delta; }   // bisogna tenerseli cosi'?
+    float  DCurv   ( )  const  { return _rCurv.length(); }
+    float  DEta    ( )  const  { return _rEta .length(); }
+    float  DLip    ( )  const  { return _rLip .length(); }
+    float  DPhi    ( )  const  { return _rPhi .length(); }
+    float  DTip    ( )  const  { return _rTip .length(); }
+    float  maxCurv ( )  const  { return _rCurv.upper();  }
+    float  maxEta  ( )  const  { return _rEta .upper();  }
+    float  maxLip  ( )  const  { return _rLip .upper();  }
+    float  maxPhi  ( )  const  { return _rPhi .upper();  } 
+    float  maxTip  ( )  const  { return _rTip .upper();  }
+    float  minCurv ( )  const  { return _rCurv.lower();  }
+    float  minEta  ( )  const  { return _rEta .lower();  }
+    float  minLip  ( )  const  { return _rLip .lower();  }
+    float  minPhi  ( )  const  { return _rPhi .lower();  }
+    float  minTip  ( )  const  { return _rTip .lower();  }
+    float  pHTurns ( )  const  { return _pHTurns;        }
+    float  nHTurns ( )  const  { return _nHTurns;        }
+    void   setCurv ( Interval        value )  { _rCurv = value;   }
+    void   setEta  ( Interval        value )  { _rEta  = value;   }
+    void   setLip  ( Interval        value )  { _rLip  = value;   }
+    void   setPhi  ( AngularInterval value )  { _rPhi  = value;   }
+    void   setTip  ( Interval        value )  { _rTip  = value;   }
+    void   setPHTurns ( unsigned int value )  { _pHTurns = value; }
+    void   setNHTurns ( unsigned int value )  { _nHTurns = value; }
+  public:  // deprecated
+    void   setCurv ( float min, float delta )  { _min_curv = min; _max_curv = min+delta; }
+    void   setEta  ( float min, float delta )  { _min_eta  = min; _max_eta  = min+delta; }
+    void   setLip  ( float min, float delta )  { _min_lip  = min; _max_lip  = min+delta; }
+    void   setPhi  ( float min, float delta )  { _min_phi  = min; _max_phi  = min+delta; }
+    void   setTip  ( float min, float delta )  { _min_tip  = min; _max_tip  = min+delta; }
   private:
     Interval        _rCurv;
     Interval        _rEta;
