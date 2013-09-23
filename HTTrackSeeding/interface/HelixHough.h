@@ -8,13 +8,12 @@
   *  \author Maurizio Lo Vetere
   */
 
-#include "BinEntryPair5D.h"
+#include "MLoVetere/HTTrackSeeding/interface/HelixParNBins.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParRange.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParResolution.h"
-#include "MLoVetere/HTTrackSeeding/interface/HelixParNBins.h"
-#include "SimpleHit3D.h"
+#include "MLoVetere/HTTrackSeeding/interface/SimpleHit3D.h"
 #include "MLoVetere/HTTrackSeeding/interface/SimpleTimer.h"
-#include "SimpleTrack3D.h"
+#include "MLoVetere/HTTrackSeeding/interface/SimpleTrack3D.h"
 
 #include <vector>
 
@@ -38,21 +37,21 @@ class HelixHough
     void  setPrintTimings    ( bool  value )  { _printTimings    = value; }
     void  setDecreasePerZoom ( float value )  { _decreasePerZoom = value; }    
   public:
-    float                       decreasePerZoom   ( )  const  { return _decrease_per_zoom; }
+    float                       decreasePerZoom   ( )  const  { return _decreasePerZoom;   }
     const HelixParResolution &  minimumResolution ( )  const  { return _minimumResolution; }
     const HelixParResolution &  maximumResolution ( )  const  { return _maximumResolution; }
     const HelixParRange      &  topRange          ( )  const  { return _range;             } 
     virtual float  phiError         ( const SimpleHit3D& hit, float min_curv, float max_curv, float min_eta, float max_eta )  const  { return 0.;    }
     virtual float  etaError         ( const SimpleHit3D& hit, float min_curv, float max_curv, float min_eta, float max_eta )  const  { return 0.;    }
     virtual bool   breakRecursion   ( const std::vector<SimpleHit3D>   & hits   ,
-                                      const HelixRange                 & range  )  const  { return false; }
+                                      const HelixParRange              & range  )  const  { return false; }
     virtual void   findTracks       ( const std::vector<SimpleHit3D>   & hits   ,
                                       std::vector<SimpleTrack3D>       & tracks ,
-                                      const HelixRange                 & range  )  =0;
+                                      const HelixParRange              & range  )  =0;
     virtual void   findSeededTracks ( const std::vector<SimpleTrack3D> & seeds  ,
                                       const std::vector<SimpleHit3D>   & hits   ,
                                       std::vector<SimpleTrack3D>       & tracks ,
-                                      const HelixRange                 & range  )  { };
+                                      const HelixParRange              & range  )  { };
     SimpleTimer &  voteTime         ( )   const { return * _voteTime;   } 
     SimpleTimer &  voteTimeXY       ( )   const { return * _voteTimeXY; }
     SimpleTimer &  voteTimeZ        ( )   const { return * _voteTimeZ;  }

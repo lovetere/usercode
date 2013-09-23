@@ -1,18 +1,18 @@
 #include "MLoVetere/HTTrackSeeding/interface/HelixHough.h"
 
 #include "MLoVetere/HTTrackSeeding/interface/HelixHoughEngine.h"
-#include "SimpleHit3D.h"
-#include "SimpleTrack3D.h"
+#include "MLoVetere/HTTrackSeeding/interface/SimpleHit3D.h"
+#include "MLoVetere/HTTrackSeeding/interface/SimpleTrack3D.h"
 
 #include <algorithm>
-#include <assert>
+#include <cassert>
 #include <cmath>
 #include <iostream>
 
 
-HelixHough::HelixHough( HelixParRange range, HelixParNBins nBins, HelixResolution & minResolution, HelixResolution & maxResolution ) 
+HelixHough::HelixHough( HelixParRange range, HelixParNBins nBins, HelixParResolution minResolution, HelixParResolution maxResolution ) 
   :  _range(range), _nBins(nBins), _minimumResolution(minResolution), _maximumResolution(maxResolution), 
-     _decrease_per_zoom(0.5), print_timings(false), _voteTime(0), _voteTimeXY(0), _voteTimeZ(0)  
+     _decreasePerZoom(0.5), _printTimings(false), _voteTime(0), _voteTimeXY(0), _voteTimeZ(0)  
 {
   _voteTime   = new SimpleTimer;
   _voteTimeXY = new SimpleTimer;
@@ -29,7 +29,7 @@ HelixHough::~HelixHough()
 }
 
 
-void  HelixHough::findHelices ( std::vector<SimpleHit3D> &   hits      ,
+void  HelixHough::findHelices ( std::vector<SimpleHit3D>   & hits      ,
                                 unsigned int                 min_hits  ,
                                 unsigned int                 max_hits  ,
                                 std::vector<SimpleTrack3D> & tracks    ,
@@ -48,7 +48,7 @@ void  HelixHough::findHelices ( std::vector<SimpleHit3D> &   hits      ,
   
   initEvent(hits, min_hits);
   
-  HelixHoughEngine engine(*this,_range,_nPhi,_nTip,_nCurv,_nEta,_nLip);
+  HelixHoughEngine engine(*this,_range,_nBins);
   std::vector<SimpleTrack3D> temp_tracks;
   engine.findHelices(hits,min_hits,max_hits,temp_tracks,maxtracks);
   
@@ -63,7 +63,7 @@ void  HelixHough::findHelices ( std::vector<SimpleHit3D> &   hits      ,
 
   finalize(temp_tracks, tracks);
 
-  if ( print_timings ) {
+  if ( _printTimings ) {
     std::cout <<    "vote time = " << voteTime  ().lapse() << std::endl;
     std::cout << "xy vote time = " << voteTimeXY().lapse() << std::endl;
     std::cout <<  "z vote time = " << voteTimeZ ().lapse() << std::endl;
@@ -85,13 +85,13 @@ void HelixHough::findSeededHelices ( std::vector<SimpleTrack3D> & seeds     ,
   initEvent(hits, min_hits);
   initSeeding();
   
-  HelixHoughEngine engine(*this,_range,_nPhi,_nTip,_nCurv,_nEta,_nLip);
+  HelixHoughEngine engine(*this,_range,_nBins);
   std::vector<SimpleTrack3D> temp_tracks;
   engine.findSeededHelices(seeds,hits,min_hits,max_hits,temp_tracks,maxtracks);
   
   finalize(temp_tracks, tracks);
 
-  if ( print_timings ) {
+  if ( _printTimings ) {
     std::cout <<    "vote time = " << voteTime  ().lapse() << std::endl;
     std::cout << "xy vote time = " << voteTimeXY().lapse() << std::endl;
     std::cout <<  "z vote time = " << voteTimeZ ().lapse() << std::endl;

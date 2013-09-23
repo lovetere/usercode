@@ -8,8 +8,8 @@
   *  \author Maurizio Lo Vetere
   */
 
-#include "MLoVetere/HTTrackSeeding/AngularInterval.h"
-#include "MLoVetere/HTTrackSeeding/Interval.h"
+#include "MLoVetere/HTTrackSeeding/interface/AngularInterval.h"
+#include "MLoVetere/HTTrackSeeding/interface/Interval.h"
 
 
 class HelixParRange
@@ -19,7 +19,7 @@ class HelixParRange
     HelixParRange ( Interval rCurv, Interval rEta, Interval rLip , AngularInterval rPhi, Interval rTip,
                     unsigned int pHTurns =1, unsigned int nHTurns =0 )
       : _rCurv(rCurv), _rEta (rEta ), _rLip (rLip ), _rPhi (rPhi ), _rTip (rTip ),
-        _pHTurns(pHTurn), _nHTurns(nHTurns)
+        _pHTurns(pHTurns), _nHTurns(nHTurns)
     { }
     HelixParRange ( float minCurv, float maxCurv,
                     float minEta , float maxEta ,
@@ -62,11 +62,11 @@ class HelixParRange
     void   setPHTurns ( unsigned int value )  { _pHTurns = value; }
     void   setNHTurns ( unsigned int value )  { _nHTurns = value; }
   public:  // deprecated
-    void   setCurv ( float min, float delta )  { _min_curv = min; _max_curv = min+delta; }
-    void   setEta  ( float min, float delta )  { _min_eta  = min; _max_eta  = min+delta; }
-    void   setLip  ( float min, float delta )  { _min_lip  = min; _max_lip  = min+delta; }
-    void   setPhi  ( float min, float delta )  { _min_phi  = min; _max_phi  = min+delta; }
-    void   setTip  ( float min, float delta )  { _min_tip  = min; _max_tip  = min+delta; }
+    void   setCurv ( float min, float delta )  { _rCurv =        Interval( min, min+delta ); }
+    void   setEta  ( float min, float delta )  { _rEta  =        Interval( min, min+delta ); }
+    void   setLip  ( float min, float delta )  { _rLip  =        Interval( min, min+delta ); }
+    void   setPhi  ( float min, float delta )  { _rPhi  = AngularInterval( min, min+delta ); }
+    void   setTip  ( float min, float delta )  { _rTip  =        Interval( min, min+delta ); }
   private:
     Interval        _rCurv;
     Interval        _rEta;

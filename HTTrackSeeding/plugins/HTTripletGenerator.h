@@ -9,6 +9,9 @@
   */
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h" 
+#include "MLoVetere/HTTrackSeeding/interface/HelixParNBins.h"
+#include "MLoVetere/HTTrackSeeding/interface/HelixParRange.h"
+#include "MLoVetere/HTTrackSeeding/interface/HelixParResolution.h"
 #include "RecoTracker/TkHitPairs/interface/LayerHitMapCache.h"
 #include "RecoTracker/TkSeedingLayers/interface/SeedingLayerSets.h"
 #include "RecoPixelVertexing/PixelTriplets/interface/HitTripletGenerator.h"
@@ -24,9 +27,9 @@ class HTTripletGenerator : public HitTripletGenerator {
     void          init          ( const edm::EventSetup & es, const TrackingRegion & reg );
   private:
     edm::ParameterSet             theConfig;
-    HelixParSlice                 theNumBins;
-    HelixResolution               theMinRes;
-    HelixResolution               theMaxRes;
+    HelixParNBins                 theNumBins;
+    HelixParResolution            theMinRes;
+    HelixParResolution            theMaxRes;
     unsigned int                  thePHTurns;
     unsigned int                  theNHTurns;
     std::string                   theLayerBuilderName;

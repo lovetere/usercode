@@ -9,7 +9,7 @@
   */
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <cmath>
 #include <vector>
 
@@ -42,18 +42,21 @@ inline Interval &  Interval::setBound ( Interval range )
 {
   setUpperBound( range.upper() );
   setLowerBound( range.lower() );
+  return *this; 
 }
 
 inline Interval &  Interval::setUpperBound ( double value )
 {
   _sup = std::min( _sup, value );
   _inf = std::min( _inf, value );
+  return *this; 
 }
 
 inline Interval &  Interval::setLowerBound ( double value )
 {
   _sup = std::max( _sup, value );
   _inf = std::max( _inf, value );
+  return *this; 
 }
 
 

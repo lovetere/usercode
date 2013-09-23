@@ -11,7 +11,6 @@
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
-#include "MLoVetere/HTTrackSeeding/interface/HoughResolution.h"
 #include "RecoTracker/TkSeedingLayers/interface/SeedingLayerSetsBuilder.h"
 #include "RecoTracker/TkTrackingRegions/interface/RectangularEtaPhiTrackingRegion.h"
 
@@ -27,10 +26,10 @@ HTTripletGenerator::HTTripletGenerator( const edm::ParameterSet & cfg )
   edm::LogInfo("HTTrackSeeding|HTTripletGenerator") << "Constructing HTTripletGenerator";
   edm::ParameterSet nBinsPSet  = cfg.getParameter<edm::ParameterSet>("DivPSet");
   theNumBins.nCurv( nBinsPSet.getParameter<unsigned int>("nBinsCurv") );
-  theNUmBins.nEta ( nBinsPSet.getParameter<unsigned int>("nBinsEta" ) );
+  theNumBins.nEta ( nBinsPSet.getParameter<unsigned int>("nBinsEta" ) );
   theNumBins.nPhi ( nBinsPSet.getParameter<unsigned int>("nBinsPhi" ) );
   theNumBins.nTip ( nBinsPSet.getParameter<unsigned int>("nBinsTip" ) );
-  theNUmBins.nLip ( nBinsPSet.getParameter<unsigned int>("nBinsLip" ) );
+  theNumBins.nLip ( nBinsPSet.getParameter<unsigned int>("nBinsLip" ) );
   /* std::cout << "theDivCurv="  << theNumBins.nCurv()
                << "; theDivEta=" << theNumBins.nEta ()
                << "; theDivPhi=" << theNumBins.nPhi ()

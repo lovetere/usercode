@@ -8,8 +8,10 @@
   *  \author Maurizio Lo Vetere
   */
 
+#include "MLoVetere/HTTrackSeeding/interface/Interval.h"
+
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <cmath>
 #include <vector>
 

@@ -8,13 +8,15 @@
   *  \author Maurizio Lo Vetere
   */
 
+#include <cassert>
+
 
 class HelixParBinId
 {
   public:
-    HelixParBinId ( ) : index(0)  { }
-    HelixParBinId ( unsigned int nCurv, unsigned int nEta, unsigned int nLip, unsigned int nPhi, unsigned int nTip )
-      : index(0)  { nCurv(nCurv); nEta(nEta); nLip(nLip); nPhi(nPhi); nTip(nTip); }
+    HelixParBinId ( ) : _index(0)  { }
+    HelixParBinId ( unsigned int ncurv, unsigned int neta, unsigned int nlip, unsigned int nphi, unsigned int ntip )
+      : _index(0) { nCurv(ncurv); nEta(neta); nLip(nlip); nPhi(nphi); nTip(ntip); }
     bool          operator< ( const HelixParBinId & other )  const  { return  _index <  other._index;   }
     bool          operator==( const HelixParBinId & other )  const  { return  _index == other._index;   }
     unsigned int  nCurv     ( )                              const  { return (_index>>binC_s) & binC_m; }
@@ -35,7 +37,7 @@ class HelixParBinId
 };
 
 
-void  HelixParBinId::nCurv ( unsigned int value )
+inline void  HelixParBinId::nCurv ( unsigned int value )
 { 
   assert ( value<=binC_m );
   _index &= ~( binC_m << binC_s );
@@ -43,7 +45,7 @@ void  HelixParBinId::nCurv ( unsigned int value )
 }
 
 
-void  HelixParBinId::nEta ( unsigned int value )
+inline void  HelixParBinId::nEta ( unsigned int value )
 { 
   assert ( value<=binE_m );
   _index &= ~( binE_m << binE_s );
@@ -51,7 +53,7 @@ void  HelixParBinId::nEta ( unsigned int value )
 }
 
 
-void  HelixParBinId::nLip ( unsigned int value )
+inline void  HelixParBinId::nLip ( unsigned int value )
 { 
   assert ( value<=binL_m );
   _index &= ~( binL_m << binL_s );
@@ -59,7 +61,7 @@ void  HelixParBinId::nLip ( unsigned int value )
 }
 
 
-void  HelixParBinId::nPhi ( unsigned int value )
+inline void  HelixParBinId::nPhi ( unsigned int value )
 { 
   assert ( value<=binP_m );
   _index &= ~( binP_m << binP_s );
@@ -67,7 +69,7 @@ void  HelixParBinId::nPhi ( unsigned int value )
 }
 
 
-void  HelixParBinId::nTip ( unsigned int value )
+inline void  HelixParBinId::nTip ( unsigned int value )
 { 
   assert ( value<=binT_m );
   _index &= ~( binT_m << binT_s );
