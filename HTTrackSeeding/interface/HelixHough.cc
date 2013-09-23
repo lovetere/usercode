@@ -10,7 +10,7 @@
 #include <iostream>
 
 
-HelixHough::HelixHough( HelixParRange range, HelixParNBins nBins, HelixResolution & miResolution, HelixResolution & maxResolution, 
+HelixHough::HelixHough( HelixParRange range, HelixParNBins nBins, HelixResolution & minResolution, HelixResolution & maxResolution ) 
   :  _range(range), _nBins(nBins), _minimumResolution(minResolution), _maximumResolution(maxResolution), 
      _decrease_per_zoom(0.5), print_timings(false), _voteTime(0), _voteTimeXY(0), _voteTimeZ(0)  
 {
