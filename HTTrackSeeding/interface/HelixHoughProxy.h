@@ -3,7 +3,7 @@
 
 /*** \class  HelixHoughProxy
   *
-  *  This class implement seed search using a Hough transform inspired algorithm
+  *  This class is a proxy to and/or wrapper of HelixHough class
   *
   *  \author Maurizio Lo Vetere
   */
@@ -24,7 +24,7 @@ class HelixHoughProxy
     bool                     breakRecursion
       ( const std::vector<SimpleHit3D>   & hits   ,
         const HelixRange                 & range  )  const  { return _context.breakRecursion(hits,range); }
-    float                    decreasePerZoom    ( )  const  { return _context.decreasePerZoom  (); } 
+    float                    decreasePerZoom    ( )  const  { return _context.decreasePerZoom();   } 
     float                    etaError
       ( const SimpleHit3D                & hit    ,
         float                              minCurv,

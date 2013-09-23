@@ -11,7 +11,7 @@
 #include "BinEntryPair5D.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParRange.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParResolution.h"
-#include "MLoVetere/HTTrackSeeding/interface/HelixParSlice.h"
+#include "MLoVetere/HTTrackSeeding/interface/HelixParNBins.h"
 #include "SimpleHit3D.h"
 #include "MLoVetere/HTTrackSeeding/interface/SimpleTimer.h"
 #include "SimpleTrack3D.h"
@@ -22,7 +22,7 @@
 class HelixHough
 {
   public:
-    HelixHough               ( HelixParRange range,  HelixParSlice slices, HelixParResolution minResolution, HelixParResolution maxResolution );
+    HelixHough               ( HelixParRange range,  HelixParNBins nbins, HelixParResolution minResolution, HelixParResolution maxResolution );
     virtual  ~HelixHough     ( );
     void  findHelices        ( std::vector<SimpleHit3D>  &  hits         ,
                                unsigned int                 min_hits     ,
@@ -62,7 +62,7 @@ class HelixHough
     virtual void  finalize    ( std::vector<SimpleTrack3D> & input, std::vector<SimpleTrack3D> & output )  { }
   private:
     HelixParRange       _range;
-    HelixParSlice       _slices;
+    HelixParNBins       _nBins;
     HelixParResolution  _minimumResolution;
     HelixParResolution  _maximumResolution;
     float               _decreasePerZoom;

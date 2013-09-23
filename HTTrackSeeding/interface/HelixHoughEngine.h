@@ -14,7 +14,7 @@
 #include "MLoVetere/HTTrackSeeding/interface/HelixHoughEngineBase.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParRange.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParResolution.h"
-#include "MLoVetere/HTTrackSeeding/interface/HelixParSlice.h"
+#include "MLoVetere/HTTrackSeeding/interface/HelixParNBins.h"
 #include "SimpleHit3D.h"
 #include "SimpleTimer.h"
 #include "SimpleTrack3D.h"
@@ -28,10 +28,10 @@ class HelixHoughEngine : protected HelixHoughProxy, protected HelixHoughEngineBa
   public:
     HelixHoughEngine           ( HelixHough       & context ,
                                  HelixParRange    & range   ,
-                                 HelixParSlice    & slices  );
+                                 HelixParNBins    & nbins   );
     HelixHoughEngine           ( HelixHoughEngine & other   ,
                                  HelixParRange    & range   ,
-                                 HelixParSlice    & slices  );
+                                 HelixParNBins    & nbins   );
     virtual  ~HelixHoughEngine ( );
     void  findHelices          ( const std::vector<SimpleHit3D>   & hits         ,
                                  unsigned int                       min_hits     ,

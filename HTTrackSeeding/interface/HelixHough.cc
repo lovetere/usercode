@@ -1,7 +1,6 @@
 #include "MLoVetere/HTTrackSeeding/interface/HelixHough.h"
 
-#include "MLoVetere/HTTrackSeeding/interface/Interval.h"
-#include "HelixHoughEngine.h"
+#include "MLoVetere/HTTrackSeeding/interface/HelixHoughEngine.h"
 #include "SimpleHit3D.h"
 #include "SimpleTrack3D.h"
 
@@ -11,9 +10,9 @@
 #include <iostream>
 
 
-HelixHough::HelixHough( HelixParRange range, HelixParSlice slice, HelixResolution & miResolution, HelixResolution & maxResolution, 
-  :  _range(range), _slice(slice), _minimumResolution(minResolution), _maximumResolution(maxResolution), 
-			_decrease_per_zoom(0.5), print_timings(false), _voteTime(0), _voteTimeXY(0), _voteTimeZ(0)  
+HelixHough::HelixHough( HelixParRange range, HelixParNBins nBins, HelixResolution & miResolution, HelixResolution & maxResolution, 
+  :  _range(range), _nBins(nBins), _minimumResolution(minResolution), _maximumResolution(maxResolution), 
+     _decrease_per_zoom(0.5), print_timings(false), _voteTime(0), _voteTimeXY(0), _voteTimeZ(0)  
 {
   _voteTime   = new SimpleTimer;
   _voteTimeXY = new SimpleTimer;
@@ -53,7 +52,7 @@ void  HelixHough::findHelices ( std::vector<SimpleHit3D> &   hits      ,
   std::vector<SimpleTrack3D> temp_tracks;
   engine.findHelices(hits,min_hits,max_hits,temp_tracks,maxtracks);
   
-  // perche' qui c'e'' e in findSeededHelices no?
+  // perche' qui c'e' e in findSeededHelices no?
   for ( unsigned int i=0; i<hits.size(); i++ )
     // hits[i].setIndex(index_mapping[i]);
     // in this way we are stable even in case of hits sorting
