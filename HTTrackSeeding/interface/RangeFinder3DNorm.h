@@ -33,4 +33,3 @@ class RangeFinder3DNorm : public RangeFinder2DNorm
 
 
 #endif // HTTrackSeeding_RangeFinder3DNorm_H
-

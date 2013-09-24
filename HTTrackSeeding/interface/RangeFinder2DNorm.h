@@ -26,10 +26,10 @@ class RangeFinder2DNorm
   private:
     void             cacheInitArcLengthRange              ( )  const;
     void             cacheInitPhiRange                    ( );
-    static bool      arcLengthDerCurvSignGivenNormTipCurv ( double  tip, double  curv );
-    static double    arcLengthGivenNormTipCurv            ( double  tip, double  curv );
-    static double    arcLengthMinimumEstimateGivenNormTip ( double  tip  );
-    static double    sinPhiGivenNormTipCurv               ( double  tip, double  curv );
+    static bool      arcLengthDerCurvSignGivenNormTipCurv ( double tip, double curv );
+    static double    arcLengthGivenNormTipCurv            ( double tip, double curv );
+    static double    arcLengthMinimumEstimateGivenNormTip ( double tip  );
+    static double    sinPhiGivenNormTipCurv               ( double tip, double curv );
   private:  
     Interval         _tip;
     Interval         _curv;
