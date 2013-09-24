@@ -1,15 +1,13 @@
+#include "MLoVetere/HTTrackSeeding/interface/RangeFinder2DNorm.h"
 
-
-#include "RangeFinder2DNorm.h"
-
-#include "Interval.h"
+#include "MLoVetere/HTTrackSeeding/interface/Interval.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cfloat>
 #include <cmath>
+#include <cstdlib>
 #include <limits>
-#include <stdlib>
 #include <utility>
 #include <vector>
 
@@ -22,9 +20,9 @@
  */
 
 RangeFinder2DNorm::RangeFinder2DNorm ( Interval tip, Interval curv )
-  : _tip(tip), _curv(curv), _forwPhiRange(), _backPhiRange(),  _arcLengthInit(false), _arcLenghRange();
+  : _tip(tip), _curv(curv), _forwPhiRange(), _backPhiRange(), _arcLengthInit(false), _arcLengthRange()
 {
-  _tip.bound(Interval(-1.,1.));
+  _tip.setBound(Interval(-1.,1.));
   cacheInitPhiRange();
 }
 
@@ -53,9 +51,9 @@ std::vector<std::pair<AngularInterval,Interval> >  RangeFinder2DNorm::phiAndArcL
     div_t res = std::div(i+1,2);
     delta_s.scale(2*M_PI*res.quot);
     if ( res.rem==1 ) {
-      delta_s += slist[0]; 
+      delta_s = delta_s + slist[0]; 
     } else {
-      delta_s -= slist[0];
+      delta_s = delta_s - slist[0];
     }
     if ( i<hfturns ) alist.push_back(std::pair<AngularInterval,Interval>( forwPhiRange, delta_s ) );
     if ( i<hbturns ) alist.push_back(std::pair<AngularInterval,Interval>( backPhiRange, delta_s.scale(-1.) ) );
@@ -89,18 +87,24 @@ Interval  RangeFinder2DNorm::arcLengthRange ( int hfturn )  const
   if ( _forwPhiRange.isEmpty() || _arcLengthRange.isEmpty() ) return Interval();
   Interval delta_s;
   div_t res = std::div(hfturn+1,2);
+  assert( res.rem==0 || res.rem==1     );   // make sure it doesn't do sylly things on negative numbers
+  assert( hfturn+1==2*res.quot+res.rem );   // make sure it doesn't do sylly things on negative numbers
   if ( res.rem==1 ) {
-    delta_s += _arcLengthRange; 
+    delta_s =   _arcLengthRange; 
   } else {
-    delta_s -= _arcLengthRange;
+    delta_s = - _arcLengthRange;
   }
   if ( res.quot!=0 ) {
     double sup = ( _curv.lower()*_curv.upper()>0 )
                ? 1./std::min( std::abs(_curv.lower()), std::abs(_curv.upper()) )
                : std::numeric_limits<float>::max();
     double inf = 1./std::max( std::abs(_curv.lower()), std::abs(_curv.upper()) );
-    delta_s += Interval(inf,sup).scale(2*M_PI*res.quot);
+    delta_s = delta_s + Interval(inf,sup).scale(2*M_PI*res.quot);
   }
+  if ( hfturn<0 )
+    delta_s.setUpperBound(0.);
+  else
+    delta_s.setLowerBound(0.);
   return delta_s;
 }
 
@@ -123,7 +127,7 @@ AngularInterval  RangeFinder2DNorm::phiRange ( int hfturn )  const
  *  approximated to best value. It returns a list of ranges. Null measure intervals are discarded.
  */
 
-void  RangeFinder2DNorm::cacheInitArcLengthRange ( )
+void  RangeFinder2DNorm::cacheInitArcLengthRange ( )  const
 {
   if ( _arcLengthInit ) return;
   _arcLengthInit = true;
@@ -376,4 +380,5 @@ double  RangeFinder2DNorm::sinPhiGivenNormTipCurv ( double tip, double curv )
   if ( sinphi<-1. ) sinphi=-1.;
   return sinphi;
 }
+
 

@@ -46,9 +46,9 @@ class SimpleHit3D
       { min_lip =0.; max_lip =0.; }
     void          phiRange             ( Interval doca, Interval kappa, float & min_phi_1, float & max_phi_1, float & min_phi_2, float & max_phi_2 )                                                          const 
       { min_phi_1 =0.; max_phi_1 =0.; min_phi_2 =0.; max_phi_2 =0.; }
-    std::vector<std::pair<AngularInterval,Interval> >          etaAndPhiGivenTipAndCurv ( Interval tip, Interval curv, int hfturns, int hbturns );
   private:
-    std::vector<std::pair<AngularInterval,Interval> > phiAndArcLengthPhiGivenTipAndCurv ( Interval tip, Interval curv, int hfturns, int hbturns );
+    std::vector<std::pair<Interval,Interval> >                 etaAndPhiGivenTipAndCurv ( Interval tip, Interval curv, int hfturns, int hbturns );
+    std::vector<std::pair<AngularInterval,Interval> >    phiAndArcLengthGivenTipAndCurv ( Interval tip, Interval curv, int hfturns, int hbturns );
   private:
     static double                 etaGivenDzArcLength        ( double   dz , double   arcl );
     static std::vector<Interval>  etaRangeGivenDzArcLength   ( Interval dz , Interval arcl );

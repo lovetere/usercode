@@ -1,52 +1,62 @@
-#include "MLoVetere/HTTrackSeeding/interface/SimpleHit3D.h"
+#include "MLoVetere/HTTrackSeeding/interface/RangeFinder3DNorm.h"
 
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
-#include "MLoVetere/HTTrackSeeding/interface/RangeFinder2DNorm.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cfloat>
-#include <cmath>
 #include <cstdlib>
+#include <cmath>
 #include <limits>
 #include <utility>
 #include <vector>
 
 
 /*
- *  This function returns the arc length and phi range combinations compatible with given tip and curv ranges.
- *  The case hfturns>1 and hbturns>1 could be improved... but for the moment I don't have time.
- *  In general we can improve computation caching values...
+ *  Constructor
  */
 
-std::vector<std::pair<AngularInterval,Interval> >  SimpleHit3D::phiAndArcLengthGivenTipAndCurv ( Interval tip, Interval curv, int hfturns, int hbturns )
+RangeFinder3DNorm::RangeFinder3DNorm ( Interval tip, Interval curv, Interval lip )
+  : RangeFinder2DNorm(tip,curv), _dz(-lip)
+{ }
+
+
+/*
+ *  Constructor
+ */
+
+RangeFinder3DNorm::RangeFinder3DNorm ( RangeFinder2DNorm finder, Interval lip )
+  : RangeFinder2DNorm(finder), _dz(-lip)
+{ }
+
+
+/*
+ *  This function returns the eta range compatible with given tip, curv, lip ranges and turns number.
+ */
+
+Interval  RangeFinder3DNorm::etaRange ( int hfturn )  const
 {
-  tip.scale(1./rho());
-  curv.scale(rho());
-  RangeFinder2DNorm rangeFinder(tip,curv);
-  std::vector<std::pair<AngularInterval,Interval> > alist;
-  /*
-  std::vector<std::pair<AngularInterval,Interval> > alist = rangeFinder.phiAndArcLengthPhiGivenTipAndCurv(hfturns,hbturn);
-  for (std::vector<std::pair<AngularInterval,Interval> >::iterator iter = alist->begin();
-        iter != alist->end();
-        iter++ ) {
-    iter->first.turnCounterClockWise(phi());
-    iter->second.scale(rho());
-  }
-  */
-  return alist;
+  std::vector<Interval> alist = etaRangeGivenDzArcLength( _dz, arcLengthRange(hfturn) );
+  assert( alist.size()<2 );
+  Interval avalue;
+  if ( alist.size()==1 ) avalue = alist[0];
+  return   avalue;
 }
 
 
 /*
- *  This function returns the pseudo-rapidity range given lip and arc lenght ranges.
+ *  This function returns the theta combinations compatible with given tip, curv, lip ranges and turns number.
  */
 
-std::vector<std::pair<Interval,Interval> >  SimpleHit3D::etaAndPhiGivenTipAndCurv ( Interval lip, Interval arcl, int hfturns, int hbturns )
+Interval  RangeFinder3DNorm::thetaRange ( int hfturn )  const
 {
-  std::vector<std::pair<Interval,Interval> > alist;
-  return alist;
+  std::vector<Interval> alist = thetaRangeGivenDzArcLength( _dz, arcLengthRange(hfturn) );
+  assert( alist.size()<2 );
+  Interval avalue;
+  if ( alist.size()==1 ) avalue = alist[0];
+  return   avalue;
 }
+
 
 /* **************************************************************************************************************************** */
 
@@ -57,7 +67,7 @@ std::vector<std::pair<Interval,Interval> >  SimpleHit3D::etaAndPhiGivenTipAndCur
  *  When arc length is negative, the track is assumed to go from the hit to the poca.
  */
 
-double  SimpleHit3D::etaGivenDzArcLength ( double dz, double arcl )
+double  RangeFinder3DNorm::etaGivenDzArcLength ( double dz, double arcl )
 {
   if ( arcl<0. ) dz=-dz;
   double ds = sqrt(arcl*arcl+dz*dz); 
@@ -70,7 +80,7 @@ double  SimpleHit3D::etaGivenDzArcLength ( double dz, double arcl )
  *  in the transverse plane between the poca and the hit.
  */
 
-std::vector<Interval>  SimpleHit3D::etaRangeGivenDzArcLength ( Interval dz, Interval arcl )
+std::vector<Interval>  RangeFinder3DNorm::etaRangeGivenDzArcLength ( Interval dz, Interval arcl )
 {
   std::vector<Interval> alist;
   Interval parcl = arcl;
@@ -101,7 +111,7 @@ std::vector<Interval>  SimpleHit3D::etaRangeGivenDzArcLength ( Interval dz, Inte
  *  When arc length is negative, the track is assumed to go from the hit to the poca.
  */
 
-double  SimpleHit3D::thetaGivenDzArcLength ( double dz, double arcl )
+double  RangeFinder3DNorm::thetaGivenDzArcLength ( double dz, double arcl )
 {
   if ( arcl<0. ) dz=-dz;
   double ds = sqrt(arcl*arcl+dz*dz); 
@@ -114,7 +124,7 @@ double  SimpleHit3D::thetaGivenDzArcLength ( double dz, double arcl )
  *  in the transverse plane between the poca and the hit.
  */
 
-std::vector<Interval>  SimpleHit3D::thetaRangeGivenDzArcLength ( Interval dz, Interval arcl )
+std::vector<Interval>  RangeFinder3DNorm::thetaRangeGivenDzArcLength ( Interval dz, Interval arcl )
 {
   std::vector<Interval> alist;
   Interval parcl = arcl;
