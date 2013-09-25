@@ -12,14 +12,16 @@
 #include "MLoVetere/HTTrackSeeding/interface/HelixHough.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixHoughProxy.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixHoughEngineBase.h"
+#include "MLoVetere/HTTrackSeeding/interface/HelixParBinId.h"
+#include "MLoVetere/HTTrackSeeding/interface/HelixParNBins.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParRange.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParResolution.h"
-#include "MLoVetere/HTTrackSeeding/interface/HelixParNBins.h"
 #include "SimpleHit3D.h"
 #include "SimpleTimer.h"
 #include "SimpleTrack3D.h"
 #include "VotingArray5D.h"
 
+#include <unordered_map>
 #include <vector>
 
 
@@ -57,9 +59,9 @@ class HelixHoughEngine : protected HelixHoughProxy, protected HelixHoughEngineBa
     void  vote_phi_lip      ( );
     void  vote_into_curv    ( );
   private:
-    std::vector<SimpleHit3D>     _hits;
-    std::vector<BinEntryPair5D>  bins_vec; // sarebbe molto meglio che bins_vec fosse una multimap eliminando anche    
+    std::vector<SimpleHit3D>    _hits;
     std::vector<SimpleTrack3D>  _seeds;
+    std::unordered_multimap<HelixParBinId,unsigned int>  bins_vec;
 };
 
 

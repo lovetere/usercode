@@ -73,22 +73,23 @@ void HelixHoughEngine::findHelices ( unsigned int min_hits, unsigned int max_hit
                            ( dPhi ()>maximumResolution().dPhi () ) ? std::min( nPhi (), static_cast<unsigned int>(ceil( dPhi ()/maximumResolution().dPhi ())) ) : 1 ,
                            ( dTip ()>maximumResolution().dTip () ) ? std::min( nTip (), static_cast<unsigned int>(ceil( dTip ()/maximumResolution().dTip ())) ) : 1 );
   // scan over the bins in 5-D hough space
+  // E' da sistemare cambiando il modo di iterare. Sarebbe meglio iterare su chiavi e poi su elementi con stessa chiave
   HelixHoughEngine * nextLevel =0;
-  unsigned int n_entries = bins_vec.size();  
-  unsigned int count = 0;
-  while ( count<n_entries ) {
-    if ( ( count==0 ) || ( bins_vec[count].bin()!=bins_vec[count-1].bin() ) ) {
+  HelixParBinId lastBin;
+  for ( auto iter = bins_vec.begin(); iter != bins_vec.end(); ) {
+    if ( ( iter == bins_vec.begin() ) ||  ( iter->first != lastBin ) ) {
       // we are entering a new bin
+      lastBin =  iter->first;
       assert( nextLevel==0 );
-      HelixParRange nextRange;
-      bins_vec[count].setRange( range(), nextRange, nPhi(), nTip(), nCurv(), nEta(), nLip() );
+      HelixParRange nextRange = range(iter->first);
       nextLevel = new HelixHoughEngine( *this, nextRange, nextBins );
     }
     // initialize nextLevel with _hits belonging to the proper bin 
-    nextLevel->_hits.push_back( _hits[ bins_vec[count].entry() ] );    
-    count++;
+    nextLevel->_hits.push_back( _hits[ iter->second ] );    
+    // WARNING: incremented iterator
+    iter++;
     //we have collected all hits from this bin. now zoom again or find tracks with user routine
-    if (  (count == n_entries) || (bins_vec[count].bin() != bins_vec[count-1].bin()) ) {
+    if (  ( iter == bins_vec.end() ) || (iter->first != lastBin ) ) {
       // we are about to exit the bin
       if ( nextLevel->_hits.size()>=min_hits ) {
         unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*_hits.size() );
@@ -122,7 +123,7 @@ void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int m
   voteTime().start();
   vote();
   voteTime().stop();
-  std::unordered_multimap<Bin5D,unsigned int > seedsMap;  // should be an unoredered_multimap but I cannot make it work with std::tr1
+  std::unordered_multimap<HelixParBinId,unsigned int> seedsMap;
   // associate seeds (pointers) with bins
   for ( unsigned int i=0; i<_seeds.size(); ++i ) {
     float   curv = _seeds[i].curv;
@@ -150,7 +151,7 @@ void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int m
     if ( tip>range().maxTip() ) continue;
     int  tip_bin = (int) ( nTip()*(tip-range().minTip())/(DTip()) );
     if ( tip_bin<0 || tip_bin>=(int)nTip()) continue;
-    seedsMap.insert( std::pair<Bin5D,unsigned int>( Bin5D(curv_bin,eta_bin,lip_bin,phi_bin,tip_bin), i ) );
+    seedsMap.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,eta_bin,lip_bin,phi_bin,tip_bin), i ) );
   }  
   // compute next level binning
   HelixParNBins nextBins ( ( dCurv()>maximumResolution().dCurv() ) ? std::min( nCurv(), static_cast<unsigned int>(ceil( dCurv()/maximumResolution().dCurv())) ) : 1 ,
@@ -159,27 +160,27 @@ void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int m
                            ( dPhi ()>maximumResolution().dPhi () ) ? std::min( nPhi (), static_cast<unsigned int>(ceil( dPhi ()/maximumResolution().dPhi ())) ) : 1 ,
                            ( dTip ()>maximumResolution().dTip () ) ? std::min( nTip (), static_cast<unsigned int>(ceil( dTip ()/maximumResolution().dTip ())) ) : 1 );
   // scan over the bins in 5-D hough space
+  // E' da sistemare cambiando il modo di iterare. Sarebbe meglio iterare su chiavi e poi su elementi con stessa chiave
   HelixHoughEngine * nextLevel =0;
-  unsigned int n_entries = bins_vec.size();  
-  unsigned int count = 0;
-  while ( count<n_entries ) {
-    if ( ( count==0 ) || ( bins_vec[count].bin()!=bins_vec[count-1].bin() ) ) {
+  HelixParBinId lastBin;
+  for ( auto iter = bins_vec.begin(); iter != bins_vec.end(); ) {
+    if ( ( iter == bins_vec.begin() ) ||  ( iter->first != lastBin ) ) {
       // we are entering a new bin
+      lastBin =  iter->first;
       assert( nextLevel==0 );
-      HelixParRange nextRange;
-      bins_vec[count].setRange( range(), nextRange, nPhi(), nTip(), nCurv(), nEta(), nLip() );
+      HelixParRange nextRange = range(iter->first);
       nextLevel = new HelixHoughEngine( *this, nextRange, nextBins );
       // initialize nextLevel with _seeds belonging to the proper bin 
-      typedef std::unordered_multimap<Bin5D,unsigned int>::iterator I;
-      std::pair<I,I> ret = seedsMap.equal_range( static_cast<Bin5D>(bins_vec[count]) );
-      for ( I iter=ret.first; iter!=ret.second; iter++ )
+      auto ret = seedsMap.equal_range( iter->first );
+      for ( auto iter=ret.first; iter!=ret.second; iter++ )
         nextLevel->_seeds.push_back( _seeds[iter->second] );
     }
     // initialize nextLevel with _hits belonging to the proper bin 
-    nextLevel->_hits.push_back( _hits[ bins_vec[count].entry() ] );
-    count++;
+    nextLevel->_hits.push_back( _hits[ iter->second ] );    
+    // WARNING: incremented iterator
+    iter++;
     //we have collected all hits from this bin. now zoom again or find tracks with user routine
-    if (  (count == n_entries) || (bins_vec[count].bin() != bins_vec[count-1].bin()) ) {
+    if (  ( iter == bins_vec.end() ) || (iter->first != lastBin ) ) {
       // we are about to exit the bin
       if ( (nextLevel->_hits.size()>=min_hits) && (nextLevel->_seeds.size()!=0) ) {
         unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*_hits.size() );
@@ -208,7 +209,7 @@ void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int m
 
 
 void  HelixHoughEngine::fillBins ( float min_phi, float max_phi, const SimpleHit3D & hit, const std::vector<std::vector<unsigned int> > & z_bins, 
-                                   unsigned index, unsigned int tip_bin, unsigned int curv_bin, float low_phi, float high_phi, float inv_phi_range )
+                                   unsigned int index, unsigned int tip_bin, unsigned int curv_bin, float low_phi, float high_phi, float inv_phi_range )
 {
   if ( min_phi>=0. ) {
     if ( (max_phi<low_phi) || (min_phi>high_phi) ) return;
@@ -218,7 +219,7 @@ void  HelixHoughEngine::fillBins ( float min_phi, float max_phi, const SimpleHit
     if ( max_phi<high_phi ) high_bin = (unsigned int)(((max_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
     for ( unsigned int b=low_bin; b<=high_bin; ++b )
       for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-        bins_vec.push_back(BinEntryPair5D(b, tip_bin, curv_bin, z_bins[zbin][0], z_bins[zbin][1], index));
+        bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin][0],z_bins[zbin][1],b,tip_bin), index ) );
   } else {
     if ( ( high_phi<(min_phi+2.*M_PI) ) && (low_phi> max_phi) ) return;
     if ( ( high_phi<(min_phi+2.*M_PI) ) && (low_phi<=max_phi) ) {
@@ -226,25 +227,25 @@ void  HelixHoughEngine::fillBins ( float min_phi, float max_phi, const SimpleHit
       unsigned int high_bin = (unsigned int)(((max_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
       for ( unsigned int b=low_bin; b<=high_bin; ++b )
         for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-          bins_vec.push_back(BinEntryPair5D(b, tip_bin, curv_bin, z_bins[zbin][0], z_bins[zbin][1], index));
+          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin][0],z_bins[zbin][1],b,tip_bin), index ) );
     } else if ( ( high_phi>=(min_phi+2.*M_PI) ) && (low_phi>max_phi) ) {
       unsigned int high_bin = (nPhi()-1);
       unsigned int low_bin = (unsigned int)(((2.*M_PI+min_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
       for ( unsigned int b=low_bin; b<=high_bin; ++b )
         for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-          bins_vec.push_back(BinEntryPair5D(b, tip_bin, curv_bin, z_bins[zbin][0], z_bins[zbin][1], index));
+          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin][0],z_bins[zbin][1],b,tip_bin), index ) );
     } else {
       //split into two sets of bins
       unsigned int high_bin = (nPhi()-1);
       unsigned int low_bin = (unsigned int)(((2.*M_PI+min_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
       for ( unsigned int b=low_bin; b<=high_bin; ++b )
         for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-          bins_vec.push_back(BinEntryPair5D(b, tip_bin, curv_bin, z_bins[zbin][0], z_bins[zbin][1], index));
+          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin][0],z_bins[zbin][1],b,tip_bin), index ) );
        low_bin = 0;
       high_bin = (unsigned int)(((max_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
       for ( unsigned int b=low_bin; b<=high_bin; ++b )
         for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-          bins_vec.push_back(BinEntryPair5D(b, tip_bin, curv_bin, z_bins[zbin][0], z_bins[zbin][1], index));
+          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin][0],z_bins[zbin][1],b,tip_bin), index ) );
     }
   }
 }
@@ -348,7 +349,6 @@ void HelixHoughEngine::vote ( )
     max_curv += curv_size;
   }
   voteTimeXY().stop();
-  sort( bins_vec.begin(), bins_vec.end() );
 }
 
 
@@ -441,5 +441,4 @@ void HelixHoughEngine::vote_phi_lip ( )
     max_curv += curv_size;
   }
   voteTimeXY().stop();
-  sort( bins_vec.begin(), bins_vec.end() );
 }

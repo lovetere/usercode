@@ -19,8 +19,8 @@ class HelixParBinId
     HelixParBinId ( ) : _index(0)  { }
     HelixParBinId ( unsigned int ncurv, unsigned int neta, unsigned int nlip, unsigned int nphi, unsigned int ntip )
       : _index(0) { nCurv(ncurv); nEta(neta); nLip(nlip); nPhi(nphi); nTip(ntip); }
-    bool          operator< ( const HelixParBinId & other )  const  { return  _index <  other._index;   }
     bool          operator==( const HelixParBinId & other )  const  { return  _index == other._index;   }
+    bool          operator!=( const HelixParBinId & other )  const  { return  _index != other._index;   }
     unsigned int  nCurv     ( )                              const  { return (_index>>binC_s) & binC_m; }
     unsigned int  nEta      ( )                              const  { return (_index>>binE_s) & binE_m; }
     unsigned int  nLip      ( )                              const  { return (_index>>binL_s) & binL_m; }
