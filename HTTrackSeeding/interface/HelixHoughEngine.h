@@ -8,7 +8,6 @@
   *  \author Maurizio Lo Vetere
   */
 
-#include "BinEntryPair5D.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixHough.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixHoughProxy.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixHoughEngineBase.h"
@@ -16,10 +15,10 @@
 #include "MLoVetere/HTTrackSeeding/interface/HelixParNBins.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParRange.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParResolution.h"
-#include "SimpleHit3D.h"
-#include "SimpleTimer.h"
-#include "SimpleTrack3D.h"
-#include "VotingArray5D.h"
+#include "MLoVetere/HTTrackSeeding/interface/SimpleHit3D.h"
+#include "MLoVetere/HTTrackSeeding/interface/SimpleTimer.h"
+#include "MLoVetere/HTTrackSeeding/interface/SimpleTrack3D.h"
+#include "MLoVetere/HTTrackSeeding/interface/VotingArray5D.h"
 
 #include <unordered_map>
 #include <vector>
