@@ -59,18 +59,6 @@ bool  HelixHoughEngine::insaneResolution ( )  const
 }
 
 
-//  Tenere conto di questo pezzo di codice per migliorare il loop
-//
-//  typedef multimap<int,string>::iterator  IT;
-//  for ( IT itk = mm.begin(); itk != mm.end(); itk = mm.upper_bound(itk->first) ) {
-//    cout << "Another is coming" << endl;
-//    for ( IT itv = itk, end = mm.upper_bound(itk->first); itv!= end; itv++ )
-//      cout << itv->first << ' ' << itv->second << endl;
-//    cout << "That's it" << endl;
-//  }
-// Per gli unordered_maps upper_bound doens't exist! equal_range si!
-
-
 void HelixHoughEngine::findHelices ( unsigned int min_hits, unsigned int max_hits, std::vector<SimpleTrack3D>& tracks, unsigned int maxtracks, bool toplevel )
 {
   if ( (maxtracks!=0) && (tracks.size()>=maxtracks) ) return;
@@ -112,6 +100,7 @@ void HelixHoughEngine::findHelices ( unsigned int min_hits, unsigned int max_hit
     delete  nextLevel;
   }
 }
+
 
 void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int max_hits, std::vector<SimpleTrack3D>& tracks, unsigned int maxtracks, bool toplevel )
 {
