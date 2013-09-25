@@ -74,8 +74,9 @@ void HelixHoughEngine::findHelices ( unsigned int min_hits, unsigned int max_hit
                            ( dTip ()>maximumResolution().dTip () ) ? std::min( nTip (), static_cast<unsigned int>(ceil( dTip ()/maximumResolution().dTip ())) ) : 1 );
   // scan over the bins in 5-D hough space
   for ( auto itk = bins_vec.begin(); itk != bins_vec.end(); ) {
-    auto  itv = bins_vec.equal_range(itk->first);
-    HelixParRange  nextRange = range(itk->first);
+    const auto  bin = itk->first;
+    auto  itv = bins_vec.equal_range(bin);
+    HelixParRange  nextRange = range(bin);
     HelixHoughEngine * nextLevel = new HelixHoughEngine( *this, nextRange, nextBins );
     assert( nextLevel!=0 );
     nextLevel->_hits.reserve( std::distance(itv.first,itv.second) );
@@ -112,36 +113,8 @@ void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int m
   voteTime().start();
   vote();
   voteTime().stop();
-  std::unordered_multimap<HelixParBinId,unsigned int> seedsMap;
-  // associate seeds (pointers) with bins
-  for ( unsigned int i=0; i<_seeds.size(); ++i ) {
-    float   curv = _seeds[i].curv;
-    if ( curv<range().minCurv() ) continue;
-    if ( curv>range().maxCurv() ) continue;
-    int  curv_bin = (int) ( nCurv()*(curv-range().minCurv())/(DCurv()) );
-    if ( curv_bin<0 || curv_bin>=(int)nCurv()) continue;
-    float    eta = _seeds[i].eta;
-    if ( eta<range().minEta() ) continue;
-    if ( eta>range().maxEta() ) continue;
-    int  eta_bin = (int) ( nEta()*(eta-range().minEta())/(DEta()) );
-    if ( eta_bin<0 || eta_bin>=(int)nEta()) continue;
-    float    lip = _seeds[i].lip;
-    if ( lip<range().minLip() ) continue;
-    if ( lip>range().maxLip() ) continue;
-    int  lip_bin = (int) ( nLip()*(lip-range().minLip())/(DLip()) );
-    if ( lip_bin<0 || lip_bin>=(int)nLip()) continue;
-    float    phi = _seeds[i].phi;
-    if ( phi<range().minPhi() ) continue;
-    if ( phi>range().maxPhi() ) continue;
-    int  phi_bin = (int) ( nPhi()*(phi-range().minPhi())/(DPhi()) );
-    if ( phi_bin<0 || phi_bin>=(int)nPhi()) continue;
-    float    tip = _seeds[i].tip;
-    if ( tip<range().minTip() ) continue;
-    if ( tip>range().maxTip() ) continue;
-    int  tip_bin = (int) ( nTip()*(tip-range().minTip())/(DTip()) );
-    if ( tip_bin<0 || tip_bin>=(int)nTip()) continue;
-    seedsMap.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,eta_bin,lip_bin,phi_bin,tip_bin), i ) );
-  }  
+  std::unordered_multimap<HelixParBinId,SimpleTrack3D*> seedsMap;
+  map(_seeds,seedsMap);
   // compute next level binning
   HelixParNBins nextBins ( ( dCurv()>maximumResolution().dCurv() ) ? std::min( nCurv(), static_cast<unsigned int>(ceil( dCurv()/maximumResolution().dCurv())) ) : 1 ,
                            ( dEta ()>maximumResolution().dEta () ) ? std::min( nEta (), static_cast<unsigned int>(ceil( dEta ()/maximumResolution().dEta ())) ) : 1 ,
@@ -150,14 +123,15 @@ void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int m
                            ( dTip ()>maximumResolution().dTip () ) ? std::min( nTip (), static_cast<unsigned int>(ceil( dTip ()/maximumResolution().dTip ())) ) : 1 );
   // scan over the bins in 5-D hough space
   for ( auto itk = bins_vec.begin(); itk != bins_vec.end(); ) {
-    auto  itv = bins_vec.equal_range(itk->first);
-    HelixParRange  nextRange = range(itk->first);
+    const auto  bin = itk->first;
+    auto  itv = bins_vec.equal_range(bin);
+    HelixParRange  nextRange = range(bin);
     HelixHoughEngine * nextLevel = new HelixHoughEngine( *this, nextRange, nextBins );
     assert( nextLevel==0 );
-    auto ret = seedsMap.equal_range( itk->first );
+    auto ret  = seedsMap.equal_range(bin);
     nextLevel->_seeds.reserve( std::distance(ret.first,ret.second) );
     for ( auto iter = ret.first; iter != ret.second; iter++ )
-      nextLevel->_seeds.push_back( _seeds[iter->second] );
+      nextLevel->_seeds.push_back( *iter->second );
     nextLevel-> _hits.reserve( std::distance(itv.first,itv.second) );
     for ( auto iter = itv.first; iter != itv.second; iter++ )
       nextLevel-> _hits.push_back( _hits[ iter->second ] );    

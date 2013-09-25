@@ -21,10 +21,11 @@ class Interval {
     Interval &  setBound      ( Interval range );
     Interval &  setUpperBound ( double   value );
     Interval &  setLowerBound ( double   value );
-    double   length   ( )  const  { return std::max(_sup-_inf,0.); }
-    double   lower    ( )  const  { return _inf; }
-    double   upper    ( )  const  { return _sup; }
-    bool     isEmpty  ( )  const  { return _sup<=_inf; }
+    double          length    ( )  const  { return std::max(_sup-_inf,0.); }
+    double          lower     ( )  const  { return _inf; }
+    double          upper     ( )  const  { return _sup; }
+    bool            isEmpty   ( )  const  { return _sup<=_inf; }
+    bool            include   ( double value           ) const;
     bool            operator< ( const Interval & other ) const;
     const Interval  operator+ ( const Interval & other ) const;
     const Interval  operator- ( const Interval & other ) const;
@@ -57,6 +58,13 @@ inline Interval &  Interval::setLowerBound ( double value )
   _sup = std::max( _sup, value );
   _inf = std::max( _inf, value );
   return *this; 
+}
+
+
+inline bool  Interval::include ( double value )  const
+{
+  if ( isEmpty() ) return false;
+  return ( _inf<value ) && ( value<_sup ); 
 }
 
 
