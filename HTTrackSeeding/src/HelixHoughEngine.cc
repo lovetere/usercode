@@ -59,6 +59,18 @@ bool  HelixHoughEngine::insaneResolution ( )  const
 }
 
 
+//  Tenere conto di questo pezzo di codice per migliorare il loop
+//
+//  typedef multimap<int,string>::iterator  IT;
+//  for ( IT itk = mm.begin(); itk != mm.end(); itk = mm.upper_bound(itk->first) ) {
+//    cout << "Another is coming" << endl;
+//    for ( IT itv = itk, end = mm.upper_bound(itk->first); itv!= end; itv++ )
+//      cout << itv->first << ' ' << itv->second << endl;
+//    cout << "That's it" << endl;
+//  }
+// Per gli unordered_maps upper_bound doens't exist! equal_range si!
+
+
 void HelixHoughEngine::findHelices ( unsigned int min_hits, unsigned int max_hits, std::vector<SimpleTrack3D>& tracks, unsigned int maxtracks, bool toplevel )
 {
   if ( (maxtracks!=0) && (tracks.size()>=maxtracks) ) return;
@@ -73,46 +85,31 @@ void HelixHoughEngine::findHelices ( unsigned int min_hits, unsigned int max_hit
                            ( dPhi ()>maximumResolution().dPhi () ) ? std::min( nPhi (), static_cast<unsigned int>(ceil( dPhi ()/maximumResolution().dPhi ())) ) : 1 ,
                            ( dTip ()>maximumResolution().dTip () ) ? std::min( nTip (), static_cast<unsigned int>(ceil( dTip ()/maximumResolution().dTip ())) ) : 1 );
   // scan over the bins in 5-D hough space
-  // E' da sistemare cambiando il modo di iterare. Sarebbe meglio iterare su chiavi e poi su elementi con stessa chiave
-  HelixHoughEngine * nextLevel =0;
-  HelixParBinId lastBin;
-  for ( auto iter = bins_vec.begin(); iter != bins_vec.end(); ) {
-    if ( ( iter == bins_vec.begin() ) ||  ( iter->first != lastBin ) ) {
-      // we are entering a new bin
-      lastBin =  iter->first;
-      assert( nextLevel==0 );
-      HelixParRange nextRange = range(iter->first);
-      nextLevel = new HelixHoughEngine( *this, nextRange, nextBins );
-    }
-    // initialize nextLevel with _hits belonging to the proper bin 
-    nextLevel->_hits.push_back( _hits[ iter->second ] );    
-    // WARNING: incremented iterator
-    iter++;
-    //we have collected all hits from this bin. now zoom again or find tracks with user routine
-    if (  ( iter == bins_vec.end() ) || (iter->first != lastBin ) ) {
-      // we are about to exit the bin
-      if ( nextLevel->_hits.size()>=min_hits ) {
-        unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*_hits.size() );
-        bool zooming_helps = nextLevel->_hits.size()<=expected_hits || toplevel;
-        if ( nextLevel->insaneResolution() || breakRecursion( nextLevel->_hits, nextLevel->range() ) ) {
-          nextLevel->findTracks( nextLevel->_hits, tracks, nextLevel->range() );
-        } else if ( nextLevel->decentResolution() && ( nextLevel->_hits.size()<=max_hits || !zooming_helps ) ) {
-          nextLevel->findTracks( nextLevel->_hits, tracks, nextLevel->range() );
-        } else {
-          nextLevel->findHelices( min_hits, max_hits, tracks, maxtracks );
-        }
-        if ( maxtracks!=0 ) {
-          double curv_proportion = DCurv() / topRange().DCurv();
-          double  phi_proportion = DPhi()  / topRange().DPhi() ;
-          double  tip_proportion = DTip()  / topRange().DTip() ;
-          unsigned int expected_tracks = (unsigned int) fabs( ((double)maxtracks)*curv_proportion*phi_proportion*tip_proportion ) +1;
-          if ( (tracks.size()-tracks_at_start)>expected_tracks ) return;
-        }
+  for ( auto itk = bins_vec.begin(); itk != bins_vec.end(); itk = bins_vec.equal_range(itk->first).second ) {
+    HelixParRange      nextRange = range(itk->first);
+    HelixHoughEngine * nextLevel = new HelixHoughEngine( *this, nextRange, nextBins );
+    assert( nextLevel!=0 );
+    for ( auto itv = itk, end = bins_vec.equal_range(itk->first).second; itv!= end; itv++ )
+      nextLevel->_hits.push_back( _hits[ itv->second ] );    
+    if ( nextLevel->_hits.size()>=min_hits ) {
+      unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*_hits.size() );
+      bool zooming_helps = nextLevel->_hits.size()<=expected_hits || toplevel;
+      if ( nextLevel->insaneResolution() || breakRecursion( nextLevel->_hits, nextLevel->range() ) ) {
+        nextLevel->findTracks( nextLevel->_hits, tracks, nextLevel->range() );
+      } else if ( nextLevel->decentResolution() && ( nextLevel->_hits.size()<=max_hits || !zooming_helps ) ) {
+        nextLevel->findTracks( nextLevel->_hits, tracks, nextLevel->range() );
+      } else {
+        nextLevel->findHelices( min_hits, max_hits, tracks, maxtracks );
       }
-      assert( nextLevel!=0 );
-      delete  nextLevel;
-      nextLevel = 0;
+      if ( maxtracks!=0 ) {
+        double curv_proportion = DCurv() / topRange().DCurv();
+        double  phi_proportion = DPhi()  / topRange().DPhi() ;
+        double  tip_proportion = DTip()  / topRange().DTip() ;
+        unsigned int expected_tracks = (unsigned int) fabs( ((double)maxtracks)*curv_proportion*phi_proportion*tip_proportion ) +1;
+        if ( (tracks.size()-tracks_at_start)>expected_tracks ) return;
+      }
     }
+    delete  nextLevel;
   }
 }
 
@@ -160,50 +157,34 @@ void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int m
                            ( dPhi ()>maximumResolution().dPhi () ) ? std::min( nPhi (), static_cast<unsigned int>(ceil( dPhi ()/maximumResolution().dPhi ())) ) : 1 ,
                            ( dTip ()>maximumResolution().dTip () ) ? std::min( nTip (), static_cast<unsigned int>(ceil( dTip ()/maximumResolution().dTip ())) ) : 1 );
   // scan over the bins in 5-D hough space
-  // E' da sistemare cambiando il modo di iterare. Sarebbe meglio iterare su chiavi e poi su elementi con stessa chiave
-  HelixHoughEngine * nextLevel =0;
-  HelixParBinId lastBin;
-  for ( auto iter = bins_vec.begin(); iter != bins_vec.end(); ) {
-    if ( ( iter == bins_vec.begin() ) ||  ( iter->first != lastBin ) ) {
-      // we are entering a new bin
-      lastBin =  iter->first;
-      assert( nextLevel==0 );
-      HelixParRange nextRange = range(iter->first);
-      nextLevel = new HelixHoughEngine( *this, nextRange, nextBins );
-      // initialize nextLevel with _seeds belonging to the proper bin 
-      auto ret = seedsMap.equal_range( iter->first );
-      for ( auto iter=ret.first; iter!=ret.second; iter++ )
-        nextLevel->_seeds.push_back( _seeds[iter->second] );
-    }
-    // initialize nextLevel with _hits belonging to the proper bin 
-    nextLevel->_hits.push_back( _hits[ iter->second ] );    
-    // WARNING: incremented iterator
-    iter++;
-    //we have collected all hits from this bin. now zoom again or find tracks with user routine
-    if (  ( iter == bins_vec.end() ) || (iter->first != lastBin ) ) {
-      // we are about to exit the bin
-      if ( (nextLevel->_hits.size()>=min_hits) && (nextLevel->_seeds.size()!=0) ) {
-        unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*_hits.size() );
-        bool zooming_helps = nextLevel->_hits.size()<=expected_hits || toplevel;
-        if ( nextLevel->insaneResolution() || breakRecursion( nextLevel->_hits, nextLevel->range() ) ) {
-          nextLevel->findSeededTracks( nextLevel->_seeds, nextLevel->_hits, tracks, nextLevel->range() );
-        } else if ( nextLevel->decentResolution() && ( nextLevel->_hits.size()<=max_hits || !zooming_helps ) ) {
-          nextLevel->findSeededTracks( nextLevel->_seeds, nextLevel->_hits, tracks, nextLevel->range() );
-        } else {
-          nextLevel->findSeededHelices( min_hits, max_hits, tracks, maxtracks );
-        }
-        if ( maxtracks!=0 ) {
-          double curv_proportion = DCurv() / topRange().DCurv();
-          double  phi_proportion = DPhi()  / topRange().DPhi() ;
-          double  tip_proportion = DTip()  / topRange().DTip() ;
-          unsigned int expected_tracks = (unsigned int) fabs( ((double)maxtracks)*curv_proportion*phi_proportion*tip_proportion ) +1;
-          if ( (tracks.size()-tracks_at_start)>expected_tracks ) return;
-        }
+  for ( auto itk = bins_vec.begin(); itk != bins_vec.end(); itk = bins_vec.equal_range(itk->first).second ) {
+    HelixParRange      nextRange = range(itk->first);
+    HelixHoughEngine * nextLevel = new HelixHoughEngine( *this, nextRange, nextBins );
+    assert( nextLevel==0 );
+    auto ret = seedsMap.equal_range( itk->first );
+    for ( auto iter=ret.first; iter!=ret.second; iter++ )
+      nextLevel->_seeds.push_back( _seeds[iter->second] );
+    for ( auto itv = itk, end = bins_vec.equal_range(itk->first).second; itv!= end; itv++ )
+      nextLevel->_hits.push_back( _hits[ itv->second ] );    
+    if ( (nextLevel->_hits.size()>=min_hits) && (nextLevel->_seeds.size()!=0) ) {
+      unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*_hits.size() );
+      bool zooming_helps = nextLevel->_hits.size()<=expected_hits || toplevel;
+      if ( nextLevel->insaneResolution() || breakRecursion( nextLevel->_hits, nextLevel->range() ) ) {
+        nextLevel->findSeededTracks( nextLevel->_seeds, nextLevel->_hits, tracks, nextLevel->range() );
+      } else if ( nextLevel->decentResolution() && ( nextLevel->_hits.size()<=max_hits || !zooming_helps ) ) {
+        nextLevel->findSeededTracks( nextLevel->_seeds, nextLevel->_hits, tracks, nextLevel->range() );
+      } else {
+        nextLevel->findSeededHelices( min_hits, max_hits, tracks, maxtracks );
       }
-      assert( nextLevel!=0 );
-      delete  nextLevel;
-      nextLevel = 0;
+      if ( maxtracks!=0 ) {
+        double curv_proportion = DCurv() / topRange().DCurv();
+        double  phi_proportion = DPhi()  / topRange().DPhi() ;
+        double  tip_proportion = DTip()  / topRange().DTip() ;
+        unsigned int expected_tracks = (unsigned int) fabs( ((double)maxtracks)*curv_proportion*phi_proportion*tip_proportion ) +1;
+        if ( (tracks.size()-tracks_at_start)>expected_tracks ) return;
+      }
     }
+    delete  nextLevel;
   }
 }
 
