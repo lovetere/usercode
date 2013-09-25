@@ -9,6 +9,8 @@
   */
 
 #include <cassert>
+#include <cstddef>
+#include <functional>
 
 
 class HelixParBinId
@@ -24,17 +26,21 @@ class HelixParBinId
     unsigned int  nLip      ( )                              const  { return (_index>>binL_s) & binL_m; }
     unsigned int  nPhi      ( )                              const  { return (_index>>binP_s) & binP_m; }
     unsigned int  nTip      ( )                              const  { return (_index>>binT_s) & binT_m; }
-    void    nCurv ( unsigned int value );
-    void    nEta  ( unsigned int value );
-    void    nLip  ( unsigned int value );
-    void    nPhi  ( unsigned int value );
-    void    nTip  ( unsigned int value );
+    void          nCurv     ( unsigned int value );
+    void          nEta      ( unsigned int value );
+    void          nLip      ( unsigned int value );
+    void          nPhi      ( unsigned int value );
+    void          nTip      ( unsigned int value );
   private:
     enum { binC_s =   24, binE_s =   18, binL_s  =   12, binP_s  =   6, binT_s =    0 };
     enum { binC_m = 0x3f, binE_m = 0x3f, binL_m  = 0x3f, binP_m = 0x3f, binT_m = 0x3f };
   private:
+    friend struct std::hash<HelixParBinId>;
     unsigned int _index;
 };
+
+
+namespace std { template<> struct hash<HelixParBinId> { std::size_t operator()( const HelixParBinId & c ) const { return hash<unsigned int>()(c._index); } }; }
 
 
 inline void  HelixParBinId::nCurv ( unsigned int value )

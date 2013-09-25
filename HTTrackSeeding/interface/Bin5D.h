@@ -11,6 +11,8 @@
 #include "MLoVetere/HTTrackSeeding/interface/HelixParRange.h"
 
 #include <cassert>
+#include <cstddef>
+#include <functional>
 
 
 class Bin5D
@@ -18,6 +20,7 @@ class Bin5D
   public:
     Bin5D         ( unsigned int nCurv, unsigned int nEta, unsigned int nLip, unsigned int nPhi, unsigned int nTip );
     bool          operator< ( const Bin5D & other )  const  { return _index<other._index; }
+    bool          operator==( const Bin5D & other )  const  { return _index==other._index; }
     void          setRange  ( const HelixParRange& range1, HelixParRange& range2, unsigned int n_phi, unsigned int n_tip, unsigned int n_curv, unsigned int n_eta , unsigned int n_lip )  const;
     unsigned int  bin       ( )                      const  { return _index;              }
   private:
@@ -35,8 +38,12 @@ class Bin5D
     enum { bin1_s =   24, bin2_s =   18, bin3_s  =   12, bin4_s  =   6, bin5_s =    0 };
     enum { bin1_m = 0x3f, bin2_m = 0x3f, bin3_m  = 0x3f, bin4_m = 0x3f, bin5_m = 0x3f };
   private:
+    friend struct std::hash<Bin5D>;
     unsigned int _index;
 };
+
+
+namespace std { template<> struct hash<Bin5D> { std::size_t operator()( const Bin5D & c ) const { return hash<unsigned int>()(c._index); } }; }
 
 
 inline  Bin5D::Bin5D ( unsigned int nCurv, unsigned int nEta, unsigned int nLip, unsigned int nPhi, unsigned int nTip ) 

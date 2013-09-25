@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <unordered_map>
 
     
 HelixHoughEngine::HelixHoughEngine ( HelixHough & context, HelixParRange & range, HelixParNBins & nbins )
@@ -121,7 +122,7 @@ void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int m
   voteTime().start();
   vote();
   voteTime().stop();
-  std::multimap<Bin5D,unsigned int> seedsMap;  // should be an unoredered_multimap but I cannot make it work with std::tr1
+  std::unordered_multimap<Bin5D,unsigned int > seedsMap;  // should be an unoredered_multimap but I cannot make it work with std::tr1
   // associate seeds (pointers) with bins
   for ( unsigned int i=0; i<_seeds.size(); ++i ) {
     float   curv = _seeds[i].curv;
@@ -169,7 +170,7 @@ void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int m
       bins_vec[count].setRange( range(), nextRange, nPhi(), nTip(), nCurv(), nEta(), nLip() );
       nextLevel = new HelixHoughEngine( *this, nextRange, nextBins );
       // initialize nextLevel with _seeds belonging to the proper bin 
-      typedef std::multimap<Bin5D,unsigned int>::iterator I;
+      typedef std::unordered_multimap<Bin5D,unsigned int>::iterator I;
       std::pair<I,I> ret = seedsMap.equal_range( static_cast<Bin5D>(bins_vec[count]) );
       for ( I iter=ret.first; iter!=ret.second; iter++ )
         nextLevel->_seeds.push_back( _seeds[iter->second] );
