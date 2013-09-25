@@ -73,12 +73,14 @@ void HelixHoughEngine::findHelices ( unsigned int min_hits, unsigned int max_hit
                            ( dPhi ()>maximumResolution().dPhi () ) ? std::min( nPhi (), static_cast<unsigned int>(ceil( dPhi ()/maximumResolution().dPhi ())) ) : 1 ,
                            ( dTip ()>maximumResolution().dTip () ) ? std::min( nTip (), static_cast<unsigned int>(ceil( dTip ()/maximumResolution().dTip ())) ) : 1 );
   // scan over the bins in 5-D hough space
-  for ( auto itk = bins_vec.begin(); itk != bins_vec.end(); itk = bins_vec.equal_range(itk->first).second ) {
-    HelixParRange      nextRange = range(itk->first);
+  for ( auto itk = bins_vec.begin(); itk != bins_vec.end(); ) {
+    auto  itv = bins_vec.equal_range(itk->first);
+    HelixParRange  nextRange = range(itk->first);
     HelixHoughEngine * nextLevel = new HelixHoughEngine( *this, nextRange, nextBins );
     assert( nextLevel!=0 );
-    for ( auto itv = itk, end = bins_vec.equal_range(itk->first).second; itv!= end; itv++ )
-      nextLevel->_hits.push_back( _hits[ itv->second ] );    
+    nextLevel->_hits.reserve( std::distance(itv.first,itv.second) );
+    for ( auto iter = itv.first; iter != itv.second; iter++ )
+      nextLevel->_hits.push_back( _hits[ iter->second ] );    
     if ( nextLevel->_hits.size()>=min_hits ) {
       unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*_hits.size() );
       bool zooming_helps = nextLevel->_hits.size()<=expected_hits || toplevel;
@@ -97,7 +99,8 @@ void HelixHoughEngine::findHelices ( unsigned int min_hits, unsigned int max_hit
         if ( (tracks.size()-tracks_at_start)>expected_tracks ) return;
       }
     }
-    delete  nextLevel;
+    delete nextLevel;
+    itk = itv.second;
   }
 }
 
@@ -146,15 +149,18 @@ void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int m
                            ( dPhi ()>maximumResolution().dPhi () ) ? std::min( nPhi (), static_cast<unsigned int>(ceil( dPhi ()/maximumResolution().dPhi ())) ) : 1 ,
                            ( dTip ()>maximumResolution().dTip () ) ? std::min( nTip (), static_cast<unsigned int>(ceil( dTip ()/maximumResolution().dTip ())) ) : 1 );
   // scan over the bins in 5-D hough space
-  for ( auto itk = bins_vec.begin(); itk != bins_vec.end(); itk = bins_vec.equal_range(itk->first).second ) {
-    HelixParRange      nextRange = range(itk->first);
+  for ( auto itk = bins_vec.begin(); itk != bins_vec.end(); ) {
+    auto  itv = bins_vec.equal_range(itk->first);
+    HelixParRange  nextRange = range(itk->first);
     HelixHoughEngine * nextLevel = new HelixHoughEngine( *this, nextRange, nextBins );
     assert( nextLevel==0 );
     auto ret = seedsMap.equal_range( itk->first );
-    for ( auto iter=ret.first; iter!=ret.second; iter++ )
+    nextLevel->_seeds.reserve( std::distance(ret.first,ret.second) );
+    for ( auto iter = ret.first; iter != ret.second; iter++ )
       nextLevel->_seeds.push_back( _seeds[iter->second] );
-    for ( auto itv = itk, end = bins_vec.equal_range(itk->first).second; itv!= end; itv++ )
-      nextLevel->_hits.push_back( _hits[ itv->second ] );    
+    nextLevel-> _hits.reserve( std::distance(itv.first,itv.second) );
+    for ( auto iter = itv.first; iter != itv.second; iter++ )
+      nextLevel-> _hits.push_back( _hits[ iter->second ] );    
     if ( (nextLevel->_hits.size()>=min_hits) && (nextLevel->_seeds.size()!=0) ) {
       unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*_hits.size() );
       bool zooming_helps = nextLevel->_hits.size()<=expected_hits || toplevel;
@@ -173,7 +179,8 @@ void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int m
         if ( (tracks.size()-tracks_at_start)>expected_tracks ) return;
       }
     }
-    delete  nextLevel;
+    delete nextLevel;
+    itk = itv.second;
   }
 }
 
