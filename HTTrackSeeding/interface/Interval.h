@@ -82,7 +82,7 @@ inline double  Interval::normalize ( double value )  const
 inline Interval  Interval::normalize ( Interval value )  const
 { 
   if ( isEmpty() || value.isEmpty() ) return Interval();
-  return value.shift(_inf).scale(1./length());
+  return value.shift(-_inf).scale(1./length());
 };
 
 

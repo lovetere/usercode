@@ -26,6 +26,7 @@ class SimpleHit3D
     double        dx                   ( )  const { return _dx;    }
     double        dy                   ( )  const { return _dy;    }
     double        dz                   ( )  const { return _dz;    }
+    double        dphi                 ( )  const { return sqrt((_dx*_dx+_dy*_dy)/(_x*_x+_y*_y)); }
     unsigned int  index                ( )  const { return _index; }
     int           layer                ( )  const { return _layer; }
     double        x                    ( )  const { return _x;     }

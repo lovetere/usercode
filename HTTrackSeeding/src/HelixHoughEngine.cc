@@ -9,6 +9,8 @@
 #include <iostream>
 #include <map>
 #include <unordered_map>
+#include <utility>
+
 
     
 HelixHoughEngine::HelixHoughEngine ( HelixHough & context, HelixParRange & range, HelixParNBins & nbins )
@@ -154,7 +156,7 @@ void HelixHoughEngine::findSeededHelices ( const std::vector<SimpleTrack3D> & se
 }
 
 
-void  HelixHoughEngine::fillBins ( float min_phi, float max_phi, const SimpleHit3D & hit, const std::vector<std::vector<unsigned int> > & z_bins, 
+void  HelixHoughEngine::fillBins ( float min_phi, float max_phi, const SimpleHit3D & hit, const std::vector<std::pair<unsigned int,unsigned int> > & z_bins, 
                                    unsigned int index, unsigned int tip_bin, unsigned int curv_bin, float low_phi, float high_phi, float inv_phi_range )
 {
   if ( min_phi>=0. ) {
@@ -165,7 +167,7 @@ void  HelixHoughEngine::fillBins ( float min_phi, float max_phi, const SimpleHit
     if ( max_phi<high_phi ) high_bin = (unsigned int)(((max_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
     for ( unsigned int b=low_bin; b<=high_bin; ++b )
       for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-        bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin][0],z_bins[zbin][1],b,tip_bin), index ) );
+        bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin].first,z_bins[zbin].second,b,tip_bin), index ) );
   } else {
     if ( ( high_phi<(min_phi+2.*M_PI) ) && (low_phi> max_phi) ) return;
     if ( ( high_phi<(min_phi+2.*M_PI) ) && (low_phi<=max_phi) ) {
@@ -173,25 +175,25 @@ void  HelixHoughEngine::fillBins ( float min_phi, float max_phi, const SimpleHit
       unsigned int high_bin = (unsigned int)(((max_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
       for ( unsigned int b=low_bin; b<=high_bin; ++b )
         for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin][0],z_bins[zbin][1],b,tip_bin), index ) );
+          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin].first,z_bins[zbin].second,b,tip_bin), index ) );
     } else if ( ( high_phi>=(min_phi+2.*M_PI) ) && (low_phi>max_phi) ) {
       unsigned int high_bin = (nPhi()-1);
       unsigned int low_bin = (unsigned int)(((2.*M_PI+min_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
       for ( unsigned int b=low_bin; b<=high_bin; ++b )
         for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin][0],z_bins[zbin][1],b,tip_bin), index ) );
+          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin].first,z_bins[zbin].second,b,tip_bin), index ) );
     } else {
       //split into two sets of bins
       unsigned int high_bin = (nPhi()-1);
       unsigned int low_bin = (unsigned int)(((2.*M_PI+min_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
       for ( unsigned int b=low_bin; b<=high_bin; ++b )
         for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin][0],z_bins[zbin][1],b,tip_bin), index ) );
+          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin].first,z_bins[zbin].second,b,tip_bin), index ) );
        low_bin = 0;
       high_bin = (unsigned int)(((max_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
       for ( unsigned int b=low_bin; b<=high_bin; ++b )
         for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin][0],z_bins[zbin][1],b,tip_bin), index ) );
+          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin].first,z_bins[zbin].second,b,tip_bin), index ) );
     }
   }
 }
@@ -204,96 +206,82 @@ void HelixHoughEngine::vote ( const std::vector<SimpleHit3D> & hits )
   float  eta_size = dEta ();
   float  lip_size = dLip ();
   float  tip_size = dTip ();
-  float  low_eta  = range().minEta();
-  float high_eta  = range().maxEta();
-  float  eta_bin_size_inv = 1./eta_size;
   float  low_phi  = range().minPhi();
   float high_phi  = range().maxPhi();
-  float  inv_phi_range = 1./(high_phi - low_phi);
-  std::vector<std::vector<std::vector<unsigned int> > > z_bins;
-  std::vector<std::vector<unsigned int> > z_bin_1;
-  std::vector<unsigned int> one_z_bin; one_z_bin.assign(2,0);
-  // first, do the voting in z
-  voteTimeZ().start();
-  float min_curv = range().minCurv();
-  float max_curv = range().maxCurv();
+  float  inv_phi_range = 1./(high_phi-low_phi);
+  float  low_eta  = range().minEta();
+  float high_eta  = range().maxEta();
+  float  inv_eta_bin = 1./eta_size;
+  std::pair<unsigned int,unsigned int>  one_z_bin;
+  std::vector<std::pair<unsigned int,unsigned int> >  z_bins;
+  voteTimeXY().start();
+  voteTimeZ ().start();
   for ( unsigned int i=0; i<hits.size(); i++ ) {
     SimpleHit3D hit = hits[i];    
-    z_bin_1.clear();
+    z_bins.clear();
+    float min_curv = range().minCurv();
+    float max_curv = range().maxCurv();
     for ( unsigned int ll=0; ll<nLip(); ++ll ) {
       float min_lip = range().minLip() + ll*lip_size;
       float max_lip = min_lip + lip_size;
       min_lip -= hit.dz();
       max_lip += hit.dz();
-      float min_eta;
-      float max_eta;
+      float min_eta =0.;
+      float max_eta =0.;
       hit.etaRange( low_phi, high_phi, min_curv, max_curv, range().minTip(), range().maxTip(), min_lip, max_lip, min_eta, max_eta );
       float d_eta = etaError( hit, min_curv, max_curv, range().minEta(), range().maxEta() );
       min_eta -= d_eta;
       max_eta += d_eta;
-      unsigned int low_bin  = 0;
-      unsigned int high_bin = 0;
+      unsigned int  low_bin =0;
+      unsigned int high_bin =0;
       if ( (min_eta>high_eta) || (max_eta<low_eta) ) {
          low_bin=1;
         high_bin=0;
       } else {
         if ( min_eta>low_eta ) {
-          low_bin = (unsigned int)((min_eta-low_eta)*eta_bin_size_inv);
+          low_bin = (unsigned int)((min_eta-low_eta)*inv_eta_bin);
         } else {
           low_bin = 0;
         }
         if ( max_eta<high_eta ) {
-          high_bin = (unsigned int)((max_eta-low_eta)*eta_bin_size_inv);
+          high_bin = (unsigned int)((max_eta-low_eta)*inv_eta_bin);
         } else {
           high_bin = nEta()-1;
         }
       }
-      one_z_bin[1] = ll;
+      one_z_bin.second = ll;
       for ( unsigned int bb=low_bin; bb<=high_bin; bb++ ) {
         if ( bb>=nEta() ) continue;
-        one_z_bin[0] = bb;
-        z_bin_1.push_back(one_z_bin);
+        one_z_bin.first = bb;
+        z_bins.push_back(one_z_bin);
       }
     }
-    z_bins.push_back(z_bin_1);
-  }
-  voteTimeZ().stop();
-  //now vote in xy
-  min_curv = range().minCurv();
-  max_curv = min_curv + curv_size;
-  // TODO protect against (d + 1/k)<0
-  voteTimeXY().start();
-  for ( unsigned int curv_bin=0; curv_bin<nCurv(); ++curv_bin ) {
-    float min_tip = range().minTip();
-    float max_tip = min_tip + tip_size;
-    for ( unsigned int tip_bin=0; tip_bin<nTip(); ++tip_bin ) {
-      for ( unsigned int i=0; i<hits.size(); i++ ) {
-        float x = hits[i].x();
-        float y = hits[i].y();
-        if ( (x*x+y*y)*min_curv*min_curv>(2.+max_tip*min_curv)*(2.+max_tip*min_curv) )  continue;
-        if ( (x*x+y*y)<(min_tip*min_tip) )  continue;
-        SimpleHit3D hit = hits[i];
+    Interval curv( range().minCurv(), range().minCurv()+curv_size );
+    for ( unsigned int curv_bin=0; curv_bin<nCurv(); ++curv_bin, curv.shift(curv_size) ) {
+      Interval tip( range().minTip(), range().minTip()+tip_size );
+      for ( unsigned int tip_bin=0; tip_bin<nTip(); ++tip_bin, tip.shift(tip_size) ) {
+        float x = hit.x();
+        float y = hit.y();
+        if ( (x*x+y*y)*curv.lower()*curv.lower()>(2.+tip.upper()*curv.lower())*(2.+tip.upper()*curv.lower()) ) continue;
+        if ( (x*x+y*y)<(tip.lower()*tip.lower()) ) continue;
         float min_phi_1;
         float max_phi_1;
         float min_phi_2;
         float max_phi_2;
-        hit.phiRange( Interval(min_tip,max_tip), Interval(min_curv,max_curv), min_phi_1, max_phi_1, min_phi_2, max_phi_2 );
-        float dphi = sqrt((hit.dx()*hit.dx()+hit.dy()*hit.dy())/(hit.x()*hit.x()+hit.y()*hit.y()));
-        dphi += phiError(hit, min_curv, max_curv, range().minEta(), range().maxEta());
+        hit.phiRange( tip, curv, min_phi_1, max_phi_1, min_phi_2, max_phi_2 );
+        float dphi = hit.dphi();
+        dphi += phiError(hit, curv.lower(), curv.upper(), range().minEta(), range().maxEta());
         min_phi_1 -= dphi;
         min_phi_2 -= dphi;
         max_phi_1 += dphi;
         max_phi_2 += dphi;
-        fillBins( min_phi_1, max_phi_1, hit, z_bins[i], i, tip_bin, curv_bin, low_phi, high_phi, inv_phi_range );
-        fillBins( min_phi_2, max_phi_2, hit, z_bins[i], i, tip_bin, curv_bin, low_phi, high_phi, inv_phi_range );
+        fillBins( min_phi_1, max_phi_1, hit, z_bins, i, tip_bin, curv_bin, low_phi, high_phi, inv_phi_range );
+        fillBins( min_phi_2, max_phi_2, hit, z_bins, i, tip_bin, curv_bin, low_phi, high_phi, inv_phi_range );
       }
-      min_tip += tip_size;
-      max_tip += tip_size;
     }
-    min_curv += curv_size;
-    max_curv += curv_size;
   }
   voteTimeXY().stop();
+  voteTimeZ ().stop();
 }
 
 
@@ -301,89 +289,83 @@ void HelixHoughEngine::vote_phi_lip ( const std::vector<SimpleHit3D> & hits )
 {
   bins_vec.clear();
   float curv_size = dCurv();
-  float  eta_size = dEta();
-  float  lip_size = dLip();
-  float  tip_size = dTip();
+  float  eta_size = dEta ();
+  float  lip_size = dLip ();
+  float  tip_size = dTip ();
   float  low_phi  = range().minPhi();
   float high_phi  = range().maxPhi();
-  float inv_phi_range = 1./(high_phi - low_phi);
+  float  inv_phi_range = 1./(high_phi-low_phi);
   float  low_lip  = range().minLip();
   float high_lip  = range().maxLip();
-  float lip_bin_size_inv = 1./lip_size;
-  //cache cosine and sine calculations
-  std::vector<std::vector<std::vector<unsigned int> > > z_bins;
-  std::vector<std::vector<unsigned int> > z_bin_1;
-  std::vector<unsigned int> one_z_bin;one_z_bin.assign(2,0);
-  // first, do the voting in z
-  voteTimeZ().start();
+  float  inv_lip_bin = 1./lip_size;
+  std::pair<unsigned int,unsigned int>  one_z_bin;
+  std::vector<std::pair<unsigned int,unsigned int> >  z_bins;
+  voteTimeXY().start();
+  voteTimeZ ().start();
   for ( unsigned int i=0; i<hits.size(); i++ ) {
-    z_bin_1.clear();
+    SimpleHit3D hit = hits[i];    
+    z_bins.clear();
+    float min_curv = range().minCurv();
+    float max_curv = range().maxCurv();
     for ( unsigned int ee=0; ee<nEta(); ee++ ) {
       float min_eta = range().minEta() + ee*eta_size;
-      float max_eta = min_eta + eta_size;
-      float min_lip=0.;
-      float max_lip=0.;
-      hits[i].lipRange( low_phi, high_phi, range().minCurv(), range().maxCurv(), range().minTip(), range().maxTip(), min_eta, max_eta, min_lip, max_lip );
-      unsigned int low_bin=0;
-      unsigned int high_bin=0;
+      float max_eta = min_eta + eta_size + d_eta;
+      // float d_eta = etaError( hit, min_curv, max_curv, range().minEta(), range().maxEta() );
+      // min_eta -= d_eta;
+      // max_eta += d_eta;
+      float min_lip =0.;
+      float max_lip =0.;
+      hit.lipRange( low_phi, high_phi, min_curv, max_curv, range().minTip(), range().maxTip(), min_eta, max_eta, min_lip, max_lip );
+      // min_lip -= hit.dz();
+      // max_lip += hit.dz();
+      unsigned int  low_bin =0;
+      unsigned int high_bin =0;
       if ( (min_lip>high_lip) || (max_lip<low_lip) ) {
          low_bin=1;
         high_bin=0;
       } else {
         if ( min_lip>low_lip ) {
-          low_bin = (unsigned int)((min_lip-low_lip)*lip_bin_size_inv);
+          low_bin = (unsigned int)((min_lip-low_lip)*inv_lip_bin);
         } else {
           low_bin = 0;
         }
         if ( max_lip<high_lip ) {
-          high_bin = (unsigned int)((max_lip-low_lip)*lip_bin_size_inv);
+          high_bin = (unsigned int)((max_lip-low_lip)*inv_lip_bin);
         } else {
           high_bin = nLip() - 1;
         }
       }
-      one_z_bin[0] = ee;
+      one_z_bin.first = ee;
       for ( unsigned int bb=low_bin; bb<=high_bin; bb++ ) {
         if (bb >= nLip()) continue;
-        one_z_bin[1] = bb;
-        z_bin_1.push_back(one_z_bin);
+        one_z_bin.second = bb;
+        z_bins.push_back(one_z_bin);
       }
     }
-    z_bins.push_back(z_bin_1);
-  }
-  voteTimeZ().stop();
-  //now vote in xy
-  float min_curv = range().minCurv();
-  float max_curv = min_curv + curv_size;
-  // TODO protect against (d + 1/k)<0
-  voteTimeXY().start();
-  for ( unsigned int curv_bin=0; curv_bin<nCurv(); ++curv_bin ) {
-    float min_tip = range().minTip();
-    float max_tip = min_tip + tip_size;
-    for ( unsigned int tip_bin=0; tip_bin<nTip(); ++tip_bin ) {
-      for ( unsigned int i=0; i<hits.size(); i++ ) {
-        float x = hits[i].x();
-        float y = hits[i].y();
-        if ( (x*x+y*y)*min_curv*min_curv>(2.+max_tip*min_curv)*(2.+max_tip*min_curv) ) continue;
-        if ( (x*x+y*y)<(min_tip*min_tip) ) continue;
-        SimpleHit3D hit = hits[i];
+    Interval curv( range().minCurv(), range().minCurv()+curv_size );
+    for ( unsigned int curv_bin=0; curv_bin<nCurv(); ++curv_bin, curv.shift(curv_size) ) {
+      Interval tip( range().minTip(), range().minTip()+tip_size );
+      for ( unsigned int tip_bin=0; tip_bin<nTip(); ++tip_bin, tip.shift(tip_size) ) {
+        float x = hit.x();
+        float y = hit.y();
+        if ( (x*x+y*y)*curv.lower()*curv.lower()>(2.+tip.upper()*curv.lower())*(2.+tip.upper()*curv.lower()) ) continue;
+        if ( (x*x+y*y)<(tip.lower()*tip.lower()) ) continue;
         float min_phi_1;
         float max_phi_1;
-        float min_phi_2; 
+        float min_phi_2;
         float max_phi_2;
-        hit.phiRange( Interval(min_tip,max_tip), Interval(min_curv,max_curv), min_phi_1, max_phi_1, min_phi_2, max_phi_2 );
-        float dphi = sqrt((hit.dx()*hit.dx()+hit.dy()*hit.dy())/(hit.x()*hit.x()+hit.y()*hit.y()));
+        hit.phiRange( tip, curv, min_phi_1, max_phi_1, min_phi_2, max_phi_2 );
+        float dphi = hit.dphi();
+        // dphi += phiError(hit, curv.lower(), curv.upper(), range().minEta(), range().maxEta());
         min_phi_1 -= dphi;
         min_phi_2 -= dphi;
         max_phi_1 += dphi;
         max_phi_2 += dphi;
-        fillBins( min_phi_1, max_phi_1, hit, z_bins[i], i, tip_bin, curv_bin, low_phi, high_phi, inv_phi_range );
-        fillBins( min_phi_2, max_phi_2, hit, z_bins[i], i, tip_bin, curv_bin, low_phi, high_phi, inv_phi_range );
+        fillBins( min_phi_1, max_phi_1, hit, z_bins, i, tip_bin, curv_bin, low_phi, high_phi, inv_phi_range );
+        fillBins( min_phi_2, max_phi_2, hit, z_bins, i, tip_bin, curv_bin, low_phi, high_phi, inv_phi_range );
       }
-      min_tip += tip_size;
-      max_tip += tip_size;
     }
-    min_curv += curv_size;
-    max_curv += curv_size;
   }
   voteTimeXY().stop();
+  voteTimeZ ().stop();
 }

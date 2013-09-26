@@ -22,6 +22,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <utility>
 
 
 class HelixHoughEngine : protected HelixHoughProxy, protected HelixHoughEngineBase
@@ -53,7 +54,7 @@ class HelixHoughEngine : protected HelixHoughProxy, protected HelixHoughEngineBa
     void  fillBins             ( float                              min_phi         ,
                                  float                              max_phi         ,
                                  const SimpleHit3D &                four_hits       ,
-                                 const std::vector<std::vector<unsigned int> > & z_bins, 
+                                 const std::vector<std::pair<unsigned int,unsigned int> > & z_bins, 
                                  unsigned int                       index           ,
                                  unsigned int                       tip_bin         ,
                                  unsigned int                       curv_bin        ,
