@@ -71,7 +71,7 @@ void HelixHoughEngine::findHelices ( const std::vector<SimpleHit3D> & hits, unsi
       nextHits.push_back( hits[ iter->second ] );    
     if ( nextHits.size()>=min_hits ) {
       unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*hits.size() );
-      bool zooming_helps = nextHits.size()<=expected_hits || forcezoom;
+      bool zooming_helps =  forcezoom || nextHits.size()<=expected_hits;
       if ( nextLevel->insaneResolution() || breakRecursion( nextHits, nextLevel->range() ) ) {
         nextLevel->findTracks( nextHits, tracks, nextLevel->range() );
       } else if ( nextLevel->decentResolution() && ( nextHits.size()<=max_hits || !zooming_helps ) ) {
@@ -132,7 +132,7 @@ void HelixHoughEngine::findSeededHelices ( const std::vector<SimpleTrack3D> & se
       nextHits.push_back( hits[ iter->second ] );    
     if ( (nextHits.size()>=min_hits) && (nextSeeds.size()!=0) ) {
       unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*hits.size() );
-      bool zooming_helps = nextHits.size()<=expected_hits || forcezoom;
+      bool zooming_helps =  forcezoom || nextHits.size()<=expected_hits;
       if ( nextLevel->insaneResolution() || breakRecursion( nextHits, nextLevel->range() ) ) {
         nextLevel->findSeededTracks ( nextSeeds, nextHits, tracks, nextLevel->range() );
       } else if ( nextLevel->decentResolution() && ( nextHits.size()<=max_hits || !zooming_helps ) ) {
@@ -196,7 +196,6 @@ void  HelixHoughEngine::fillBins ( float min_phi, float max_phi, const SimpleHit
   }
 }
 
-#include <iostream>
 
 void HelixHoughEngine::vote ( const std::vector<SimpleHit3D> & hits )
 {

@@ -25,12 +25,14 @@ class Interval {
     double          lower     ( )  const  { return _inf; }
     double          upper     ( )  const  { return _sup; }
     bool            isEmpty   ( )  const  { return _sup<=_inf; }
-    bool            include   ( double value           ) const;
-    bool            operator< ( const Interval & other ) const;
-    const Interval  operator+ ( const Interval & other ) const;
-    const Interval  operator- ( const Interval & other ) const;
-    const Interval  operator- (                        ) const;
-    bool            overlaps  ( const Interval & other ) const;
+    bool            include   ( double value           )  const;
+    double          normalize ( double           value )  const;
+    Interval        normalize ( Interval         value )  const;
+    bool            operator< ( const Interval & other )  const;
+    const Interval  operator+ ( const Interval & other )  const;
+    const Interval  operator- ( const Interval & other )  const;
+    const Interval  operator- (                        )  const;
+    bool            overlaps  ( const Interval & other )  const;
     Interval &      scale     ( double factor );
     Interval &      shift     ( double factor );
   private:
@@ -66,6 +68,22 @@ inline bool  Interval::include ( double value )  const
   if ( isEmpty() ) return false;
   return ( _inf<value ) && ( value<_sup ); 
 }
+
+
+inline double  Interval::normalize ( double value )  const
+{ 
+  if ( isEmpty()     ) return 0.;
+  if ( value <= _inf ) return 0.;
+  if ( value >= _sup ) return 1.;
+  return (value-_inf)/(_sup-_inf);
+};
+
+
+inline Interval  Interval::normalize ( Interval value )  const
+{ 
+  if ( isEmpty() || value.isEmpty() ) return Interval();
+  return value.shift(_inf).scale(1./length());
+};
 
 
 inline bool  Interval::operator< ( const Interval & other ) const  

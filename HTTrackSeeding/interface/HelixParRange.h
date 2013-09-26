@@ -11,6 +11,8 @@
 #include "MLoVetere/HTTrackSeeding/interface/AngularInterval.h"
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
 
+#include <algorithm>
+
 
 class HelixParRange
 {
@@ -52,15 +54,18 @@ class HelixParRange
     float  minLip  ( )  const  { return _rLip .lower();  }
     float  minPhi  ( )  const  { return _rPhi .lower();  }
     float  minTip  ( )  const  { return _rTip .lower();  }
-    float  pHTurns ( )  const  { return _pHTurns;        }
-    float  nHTurns ( )  const  { return _nHTurns;        }
-    void   setCurv ( Interval        value )  { _rCurv = value;   }
-    void   setEta  ( Interval        value )  { _rEta  = value;   }
-    void   setLip  ( Interval        value )  { _rLip  = value;   }
-    void   setPhi  ( AngularInterval value )  { _rPhi  = value;   }
-    void   setTip  ( Interval        value )  { _rTip  = value;   }
-    void   setPHTurns ( unsigned int value )  { _pHTurns = value; }
-    void   setNHTurns ( unsigned int value )  { _nHTurns = value; }
+    float     rCurv   ( float    value )  const  { return _rCurv.normalize(value); }
+    Interval  rCurv   ( Interval value )  const  { return _rCurv.normalize(value); }
+    float     rEta    ( float    value )  const  { return _rEta .normalize(value); }
+    Interval  rEta    ( Interval value )  const  { return _rEta .normalize(value); }
+    float     rLip    ( float    value )  const  { return _rLip .normalize(value); }
+    Interval  rLip    ( Interval value )  const  { return _rLip .normalize(value); }
+    float     rPhi    ( float    value )  const  { return std::max( std::min((value-_rPhi.lower())/_rPhi.length(),1.) ,0.); }
+    // Interval  rPhi    ( Interval value )  const  { return std::max( std::min((value-_rPhi.lower())/_rPhi.length(),1.) ,0.); }
+    float     rTip    ( float    value )  const  { return _rTip .normalize(value); }
+    Interval  rTip    ( Interval value )  const  { return _rTip .normalize(value); }
+    float     pHTurns ( )  const  { return _pHTurns;        }
+    float     nHTurns ( )  const  { return _nHTurns;        }
   public:  // deprecated
     void   setCurv ( float min, float delta )  { _rCurv =        Interval( min, min+delta ); }
     void   setEta  ( float min, float delta )  { _rEta  =        Interval( min, min+delta ); }
