@@ -24,20 +24,6 @@ HelixHoughEngine::HelixHoughEngine ( HelixHoughEngine & other, HelixParRange & r
 HelixHoughEngine::~HelixHoughEngine ( )
 { }
 
-void  HelixHoughEngine::findHelices ( const std::vector<SimpleHit3D>& hits, unsigned int min_hits, unsigned int max_hits, std::vector<SimpleTrack3D>& tracks, unsigned int maxtracks )
-{
-  _hits = hits;
-  findHelices(min_hits,max_hits,tracks,maxtracks,true);
-}
-
-
-void  HelixHoughEngine::findSeededHelices ( const std::vector<SimpleTrack3D>& seeds, const std::vector<SimpleHit3D>& hits, unsigned int min_hits, unsigned int max_hits, std::vector<SimpleTrack3D>& tracks, unsigned int maxtracks )
-{
-   _hits = hits;
-  _seeds = seeds;
-  findSeededHelices(min_hits,max_hits,tracks,maxtracks,true);
-};
-
 
 bool  HelixHoughEngine::decentResolution ( )  const 
 {
@@ -59,12 +45,12 @@ bool  HelixHoughEngine::insaneResolution ( )  const
 }
 
 
-void HelixHoughEngine::findHelices ( unsigned int min_hits, unsigned int max_hits, std::vector<SimpleTrack3D>& tracks, unsigned int maxtracks, bool toplevel )
+void HelixHoughEngine::findHelices ( const std::vector<SimpleHit3D> & hits, unsigned int min_hits, unsigned int max_hits, std::vector<SimpleTrack3D>& tracks, unsigned int maxtracks, bool forcezoom )
 {
   if ( (maxtracks!=0) && (tracks.size()>=maxtracks) ) return;
   unsigned int tracks_at_start = tracks.size();
   voteTime().start();
-  vote();
+  vote(hits);
   voteTime().stop();
   // compute next level binning
   HelixParNBins nextBins ( ( dCurv()>maximumResolution().dCurv() ) ? std::min( nCurv(), static_cast<unsigned int>(ceil( dCurv()/maximumResolution().dCurv())) ) : 1 ,
@@ -79,18 +65,19 @@ void HelixHoughEngine::findHelices ( unsigned int min_hits, unsigned int max_hit
     HelixParRange  nextRange = range(bin);
     HelixHoughEngine * nextLevel = new HelixHoughEngine( *this, nextRange, nextBins );
     assert( nextLevel!=0 );
-    nextLevel->_hits.reserve( std::distance(itv.first,itv.second) );
+    std::vector<SimpleHit3D> nextHits;
+    nextHits.reserve( std::distance(itv.first,itv.second) );
     for ( auto iter = itv.first; iter != itv.second; iter++ )
-      nextLevel->_hits.push_back( _hits[ iter->second ] );    
-    if ( nextLevel->_hits.size()>=min_hits ) {
-      unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*_hits.size() );
-      bool zooming_helps = nextLevel->_hits.size()<=expected_hits || toplevel;
-      if ( nextLevel->insaneResolution() || breakRecursion( nextLevel->_hits, nextLevel->range() ) ) {
-        nextLevel->findTracks( nextLevel->_hits, tracks, nextLevel->range() );
-      } else if ( nextLevel->decentResolution() && ( nextLevel->_hits.size()<=max_hits || !zooming_helps ) ) {
-        nextLevel->findTracks( nextLevel->_hits, tracks, nextLevel->range() );
+      nextHits.push_back( hits[ iter->second ] );    
+    if ( nextHits.size()>=min_hits ) {
+      unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*hits.size() );
+      bool zooming_helps = nextHits.size()<=expected_hits || forcezoom;
+      if ( nextLevel->insaneResolution() || breakRecursion( nextHits, nextLevel->range() ) ) {
+        nextLevel->findTracks( nextHits, tracks, nextLevel->range() );
+      } else if ( nextLevel->decentResolution() && ( nextHits.size()<=max_hits || !zooming_helps ) ) {
+        nextLevel->findTracks( nextHits, tracks, nextLevel->range() );
       } else {
-        nextLevel->findHelices( min_hits, max_hits, tracks, maxtracks );
+        nextLevel->findHelices( nextHits, min_hits, max_hits, tracks, maxtracks, false );
       }
       if ( maxtracks!=0 ) {
         double curv_proportion = DCurv() / topRange().DCurv();
@@ -106,15 +93,21 @@ void HelixHoughEngine::findHelices ( unsigned int min_hits, unsigned int max_hit
 }
 
 
-void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int max_hits, std::vector<SimpleTrack3D>& tracks, unsigned int maxtracks, bool toplevel )
+void HelixHoughEngine::findSeededHelices ( const std::vector<SimpleTrack3D> & seeds     ,
+                                           const std::vector<SimpleHit3D>   & hits      , 
+                                           unsigned int                       min_hits  ,
+                                           unsigned int                       max_hits  ,
+                                           std::vector<SimpleTrack3D>       & tracks    ,
+                                           unsigned int                       maxtracks ,
+                                           bool                               forcezoom )
 {
   if ( (maxtracks!=0) && (tracks.size()>=maxtracks) ) return;
   unsigned int tracks_at_start = tracks.size();
   voteTime().start();
-  vote();
+  vote(hits);
   voteTime().stop();
-  std::unordered_multimap<HelixParBinId,SimpleTrack3D*> seedsMap;
-  map(_seeds,seedsMap);
+  std::unordered_multimap<HelixParBinId,const SimpleTrack3D*> seedsMap;
+  map(seeds,seedsMap);
   // compute next level binning
   HelixParNBins nextBins ( ( dCurv()>maximumResolution().dCurv() ) ? std::min( nCurv(), static_cast<unsigned int>(ceil( dCurv()/maximumResolution().dCurv())) ) : 1 ,
                            ( dEta ()>maximumResolution().dEta () ) ? std::min( nEta (), static_cast<unsigned int>(ceil( dEta ()/maximumResolution().dEta ())) ) : 1 ,
@@ -128,22 +121,24 @@ void HelixHoughEngine::findSeededHelices ( unsigned int min_hits, unsigned int m
     HelixParRange  nextRange = range(bin);
     HelixHoughEngine * nextLevel = new HelixHoughEngine( *this, nextRange, nextBins );
     assert( nextLevel==0 );
-    auto ret  = seedsMap.equal_range(bin);
-    nextLevel->_seeds.reserve( std::distance(ret.first,ret.second) );
+    std::vector<SimpleTrack3D> nextSeeds;
+    auto ret = seedsMap.equal_range(bin);
+    nextSeeds.reserve( std::distance(ret.first,ret.second) );
     for ( auto iter = ret.first; iter != ret.second; iter++ )
-      nextLevel->_seeds.push_back( *iter->second );
-    nextLevel-> _hits.reserve( std::distance(itv.first,itv.second) );
+      nextSeeds.push_back( *iter->second );
+    std::vector<SimpleHit3D> nextHits;
+    nextHits.reserve( std::distance(itv.first,itv.second) );
     for ( auto iter = itv.first; iter != itv.second; iter++ )
-      nextLevel-> _hits.push_back( _hits[ iter->second ] );    
-    if ( (nextLevel->_hits.size()>=min_hits) && (nextLevel->_seeds.size()!=0) ) {
-      unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*_hits.size() );
-      bool zooming_helps = nextLevel->_hits.size()<=expected_hits || toplevel;
-      if ( nextLevel->insaneResolution() || breakRecursion( nextLevel->_hits, nextLevel->range() ) ) {
-        nextLevel->findSeededTracks( nextLevel->_seeds, nextLevel->_hits, tracks, nextLevel->range() );
-      } else if ( nextLevel->decentResolution() && ( nextLevel->_hits.size()<=max_hits || !zooming_helps ) ) {
-        nextLevel->findSeededTracks( nextLevel->_seeds, nextLevel->_hits, tracks, nextLevel->range() );
+      nextHits.push_back( hits[ iter->second ] );    
+    if ( (nextHits.size()>=min_hits) && (nextSeeds.size()!=0) ) {
+      unsigned int expected_hits = static_cast<unsigned int>( decreasePerZoom()*hits.size() );
+      bool zooming_helps = nextHits.size()<=expected_hits || forcezoom;
+      if ( nextLevel->insaneResolution() || breakRecursion( nextHits, nextLevel->range() ) ) {
+        nextLevel->findSeededTracks ( nextSeeds, nextHits, tracks, nextLevel->range() );
+      } else if ( nextLevel->decentResolution() && ( nextHits.size()<=max_hits || !zooming_helps ) ) {
+        nextLevel->findSeededTracks ( nextSeeds, nextHits, tracks, nextLevel->range() );
       } else {
-        nextLevel->findSeededHelices( min_hits, max_hits, tracks, maxtracks );
+        nextLevel->findSeededHelices( nextSeeds, nextHits, min_hits, max_hits, tracks, maxtracks, false );
       }
       if ( maxtracks!=0 ) {
         double curv_proportion = DCurv() / topRange().DCurv();
@@ -203,7 +198,7 @@ void  HelixHoughEngine::fillBins ( float min_phi, float max_phi, const SimpleHit
 
 #include <iostream>
 
-void HelixHoughEngine::vote ( )
+void HelixHoughEngine::vote ( const std::vector<SimpleHit3D> & hits )
 {
   bins_vec.clear();
   float curv_size = dCurv();
@@ -223,8 +218,8 @@ void HelixHoughEngine::vote ( )
   voteTimeZ().start();
   float min_curv = range().minCurv();
   float max_curv = range().maxCurv();
-  for ( unsigned int i=0; i<_hits.size(); i++ ) {
-    SimpleHit3D hit = _hits[i];    
+  for ( unsigned int i=0; i<hits.size(); i++ ) {
+    SimpleHit3D hit = hits[i];    
     z_bin_1.clear();
     for ( unsigned int ll=0; ll<nLip(); ++ll ) {
       float min_lip = range().minLip() + ll*lip_size;
@@ -273,12 +268,12 @@ void HelixHoughEngine::vote ( )
     float min_tip = range().minTip();
     float max_tip = min_tip + tip_size;
     for ( unsigned int tip_bin=0; tip_bin<nTip(); ++tip_bin ) {
-      for ( unsigned int i=0; i<_hits.size(); i++ ) {
-        float x = _hits[i].x();
-        float y = _hits[i].y();
+      for ( unsigned int i=0; i<hits.size(); i++ ) {
+        float x = hits[i].x();
+        float y = hits[i].y();
         if ( (x*x+y*y)*min_curv*min_curv>(2.+max_tip*min_curv)*(2.+max_tip*min_curv) )  continue;
         if ( (x*x+y*y)<(min_tip*min_tip) )  continue;
-        SimpleHit3D hit = _hits[i];
+        SimpleHit3D hit = hits[i];
         float min_phi_1;
         float max_phi_1;
         float min_phi_2;
@@ -303,7 +298,7 @@ void HelixHoughEngine::vote ( )
 }
 
 
-void HelixHoughEngine::vote_phi_lip ( )
+void HelixHoughEngine::vote_phi_lip ( const std::vector<SimpleHit3D> & hits )
 {
   bins_vec.clear();
   float curv_size = dCurv();
@@ -322,14 +317,14 @@ void HelixHoughEngine::vote_phi_lip ( )
   std::vector<unsigned int> one_z_bin;one_z_bin.assign(2,0);
   // first, do the voting in z
   voteTimeZ().start();
-  for ( unsigned int i=0; i<_hits.size(); i++ ) {
+  for ( unsigned int i=0; i<hits.size(); i++ ) {
     z_bin_1.clear();
     for ( unsigned int ee=0; ee<nEta(); ee++ ) {
       float min_eta = range().minEta() + ee*eta_size;
       float max_eta = min_eta + eta_size;
       float min_lip=0.;
       float max_lip=0.;
-      _hits[i].lipRange( low_phi, high_phi, range().minCurv(), range().maxCurv(), range().minTip(), range().maxTip(), min_eta, max_eta, min_lip, max_lip );
+      hits[i].lipRange( low_phi, high_phi, range().minCurv(), range().maxCurv(), range().minTip(), range().maxTip(), min_eta, max_eta, min_lip, max_lip );
       unsigned int low_bin=0;
       unsigned int high_bin=0;
       if ( (min_lip>high_lip) || (max_lip<low_lip) ) {
@@ -366,12 +361,12 @@ void HelixHoughEngine::vote_phi_lip ( )
     float min_tip = range().minTip();
     float max_tip = min_tip + tip_size;
     for ( unsigned int tip_bin=0; tip_bin<nTip(); ++tip_bin ) {
-      for ( unsigned int i=0; i<_hits.size(); i++ ) {
-        float x = _hits[i].x();
-        float y = _hits[i].y();
+      for ( unsigned int i=0; i<hits.size(); i++ ) {
+        float x = hits[i].x();
+        float y = hits[i].y();
         if ( (x*x+y*y)*min_curv*min_curv>(2.+max_tip*min_curv)*(2.+max_tip*min_curv) ) continue;
         if ( (x*x+y*y)<(min_tip*min_tip) ) continue;
-        SimpleHit3D hit = _hits[i];
+        SimpleHit3D hit = hits[i];
         float min_phi_1;
         float max_phi_1;
         float min_phi_2; 

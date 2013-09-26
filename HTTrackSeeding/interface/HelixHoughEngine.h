@@ -34,32 +34,36 @@ class HelixHoughEngine : protected HelixHoughProxy, protected HelixHoughEngineBa
                                  HelixParRange    & range   ,
                                  HelixParNBins    & nbins   );
     virtual  ~HelixHoughEngine ( );
-    void  findHelices          ( const std::vector<SimpleHit3D>   & hits         ,
-                                 unsigned int                       min_hits     ,
-                                 unsigned int                       max_hits     ,
-                                 std::vector<SimpleTrack3D>       & tracks       ,
-                                 unsigned int                       maxtracks =0 );
-    void  findSeededHelices    ( const std::vector<SimpleTrack3D> & seeds        ,
-                                 const std::vector<SimpleHit3D>   & hits         ,
-                                 unsigned int                       min_hits     ,
-                                 unsigned int                       max_hits     ,
-                                 std::vector<SimpleTrack3D>       & tracks       ,
-                                 unsigned int                       maxtracks =0 );
+    void  findHelices          ( const std::vector<SimpleHit3D>   & hits            ,
+                                 unsigned int                       min_hits        ,
+                                 unsigned int                       max_hits        ,
+                                 std::vector<SimpleTrack3D>       & tracks          ,
+                                 unsigned int                       maxtracks =0    ,
+                                 bool                               forcezoom =true );
+    void  findSeededHelices    ( const std::vector<SimpleTrack3D> & seeds           ,
+                                 const std::vector<SimpleHit3D>   & hits            ,
+                                 unsigned int                       min_hits        ,
+                                 unsigned int                       max_hits        ,
+                                 std::vector<SimpleTrack3D>       & tracks          ,
+                                 unsigned int                       maxtracks =0    ,
+                                 bool                               forcezoom =true );
   private:
-    bool  decentResolution ( )  const;
-    bool  insaneResolution ( )  const;
+    bool  decentResolution     ( )  const;
+    bool  insaneResolution     ( )  const;
+    void  fillBins             ( float                              min_phi         ,
+                                 float                              max_phi         ,
+                                 const SimpleHit3D &                four_hits       ,
+                                 const std::vector<std::vector<unsigned int> > & z_bins, 
+                                 unsigned int                       index           ,
+                                 unsigned int                       tip_bin         ,
+                                 unsigned int                       curv_bin        ,
+                                 float                              low_phi         ,
+                                 float                              high_phi        ,
+                                 float                              inv_phi_range   );
+    void  vote                 ( const std::vector<SimpleHit3D> &   hits            );
+    void  vote_phi_lip         ( const std::vector<SimpleHit3D> &   hits            );
+    void  vote_into_curv       ( const std::vector<SimpleHit3D> &   hits            );
   private:
-    void  findHelices       ( unsigned int min_hits, unsigned int max_hits, std::vector<SimpleTrack3D>& tracks, unsigned int maxtracks, bool toplevel =false );
-    void  findSeededHelices ( unsigned int min_hits, unsigned int max_hits, std::vector<SimpleTrack3D>& tracks, unsigned int maxtracks, bool toplevel =false );
-  private:
-    void  fillBins          ( float min_phi, float max_phi, const SimpleHit3D & four_hits, const std::vector<std::vector<unsigned int> > & z_bins, 
-                              unsigned index, unsigned int tip_bin, unsigned int curv_bin, float low_phi, float high_phi, float inv_phi_range );
-    void  vote              ( );
-    void  vote_phi_lip      ( );
-    void  vote_into_curv    ( );
-  private:
-    std::vector<SimpleHit3D>    _hits;
-    std::vector<SimpleTrack3D>  _seeds;
     std::unordered_multimap<HelixParBinId,unsigned int>  bins_vec;
 };
 

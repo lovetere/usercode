@@ -27,7 +27,8 @@ class HelixHoughEngineBase
       : _range(range), _nbins(nbins)  { }
     HelixParRange          range ( )  const { return _range; }
     HelixParRange          range ( HelixParBinId bin )  const;
-    template <typename T>  void  map ( std::vector<T> & vec, std::unordered_multimap<HelixParBinId,T*> & map )  const;
+    template <typename T>  void  map ( const std::vector<T> & vec, std::unordered_multimap<HelixParBinId,const T*> & map )  const;
+    template <typename T>  void  map (       std::vector<T> & vec, std::unordered_multimap<HelixParBinId,      T*> & map )  const;
   public:
     float         DCurv ( )  const  { return  _range.DCurv();     }
     float         DEta  ( )  const  { return  _range.DEta ();     }
@@ -48,6 +49,31 @@ class HelixHoughEngineBase
     HelixParRange _range;
     HelixParNBins _nbins;
 };
+
+
+template <typename T> 
+void  HelixHoughEngineBase::map ( const std::vector<T> & vec, std::unordered_multimap<HelixParBinId,const T*> & map )  const
+{
+  // map.resize doesn't exist; maybe we should do something similar
+  for ( auto elem = vec.begin(); elem != vec.end(); elem++ ) {
+    if ( !Interval(_range.minCurv(),_range.maxCurv()).include(elem->curv) ) continue;
+    int  curv_bin = (int) ( nCurv()*(elem->curv-_range.minCurv())/(DCurv()) );
+    if ( curv_bin<0 || curv_bin>=(int)nCurv()) continue;
+    if ( !Interval(_range.minEta(),_range.maxEta()).include(elem->eta) ) continue;
+    int  eta_bin = (int) ( nEta()*(elem->eta-_range.minEta())/(DEta()) );
+    if ( eta_bin<0 || eta_bin>=(int)nEta()) continue;
+    if ( !Interval(_range.minLip(),_range.maxLip()).include(elem->lip) ) continue;
+    int  lip_bin = (int) ( nLip()*(elem->lip-_range.minLip())/(DLip()) );
+    if ( lip_bin<0 || lip_bin>=(int)nLip()) continue;
+    if ( !Interval(_range.minPhi(),_range.maxPhi()).include(elem->phi) ) continue;
+    int  phi_bin = (int) ( nPhi()*(elem->phi-_range.minPhi())/(DPhi()) );               // qui e' da sistemare
+    if ( phi_bin<0 || phi_bin>=(int)nPhi()) continue;
+    if ( !Interval(_range.minTip(),_range.maxTip()).include(elem->tip) ) continue;
+    int  tip_bin = (int) ( nTip()*(elem->tip-_range.minTip())/(DTip()) );
+    if ( tip_bin<0 || tip_bin>=(int)nTip()) continue;
+    map.insert( std::pair<HelixParBinId,const T*>( HelixParBinId(curv_bin,eta_bin,lip_bin,phi_bin,tip_bin), &(*elem) ) );
+  }  
+}
 
 
 template <typename T> 
