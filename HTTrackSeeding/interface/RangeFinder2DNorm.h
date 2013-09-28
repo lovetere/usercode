@@ -11,11 +11,6 @@
 #include "MLoVetere/HTTrackSeeding/interface/AngularInterval.h"
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
 
-//  Normalized units correspond to a translation along z and an overall coordinate rescaling
-//  such that the hit has rho()=1. anz z()=0.
-//  std::vector<std::pair<AngularInterval,Interval> >  phiAndArcLengthRange ( int hfturns, int  hbturns )  const;
-//  std::vector<std::pair<AngularInterval,Interval> >  phiAndArcLengthRange ( int hfturn =0 )  const;
-
 
 class RangeFinder2DNorm
 {
@@ -43,4 +38,3 @@ class RangeFinder2DNorm
 
 
 #endif // HTTrackSeeding_RangeFinder2DNorm_H
-

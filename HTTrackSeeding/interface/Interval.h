@@ -24,6 +24,7 @@ class Interval {
     double          length    ( )  const  { return std::max(_sup-_inf,0.); }
     double          lower     ( )  const  { return _inf; }
     double          upper     ( )  const  { return _sup; }
+    double          center    ( )  const  { return (_sup+_inf)/2.; }
     bool            isEmpty   ( )  const  { return _sup<=_inf; }
     bool            include   ( double value           )  const;
     double          normalize ( double           value )  const;
