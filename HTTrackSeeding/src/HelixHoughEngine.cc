@@ -1,6 +1,7 @@
 #include "MLoVetere/HTTrackSeeding/interface/HelixHoughEngine.h"
 
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
+#include "MLoVetere/HTTrackSeeding/interface/RangeFinder.h"
 
 #include <algorithm>
 #include <cassert>
@@ -10,7 +11,6 @@
 #include <map>
 #include <unordered_map>
 #include <utility>
-
 
     
 HelixHoughEngine::HelixHoughEngine ( HelixHough & context, HelixParRange & range, HelixParNBins & nbins )
@@ -156,6 +156,46 @@ void HelixHoughEngine::findSeededHelices ( const std::vector<SimpleTrack3D> & se
 }
 
 
+void HelixHoughEngine::vote ( const std::vector<SimpleHit3D> & hits )
+{
+  voteTimeXY().start();
+  voteTimeZ ().start();
+  bins_vec    .clear();
+  float curv_size = dCurv();
+  float  lip_size = dLip ();
+  float  tip_size = dTip ();
+  for ( unsigned int i=0; i<hits.size(); i++ ) {
+    Interval curv( range().minCurv(), range().minCurv()+curv_size );
+    for ( unsigned int binCurv=0; binCurv<nCurv(); ++binCurv, curv.shift(curv_size) ) {
+      Interval tip( range().minTip(), range().minTip()+tip_size );
+      for ( unsigned int binTip=0; binTip<nTip(); ++binTip, tip.shift(tip_size) ) {
+        RangeFinder finder(hits[i],curv,tip);
+        if ( finder.dPhi().isEmpty() ) continue;
+ 	for ( unsigned int hturn=-inHalfTurns(); hturn<outHalfTurns(); hturn++ ) {
+          std::pair<BinRange,BinRange>  phiNRange = phi2bin(finder.dPhi(hturn));
+          Interval lip( range().minLip(), range().minLip()+lip_size );
+	  for ( unsigned int binLip=0; binLip<nLip(); ++binLip, lip.shift(lip_size) ) {
+            BinRange  etaNRange = eta2bin(finder.dEta(lip,hturn));
+            for ( unsigned int binEta = etaNRange.first; binEta<etaNRange.second; binEta++ ) {
+              for ( unsigned int binPhi = phiNRange.first.first; binPhi<phiNRange.first.second; binPhi++ )
+                bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(binCurv,binEta,binLip,binPhi,binTip), i ) );
+              for ( unsigned int binPhi = phiNRange.second.first; binPhi<phiNRange.second.second; binPhi++ )
+                bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(binCurv,binEta,binLip,binPhi,binTip), i ) );
+            }
+          }
+        }
+      }
+    }
+  }
+  voteTimeXY().stop();
+  voteTimeZ ().stop();
+}
+
+
+/*
+ *  Deprecated functions
+ */
+
 void  HelixHoughEngine::fillBins ( float min_phi, float max_phi, const SimpleHit3D & hit, const std::vector<std::pair<unsigned int,unsigned int> > & z_bins, 
                                    unsigned int index, unsigned int tip_bin, unsigned int curv_bin, float low_phi, float high_phi, float inv_phi_range )
 {
@@ -199,7 +239,7 @@ void  HelixHoughEngine::fillBins ( float min_phi, float max_phi, const SimpleHit
 }
 
 
-void HelixHoughEngine::vote ( const std::vector<SimpleHit3D> & hits )
+void HelixHoughEngine::vote_lip ( const std::vector<SimpleHit3D> & hits )
 {
   bins_vec.clear();
   float curv_size = dCurv();
@@ -285,7 +325,7 @@ void HelixHoughEngine::vote ( const std::vector<SimpleHit3D> & hits )
 }
 
 
-void HelixHoughEngine::vote_phi_lip ( const std::vector<SimpleHit3D> & hits )
+void HelixHoughEngine::vote_eta ( const std::vector<SimpleHit3D> & hits )
 {
   bins_vec.clear();
   float curv_size = dCurv();
@@ -309,7 +349,7 @@ void HelixHoughEngine::vote_phi_lip ( const std::vector<SimpleHit3D> & hits )
     float max_curv = range().maxCurv();
     for ( unsigned int ee=0; ee<nEta(); ee++ ) {
       float min_eta = range().minEta() + ee*eta_size;
-      float max_eta = min_eta + eta_size + d_eta;
+      float max_eta = min_eta + eta_size;
       // float d_eta = etaError( hit, min_curv, max_curv, range().minEta(), range().maxEta() );
       // min_eta -= d_eta;
       // max_eta += d_eta;

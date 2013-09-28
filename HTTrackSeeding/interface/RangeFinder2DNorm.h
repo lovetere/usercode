@@ -20,7 +20,7 @@
 class RangeFinder2DNorm
 {
   public:
-    RangeFinder2DNorm ( Interval tip, Interval curv );
+    RangeFinder2DNorm ( Interval curv, Interval tip );
     Interval         arcLengthRange ( int hfturn =0 )  const;
     AngularInterval  phiRange       ( int hfturn =0 )  const;
   private:
@@ -31,8 +31,8 @@ class RangeFinder2DNorm
     static double    arcLengthMinimumEstimateGivenNormTip ( double tip  );
     static double    sinPhiGivenNormTipCurv               ( double tip, double curv );
   private:  
-    Interval         _tip;
     Interval         _curv;
+    Interval         _tip;
     AngularInterval  _forwPhiRange;
     AngularInterval  _backPhiRange;
     mutable bool     _arcLengthInit;

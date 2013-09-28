@@ -12,7 +12,9 @@
 #include "MLoVetere/HTTrackSeeding/interface/HelixParNBins.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParRange.h"
 
+#include <cassert>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 // Dovremmo togliere l'esposizione di range
@@ -45,47 +47,141 @@ class HelixHoughEngineBase
     unsigned int  nLip  ( )  const  { return  _nbins.nLip ();     }
     unsigned int  nPhi  ( )  const  { return  _nbins.nPhi ();     }
     unsigned int  nTip  ( )  const  { return  _nbins.nTip ();     }
+  public:
+    typedef  std::pair<unsigned int, unsigned int>  BinRange;
+    int                          curv2bin ( float           value )  const;
+    int                           eta2bin ( float           value )  const;
+    int                           lip2bin ( float           value )  const;
+    int                           phi2bin ( float           value )  const;
+    int                           tip2bin ( float           value )  const;
+    BinRange                     curv2bin ( Interval        value )  const;
+    BinRange                      eta2bin ( Interval        value )  const;
+    BinRange                      lip2bin ( Interval        value )  const;
+    std::pair<BinRange,BinRange>  phi2bin ( AngularInterval value )  const;
+    BinRange                      tip2bin ( Interval        value )  const;
  private:
     HelixParRange _range;
     HelixParNBins _nbins;
 };
 
 
+inline int  HelixHoughEngineBase::curv2bin( float value )  const
+{
+   if ( !Interval(_range.minCurv(),_range.maxCurv()).include(value) ) return -1;
+   int  bin = (int) ( nCurv() * _range.rCurv(value) );
+   return bin;
+}
+
+
+inline int  HelixHoughEngineBase::eta2bin( float value )  const
+{
+   if ( !Interval(_range.minEta(),_range.maxEta()).include(value) ) return -1;
+   int  bin = (int) ( nEta() * _range.rEta(value) );
+   return bin;
+}
+
+
+inline int  HelixHoughEngineBase::lip2bin( float value )  const
+{
+   if ( !Interval(_range.minLip(),_range.maxLip()).include(value) ) return -1;
+   int  bin = (int) ( nLip() * _range.rLip(value) );
+   return bin;
+}
+
+
+inline int  HelixHoughEngineBase::phi2bin ( float value )  const
+{
+   if ( !AngularInterval(_range.minPhi(),_range.maxPhi()).include(value) ) return -1;
+   int  bin = (int) ( nPhi() * _range.rPhi(value) );                                           // qui e' da sistemare
+   return bin;
+}
+
+
+inline int  HelixHoughEngineBase::tip2bin( float value )  const
+{
+   if ( !Interval(_range.minTip(),_range.maxTip()).include(value) ) return -1;
+   int  bin = (int) ( nTip() * _range.rTip(value) );
+   return bin;
+}
+
+
+inline HelixHoughEngineBase::BinRange  HelixHoughEngineBase::curv2bin( Interval value )  const
+{
+  value = _range.rCurv(value);
+  if ( value.isEmpty() ) return BinRange(0,0);
+  unsigned int low  = (unsigned int) ( nCurv() * value.lower() );
+  unsigned int high = (unsigned int) ( nCurv() * value.upper() );
+  return BinRange( low, std::min(nCurv()+1,high+1) );
+}
+
+
+inline HelixHoughEngineBase::BinRange  HelixHoughEngineBase::eta2bin( Interval value )  const
+{
+  value = _range.rEta(value);
+  if ( value.isEmpty() ) return BinRange(0,0);
+  unsigned int low  = (unsigned int) ( nEta() * value.lower() );
+  unsigned int high = (unsigned int) ( nEta() * value.upper() );
+  return BinRange( low, std::min(nEta()+1,high+1) );
+}
+
+
+inline HelixHoughEngineBase::BinRange  HelixHoughEngineBase::lip2bin( Interval value )  const
+{
+  value = _range.rLip(value);
+  if ( value.isEmpty() ) return BinRange(0,0);
+  unsigned int low  = (unsigned int) ( nLip() * value.lower() );
+  unsigned int high = (unsigned int) ( nLip() * value.upper() );
+  return BinRange( low, std::min(nLip()+1,high+1) );
+}
+
+
+inline std::pair<HelixHoughEngineBase::BinRange,HelixHoughEngineBase::BinRange> HelixHoughEngineBase::phi2bin( AngularInterval value )  const
+{
+  // value = _range.rCurv(value);
+  // if ( value.isEmpty() ) return BinRange(0,0);
+  // unsigned int low  = (unsigned int) ( nCurv() * value.lower() );
+  // unsigned int high = (unsigned int) ( nCurv() * value.upper() );
+  // return BinRange( low, std::min(nCurv()+1,high+1) );
+  return std::pair<BinRange,BinRange>(BinRange(0,0),BinRange(0,0));
+}
+
+
+inline HelixHoughEngineBase::BinRange  HelixHoughEngineBase::tip2bin( Interval value )  const
+{
+  value = _range.rTip(value);
+  if ( value.isEmpty() ) return BinRange(0,0);
+  unsigned int low  = (unsigned int) ( nTip() * value.lower() );
+  unsigned int high = (unsigned int) ( nTip() * value.upper() );
+  return BinRange( low, std::min(nTip()+1,high+1) );
+}
+
+
+
 template <typename T> 
-void  HelixHoughEngineBase::map ( const std::vector<T> & vec, std::unordered_multimap<HelixParBinId,const T*> & map )  const
+inline void  HelixHoughEngineBase::map ( const std::vector<T> & vec, std::unordered_multimap<HelixParBinId,const T*> & map )  const
 {
   // map.resize doesn't exist; maybe we should do something similar
   for ( auto elem = vec.begin(); elem != vec.end(); elem++ ) {
-    if ( !Interval(_range.minCurv(),_range.maxCurv()).include(elem->curv) ) continue;
-    int  curv_bin = (int) ( nCurv() * _range.rCurv(elem->curv) );
-    if ( !Interval(_range.minEta(),_range.maxEta()).include(elem->eta) ) continue;
-    int  eta_bin = (int) ( nEta() * _range.rEta(elem->eta) );
-    if ( !Interval(_range.minLip(),_range.maxLip()).include(elem->lip) ) continue;
-    int  lip_bin = (int) ( nLip() * _range.rLip(elem->lip) );
-    if ( !Interval(_range.minPhi(),_range.maxPhi()).include(elem->phi) ) continue;
-    int  phi_bin = (int) ( nPhi() * (elem->phi-_range.minPhi())/(DPhi()) );               // qui e' da sistemare
-    if ( !Interval(_range.minTip(),_range.maxTip()).include(elem->tip) ) continue;
-    int  tip_bin = (int) ( nTip() * _range.rTip(elem->tip) );
+    int curv_bin = curv2bin(elem->curv);  if ( curv_bin<0 ) continue;
+    int  eta_bin =  eta2bin(elem->eta );  if (  eta_bin<0 ) continue;
+    int  lip_bin =  lip2bin(elem->lip );  if (  lip_bin<0 ) continue;
+    int  phi_bin =  phi2bin(elem->phi );  if (  phi_bin<0 ) continue;
+    int  tip_bin =  tip2bin(elem->tip );  if (  tip_bin<0 ) continue;
     map.insert( std::pair<HelixParBinId,const T*>( HelixParBinId(curv_bin,eta_bin,lip_bin,phi_bin,tip_bin), &(*elem) ) );
   }  
 }
 
 
 template <typename T> 
-void  HelixHoughEngineBase::map ( std::vector<T> & vec, std::unordered_multimap<HelixParBinId,T*> & map )  const
+inline void  HelixHoughEngineBase::map ( std::vector<T> & vec, std::unordered_multimap<HelixParBinId,T*> & map )  const
 {
   // map.resize() doesn't exist; maybe we should do something similar
   for ( auto elem = vec.begin(); elem != vec.end(); elem++ ) {
-    if ( !Interval(_range.minCurv(),_range.maxCurv()).include(elem->curv) ) continue;
-    int  curv_bin = (int) ( nCurv() * _range.rCurv(elem->curv) );
-    if ( !Interval(_range.minEta(),_range.maxEta()).include(elem->eta) ) continue;
-    int  eta_bin = (int) ( nEta() * _range.rEta(elem->eta) );
-    if ( !Interval(_range.minLip(),_range.maxLip()).include(elem->lip) ) continue;
-    int  lip_bin = (int) ( nLip() * _range.rLip(elem->lip) );
-    if ( !Interval(_range.minPhi(),_range.maxPhi()).include(elem->phi) ) continue;
-    int  phi_bin = (int) ( nPhi()*(elem->phi-_range.minPhi())/(DPhi()) );               // qui e' da sistemare
-    if ( !Interval(_range.minTip(),_range.maxTip()).include(elem->tip) ) continue;
-    int  tip_bin = (int) ( nTip() * _range.rTip(elem->tip) );
+    int curv_bin = curv2bin(elem->curv);  if ( curv_bin<0 ) continue;
+    int  eta_bin =  eta2bin(elem->eta );  if (  eta_bin<0 ) continue;
+    int  lip_bin =  lip2bin(elem->lip );  if (  lip_bin<0 ) continue;
+    int  phi_bin =  phi2bin(elem->phi );  if (  phi_bin<0 ) continue;
+    int  tip_bin =  tip2bin(elem->tip );  if (  tip_bin<0 ) continue;
     map.insert( std::pair<HelixParBinId,T*>( HelixParBinId(curv_bin,eta_bin,lip_bin,phi_bin,tip_bin), &(*elem) ) );
   }  
 }

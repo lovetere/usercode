@@ -41,6 +41,21 @@ class Interval {
 };
 
 
+inline static bool overlaps( Interval first, Interval second ) 
+{
+  return first.overlaps(second);
+}
+
+
+// da verificare con attenzione;
+inline static Interval intersection( Interval first, Interval second ) 
+{
+  return first.setBound(second);
+}
+
+
+// 
+
 inline Interval &  Interval::setBound ( Interval range )
 {
   setUpperBound( range.upper() );
@@ -81,6 +96,7 @@ inline double  Interval::normalize ( double value )  const
 
 inline Interval  Interval::normalize ( Interval value )  const
 { 
+  value.setBound(*this);
   if ( isEmpty() || value.isEmpty() ) return Interval();
   return value.shift(-_inf).scale(1./length());
 };

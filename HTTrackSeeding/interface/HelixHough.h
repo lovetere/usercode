@@ -41,6 +41,8 @@ class HelixHough
     const HelixParResolution &  minimumResolution ( )  const  { return _minimumResolution; }
     const HelixParResolution &  maximumResolution ( )  const  { return _maximumResolution; }
     const HelixParRange      &  topRange          ( )  const  { return _range;             } 
+    unsigned int                posHalfTurns      ( )  const  { return 1;  }
+    unsigned int                negHalfTurns      ( )  const  { return 0;  }
     virtual float  phiError         ( const SimpleHit3D& hit, float min_curv, float max_curv, float min_eta, float max_eta )  const  { return 0.;    }
     virtual float  etaError         ( const SimpleHit3D& hit, float min_curv, float max_curv, float min_eta, float max_eta )  const  { return 0.;    }
     virtual bool   breakRecursion   ( const std::vector<SimpleHit3D>   & hits   ,

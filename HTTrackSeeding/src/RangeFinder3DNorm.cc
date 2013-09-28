@@ -16,8 +16,8 @@
  *  Constructor
  */
 
-RangeFinder3DNorm::RangeFinder3DNorm ( Interval tip, Interval curv, Interval lip )
-  : RangeFinder2DNorm(tip,curv), _dz(-lip)
+RangeFinder3DNorm::RangeFinder3DNorm ( Interval curv, Interval tip )
+: RangeFinder2DNorm(curv,tip)
 { }
 
 
@@ -25,8 +25,8 @@ RangeFinder3DNorm::RangeFinder3DNorm ( Interval tip, Interval curv, Interval lip
  *  Constructor
  */
 
-RangeFinder3DNorm::RangeFinder3DNorm ( RangeFinder2DNorm finder, Interval lip )
-  : RangeFinder2DNorm(finder), _dz(-lip)
+RangeFinder3DNorm::RangeFinder3DNorm ( RangeFinder2DNorm finder )
+  : RangeFinder2DNorm(finder)
 { }
 
 
@@ -34,9 +34,9 @@ RangeFinder3DNorm::RangeFinder3DNorm ( RangeFinder2DNorm finder, Interval lip )
  *  This function returns the eta range compatible with given tip, curv, lip ranges and turns number.
  */
 
-Interval  RangeFinder3DNorm::etaRange ( int hfturn )  const
+Interval  RangeFinder3DNorm::etaRange ( Interval lip, int hfturn )  const
 {
-  std::vector<Interval> alist = etaRangeGivenDzArcLength( _dz, arcLengthRange(hfturn) );
+  std::vector<Interval> alist = etaRangeGivenDzArcLength( -lip, arcLengthRange(hfturn) );
   assert( alist.size()<2 );
   Interval avalue;
   if ( alist.size()==1 ) avalue = alist[0];
@@ -48,9 +48,9 @@ Interval  RangeFinder3DNorm::etaRange ( int hfturn )  const
  *  This function returns the theta combinations compatible with given tip, curv, lip ranges and turns number.
  */
 
-Interval  RangeFinder3DNorm::thetaRange ( int hfturn )  const
+Interval  RangeFinder3DNorm::thetaRange ( Interval lip, int hfturn )  const
 {
-  std::vector<Interval> alist = thetaRangeGivenDzArcLength( _dz, arcLengthRange(hfturn) );
+  std::vector<Interval> alist = thetaRangeGivenDzArcLength( -lip, arcLengthRange(hfturn) );
   assert( alist.size()<2 );
   Interval avalue;
   if ( alist.size()==1 ) avalue = alist[0];
@@ -76,7 +76,7 @@ double  RangeFinder3DNorm::etaGivenDzArcLength ( double dz, double arcl )
 
 
 /*
- *  This function returns a list of eta ranges as a function of range of normalized lip of the poca and the allowed arc lengths
+ *  This function returns a list of eta ranges as a function of range of normalized dz of the poca and the allowed arc lengths
  *  in the transverse plane between the poca and the hit.
  */
 
@@ -120,7 +120,7 @@ double  RangeFinder3DNorm::thetaGivenDzArcLength ( double dz, double arcl )
 
 
 /*
- *  This function returns a list of theta ranges as a function of range of normalized lip of the poca and the allowed arc lengths
+ *  This function returns a list of theta ranges as a function of range of normalized dz of the poca and the allowed arc lengths
  *  in the transverse plane between the poca and the hit.
  */
 

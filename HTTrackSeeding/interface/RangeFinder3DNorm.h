@@ -18,17 +18,15 @@
 class RangeFinder3DNorm : public RangeFinder2DNorm
 {
   public:
-    RangeFinder3DNorm ( Interval tip, Interval curv, Interval lip );
-    RangeFinder3DNorm ( RangeFinder2DNorm finder   , Interval lip );
-    Interval    etaRange ( int hfturn =0 )  const;
-    Interval  thetaRange ( int hfturn =0 )  const;
+    RangeFinder3DNorm ( Interval curv, Interval tip );
+    RangeFinder3DNorm ( RangeFinder2DNorm finder    );
+    Interval    etaRange ( Interval lip, int hfturn =0 )  const;
+    Interval  thetaRange ( Interval lip, int hfturn =0 )  const;
   private:
     static double                 etaGivenDzArcLength        ( double   dz , double   arcl );
     static std::vector<Interval>  etaRangeGivenDzArcLength   ( Interval dz , Interval arcl );
     static double                 thetaGivenDzArcLength      ( double   dz , double   arcl );
     static std::vector<Interval>  thetaRangeGivenDzArcLength ( Interval dz , Interval arcl );
-  private:  
-    Interval  _dz;  // dz=-lip;
 };
 
 

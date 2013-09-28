@@ -19,8 +19,8 @@
  *  In general we can improve computation caching values...
  */
 
-RangeFinder2DNorm::RangeFinder2DNorm ( Interval tip, Interval curv )
-  : _tip(tip), _curv(curv), _forwPhiRange(), _backPhiRange(), _arcLengthInit(false), _arcLengthRange()
+RangeFinder2DNorm::RangeFinder2DNorm ( Interval curv, Interval tip )
+  : _curv(curv), _tip(tip), _forwPhiRange(), _backPhiRange(), _arcLengthInit(false), _arcLengthRange()
 {
   _tip.setBound(Interval(-1.,1.));
   cacheInitPhiRange();
