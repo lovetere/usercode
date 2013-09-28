@@ -20,7 +20,7 @@
  */
 
 RangeFinder2DNorm::RangeFinder2DNorm ( Interval curv, Interval tip )
-  : _curv(curv), _tip(tip), _forwPhiRange(), _backPhiRange(), _arcLengthInit(false), _arcLengthRange()
+  : _curv(curv), _tip(tip), _forwPhiRange(), _backPhiRange(), _hfturn(NotInitialized), _arcLengthOneHalf(), _arcLength()
 {
   _tip.setBound(Interval(-1.,1.));
   cacheInitPhiRange();
@@ -28,84 +28,37 @@ RangeFinder2DNorm::RangeFinder2DNorm ( Interval curv, Interval tip )
 
 
 /*
- *  This function returns the arc length and phi range combinations compatible with given tip and curv ranges.
- *  The case hfturns>1 and hbturns>1 could be improved... but for the moment I don't have time.
- */
-/*
-std::vector<std::pair<AngularInterval,Interval> >  RangeFinder2DNorm::phiAndArcLengthRange ( int hfturns, int hbturns )
-{
-  std::vector<std::pair<AngularInterval,Interval> > alist;
-  for ( int i=0; i<std::max(hfturns,hbturns) ; i++ ) {
-    Interval delta_s;
-    if ( i!=0 ) {
-      if ( _curv.lower()*_curv.upper()>0 ) {
-        double sup = 1./std::min( std:abs(_curv.lower()), std::abs(_curv.upper()) );
-        double inf = 1./std::max( std:abs(_curv.lower()), std::abs(_curv.upper()) );
-        delta_s = Interval(inf,sup);
-      } else {
-        double sup = std::numeric_limits<float>::max();
-        double inf = 1./std::max( std::abs(_curv.lower()), std::abs(_curv.upper()) );
-        delta_s = Interval(inf,sup);
-      }
-    }
-    div_t res = std::div(i+1,2);
-    delta_s.scale(2*M_PI*res.quot);
-    if ( res.rem==1 ) {
-      delta_s = delta_s + slist[0]; 
-    } else {
-      delta_s = delta_s - slist[0];
-    }
-    if ( i<hfturns ) alist.push_back(std::pair<AngularInterval,Interval>( forwPhiRange, delta_s ) );
-    if ( i<hbturns ) alist.push_back(std::pair<AngularInterval,Interval>( backPhiRange, delta_s.scale(-1.) ) );
-  }
-  return alist;
-}
-
-*/
-/*
- *  This function returns the arc length and phi range combinations compatible with given tip and curv ranges.
- *  The case turns>1 and turns<-1 could be improved... but for the moment I don't have time.
- */
- /*
-std::vector<std::pair<AngularInterval,Interval> >  RangeFinder2DNorm::phiAndArcLengthRange ( int hfturn )  const
-{
-  std::vector<std::pair<AngularInterval,Interval> > alist;
-  AngularInterval phi = phiRange(hfturn);
-  Interval    delta_s = arcLengthRange(hfturn);
-  if ( !_phi.isEmpty() && !_delta_s.isEmpty() ) alist.push_back( std::pair<AngularInterval,Interval>(phi,delta_s) );
-  return alist;
-}
-
- */
-/*
  *  This function returns the arc length compatible with given tip and curv  tip and curv ranges and turns number.
  */
 
 Interval  RangeFinder2DNorm::arcLengthRange ( int hfturn )  const
 {
-  cacheInitArcLengthRange();
-  if ( _forwPhiRange.isEmpty() || _arcLengthRange.isEmpty() ) return Interval();
-  Interval delta_s;
-  div_t res = std::div(hfturn+1,2);
-  assert( res.rem==0 || res.rem==1     );   // make sure it doesn't do sylly things on negative numbers
-  assert( hfturn+1==2*res.quot+res.rem );   // make sure it doesn't do sylly things on negative numbers
-  if ( res.rem==1 ) {
-    delta_s =   _arcLengthRange; 
-  } else {
-    delta_s = - _arcLengthRange;
-  }
-  if ( res.quot!=0 ) {
-    double sup = ( _curv.lower()*_curv.upper()>0 )
-               ? 1./std::min( std::abs(_curv.lower()), std::abs(_curv.upper()) )
-               : std::numeric_limits<float>::max();
-    double inf = 1./std::max( std::abs(_curv.lower()), std::abs(_curv.upper()) );
-    delta_s = delta_s + Interval(inf,sup).scale(2*M_PI*res.quot);
-  }
-  if ( hfturn<0 )
-    delta_s.setUpperBound(0.);
-  else
-    delta_s.setLowerBound(0.);
-  return delta_s;
+  if ( _hfturn==NotInitialized )  cacheInitArcLengthOneHalfRange();
+  if ( _hfturn==NotInitialized || _hfturn!=hfturn ) {
+    _arcLength = Interval();
+    if ( !_forwPhiRange.isEmpty() && !_arcLengthOneHalf.isEmpty() ) {
+      div_t res = std::div(hfturn+1,2);
+      assert( res.rem==0 || res.rem==1     );   // make sure it doesn't do sylly things on negative numbers
+      assert( hfturn+1==2*res.quot+res.rem );   // make sure it doesn't do sylly things on negative numbers
+      if ( res.rem==1 ) {
+        _arcLength =   _arcLengthOneHalf; 
+      } else {
+        _arcLength = - _arcLengthOneHalf;
+      }
+      if ( res.quot!=0 ) {
+        double sup = ( _curv.lower()*_curv.upper()>0 )
+                   ? 1./std::min( std::abs(_curv.lower()), std::abs(_curv.upper()) )
+                   : std::numeric_limits<float>::max();
+        double inf = 1./std::max( std::abs(_curv.lower()), std::abs(_curv.upper()) );
+        _arcLength = _arcLength + Interval(inf,sup).scale(2*M_PI*res.quot);
+
+      }
+      hfturn<0 ? _arcLength.setUpperBound(0.) : _arcLength.setLowerBound(0.);
+      _hfturn    = hfturn;
+      _arcLength = Interval();
+    }
+  } 
+  return _arcLength;
 }
 
 
@@ -122,15 +75,13 @@ AngularInterval  RangeFinder2DNorm::phiRange ( int hfturn )  const
 /*  **************************************************************************************************************************  */
 
 /*
- *  This function return the list of arc length ranges in the transverse plane between the poca and the hit as a function of
- *  tip and curv range. The calculation ot the range is non exact everywhere. In some region the arc length range is sligthty
- *  approximated to best value. It returns a list of ranges. Null measure intervals are discarded.
+ *  This function return the arc length ranges in the transverse plane between the poca and the hit as a function of
+ *  tip and curv range. The calculation ot the range is non exact everywhere. In some region the arc length range is 
+ *  sligthty approximated to best value. It returns a list of ranges. Null measure intervals are discarded.
  */
 
-void  RangeFinder2DNorm::cacheInitArcLengthRange ( )  const
+void  RangeFinder2DNorm::cacheInitArcLengthOneHalfRange ( )  const
 {
-  if ( _arcLengthInit ) return;
-  _arcLengthInit = true;
   const double epsilon = 1e-15;
   double max_t = std::max( std::min(_tip.upper(),1.),-1.);
   double min_t = std::max( std::min(_tip.lower(),1.),-1.);
@@ -140,7 +91,7 @@ void  RangeFinder2DNorm::cacheInitArcLengthRange ( )  const
   sValues.reserve(12);
   std::vector<Interval> alist;
   if ( ( max_t==1. && max_c>=1. && min_c<=1. ) || ( max_t==-1. && max_c>=-1. && min_c<=-1. ) ) {
-     _arcLengthRange = Interval(0,M_PI);
+     _arcLengthOneHalf = Interval(0,M_PI);
   }
   // the function doesn't have any minima or maxima inside the tip, curv range minima and maxima
   // on the horizontal boundaries
@@ -195,7 +146,7 @@ void  RangeFinder2DNorm::cacheInitArcLengthRange ( )  const
   if ( !sValues.empty() ) { 
     double min_s = *min_element( sValues.begin(), sValues.end() );
     double max_s = *max_element( sValues.begin(), sValues.end() );
-    if ( min_s<max_s ) _arcLengthRange = Interval(min_s,max_s);
+    if ( min_s<max_s ) _arcLengthOneHalf = Interval(min_s,max_s);
   }
 }
 

@@ -24,19 +24,21 @@ class RangeFinder2DNorm
     Interval         arcLengthRange ( int hfturn =0 )  const;
     AngularInterval  phiRange       ( int hfturn =0 )  const;
   private:
-    void             cacheInitArcLengthRange              ( )  const;
+    void             cacheInitArcLengthOneHalfRange       ( )  const;
     void             cacheInitPhiRange                    ( );
     static bool      arcLengthDerCurvSignGivenNormTipCurv ( double tip, double curv );
     static double    arcLengthGivenNormTipCurv            ( double tip, double curv );
     static double    arcLengthMinimumEstimateGivenNormTip ( double tip  );
     static double    sinPhiGivenNormTipCurv               ( double tip, double curv );
-  private:  
+  private:
+    const int         NotInitialized = std::numeric_limits<int>::max(); 
     Interval         _curv;
     Interval         _tip;
     AngularInterval  _forwPhiRange;
     AngularInterval  _backPhiRange;
-    mutable bool     _arcLengthInit;
-    mutable Interval _arcLengthRange;
+    mutable int      _hfturn;
+    mutable Interval _arcLengthOneHalf;
+    mutable Interval _arcLength;
 };
 
 
