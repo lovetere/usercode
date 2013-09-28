@@ -23,10 +23,10 @@ class RangeFinder3DNorm : public RangeFinder2DNorm
     Interval    etaRange ( Interval lip, int hfturn =0 )  const;
     Interval  thetaRange ( Interval lip, int hfturn =0 )  const;
   private:
-    static double                 etaGivenDzArcLength        ( double   dz , double   arcl );
-    static std::vector<Interval>  etaRangeGivenDzArcLength   ( Interval dz , Interval arcl );
-    static double                 thetaGivenDzArcLength      ( double   dz , double   arcl );
-    static std::vector<Interval>  thetaRangeGivenDzArcLength ( Interval dz , Interval arcl );
+    static double                 etaGivenLipArcLength        ( double   lip, double   arcl );
+    static std::vector<Interval>  etaRangeGivenLipArcLength   ( Interval lip, Interval arcl );
+    static double                 thetaGivenLipArcLength      ( double   lip, double   arcl );
+    static std::vector<Interval>  thetaRangeGivenLipArcLength ( Interval lip, Interval arcl );
 };
 
 
