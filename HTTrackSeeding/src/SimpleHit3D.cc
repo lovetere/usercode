@@ -1,7 +1,7 @@
 #include "MLoVetere/HTTrackSeeding/interface/SimpleHit3D.h"
 
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
-#include "MLoVetere/HTTrackSeeding/interface/RangeFinder2DNorm.h"
+#include "MLoVetere/HTTrackSeeding/interface/RangeFinderNExact.h"
 
 #include <algorithm>
 #include <cassert>
@@ -23,7 +23,7 @@ std::vector<std::pair<AngularInterval,Interval> >  SimpleHit3D::phiAndArcLengthG
 {
   tip.scale(1./rho());
   curv.scale(rho());
-  RangeFinder2DNorm rangeFinder(tip,curv);
+  RangeFinderNExact rangeFinder(tip,curv);
   std::vector<std::pair<AngularInterval,Interval> > alist;
   /*
   std::vector<std::pair<AngularInterval,Interval> > alist = rangeFinder.phiAndArcLengthPhiGivenTipAndCurv(hfturns,hbturn);

@@ -1,4 +1,4 @@
-#include "MLoVetere/HTTrackSeeding/interface/RangeFinderNormFast.h"
+#include "MLoVetere/HTTrackSeeding/interface/RangeFinderNFast.h"
 
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
 
@@ -19,7 +19,7 @@
  *  In general we can improve computation caching values...
  */
 
-RangeFinderNormFast::RangeFinderNormFast ( Interval curv, Interval tip )
+RangeFinderNFast::RangeFinderNFast ( Interval curv, Interval tip )
   : _curv(curv), _tip(tip), _forwPhiRange(), _backPhiRange(), _hfturn(NotInitialized), _arcLengthOneHalf(), _arcLength()
 {
   cacheInitPhiRange();
@@ -30,7 +30,7 @@ RangeFinderNormFast::RangeFinderNormFast ( Interval curv, Interval tip )
  *  This function returns the arc length compatible with given tip and curv  tip and curv ranges and turns number.
  */
 
-Interval  RangeFinderNormFast::arcLengthRange ( int hfturn )  const
+Interval  RangeFinderNFast::arcLengthRange ( int hfturn )  const
 {
   if ( _hfturn==NotInitialized )  cacheInitArcLengthOneHalfRange();
   if ( _hfturn==NotInitialized || _hfturn!=hfturn ) {
@@ -62,7 +62,7 @@ Interval  RangeFinderNormFast::arcLengthRange ( int hfturn )  const
  *  This function returns the eta range compatible with given tip, curv, lip ranges and turns number.
  */
 
-Interval  RangeFinderNormFast::etaRange ( Interval lip, int hfturn )  const
+Interval  RangeFinderNFast::etaRange ( Interval lip, int hfturn )  const
 {
   if ( lip.isEmpty() )  return Interval();
   Interval  arclRange = arcLengthRange(hfturn);
@@ -79,7 +79,7 @@ Interval  RangeFinderNormFast::etaRange ( Interval lip, int hfturn )  const
  *  This function returns the phi range compatible with given tip and curv ranges and turns number.
  */
 
-AngularInterval  RangeFinderNormFast::phiRange ( int hfturn )  const
+AngularInterval  RangeFinderNFast::phiRange ( int hfturn )  const
 {
   return ( hfturn<0 ) ? _backPhiRange : _forwPhiRange;
 }
@@ -89,7 +89,7 @@ AngularInterval  RangeFinderNormFast::phiRange ( int hfturn )  const
  *  This function returns the theta combinations compatible with given tip, curv, lip ranges and turns number.
  */
 
-Interval  RangeFinderNormFast::thetaRange ( Interval lip, int hfturn )  const
+Interval  RangeFinderNFast::thetaRange ( Interval lip, int hfturn )  const
 {
   if ( lip.isEmpty() )  return Interval();
   Interval  arclRange = arcLengthRange(hfturn);
@@ -110,7 +110,7 @@ Interval  RangeFinderNormFast::thetaRange ( Interval lip, int hfturn )  const
  *  sligthty approximated to best value. It returns a list of ranges. Null measure intervals are discarded.
  */
 
-void  RangeFinderNormFast::cacheInitArcLengthOneHalfRange ( )  const
+void  RangeFinderNFast::cacheInitArcLengthOneHalfRange ( )  const
 {
   const double  epsilon = 1e-15;
   double  tip  =  _tip.center();
@@ -125,7 +125,7 @@ void  RangeFinderNormFast::cacheInitArcLengthOneHalfRange ( )  const
 }
 
 
-void  RangeFinderNormFast::cacheInitPhiRange ( )
+void  RangeFinderNFast::cacheInitPhiRange ( )
 {
   const double  epsilon = 1e-15;
   double  tip  =  _tip.center();
@@ -148,7 +148,7 @@ void  RangeFinderNormFast::cacheInitPhiRange ( )
  *  In other words it must be granted: -1<=tip<=1<=|tip-2./curv|, 1-tip*curv>=0.
  */
 
-double  RangeFinderNormFast::arcLengthGivenNormTipCurv ( double tip, double curv )
+double  RangeFinderNFast::arcLengthGivenNormTipCurv ( double tip, double curv )
 {
   assert ( tip>=-1. );
   assert ( tip<= 1. );
@@ -173,7 +173,7 @@ double  RangeFinderNormFast::arcLengthGivenNormTipCurv ( double tip, double curv
  *  poca to the hit. When arc length is negative, the track is assumed to go from the hit to the poca.
  */
 
-double  RangeFinderNormFast::etaGivenLipArcLength ( double lip, double arcl )
+double  RangeFinderNFast::etaGivenLipArcLength ( double lip, double arcl )
 {
   double ds = sqrt(arcl*arcl+lip*lip); 
   if ( arcl<0. ) lip = -lip;
@@ -187,7 +187,7 @@ double  RangeFinderNormFast::etaGivenLipArcLength ( double lip, double arcl )
  *  When there are no solutions, this function returns -1. for positive curvature and 1. for negative curvature.
  */
 
-double  RangeFinderNormFast::sinPhiGivenNormTipCurv ( double tip, double curv )
+double  RangeFinderNFast::sinPhiGivenNormTipCurv ( double tip, double curv )
 {
   assert( tip>=-1. );
   assert( tip<= 1. );
@@ -207,7 +207,7 @@ double  RangeFinderNormFast::sinPhiGivenNormTipCurv ( double tip, double curv )
  *  When arc length is negative, the track is assumed to go from the hit to the poca.
  */
 
-double  RangeFinderNormFast::thetaGivenLipArcLength ( double lip, double arcl )
+double  RangeFinderNFast::thetaGivenLipArcLength ( double lip, double arcl )
 {
   double ds = sqrt(arcl*arcl+lip*lip); 
   if ( arcl<0. ) lip = -lip;

@@ -1,7 +1,7 @@
-#ifndef HTTrackSeeding_RangeFinderNormFast_H
-#define HTTrackSeeding_RangeFinderNormFast_H
+#ifndef HTTrackSeeding_RangeFinderNFast_H
+#define HTTrackSeeding_RangeFinderNFast_H
 
-/*** \class  RangeFinderNormFast
+/*** \class  RangeFinderNFast
   *
   *  Under development.
   *
@@ -12,10 +12,10 @@
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
 
 
-class RangeFinderNormFast
+class RangeFinderNFast
 {
   public:
-    RangeFinderNormFast ( Interval curv, Interval tip );
+    RangeFinderNFast ( Interval curv, Interval tip );
     Interval        arcLengthRange ( int hfturn =0 )                const;
     AngularInterval       phiRange ( int hfturn =0 )                const;
     Interval              etaRange ( Interval lip, int hfturn =0 )  const;
@@ -39,4 +39,4 @@ class RangeFinderNormFast
 };
 
 
-#endif // HTTrackSeeding_RangeFinderNormFast_H
+#endif // HTTrackSeeding_RangeFinderNFast_H

@@ -9,7 +9,7 @@
   */
 
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
-#include "MLoVetere/HTTrackSeeding/interface/RangeFinder3DNorm.h"
+#include "MLoVetere/HTTrackSeeding/interface/RangeFinderNExact.h"
 #include "MLoVetere/HTTrackSeeding/interface/SimpleHit3D.h"
 
 
@@ -22,7 +22,7 @@ class RangeFinder
     Interval         dTheta ( Interval lip, int hfturn =0 )  const;
   private:  
     const SimpleHit3D & _hit;
-    RangeFinder3DNorm   _finder;
+    RangeFinderNExact   _finder;
 };
 
 

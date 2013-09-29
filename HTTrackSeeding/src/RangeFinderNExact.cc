@@ -1,4 +1,4 @@
-#include "MLoVetere/HTTrackSeeding/interface/RangeFinder2DNorm.h"
+#include "MLoVetere/HTTrackSeeding/interface/RangeFinderNExact.h"
 
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
 
@@ -19,7 +19,7 @@
  *  In general we can improve computation caching values...
  */
 
-RangeFinder2DNorm::RangeFinder2DNorm ( Interval curv, Interval tip )
+RangeFinderNExact::RangeFinderNExact ( Interval curv, Interval tip )
   : _curv(curv), _tip(tip), _forwPhiRange(), _backPhiRange(), _hfturn(NotInitialized), _arcLengthOneHalf(), _arcLength()
 {
   _tip.setBound(Interval(-1.,1.));
@@ -31,7 +31,7 @@ RangeFinder2DNorm::RangeFinder2DNorm ( Interval curv, Interval tip )
  *  This function returns the arc length compatible with given tip and curv  tip and curv ranges and turns number.
  */
 
-Interval  RangeFinder2DNorm::arcLengthRange ( int hfturn )  const
+Interval  RangeFinderNExact::arcLengthRange ( int hfturn )  const
 {
   if ( _hfturn==NotInitialized )  cacheInitArcLengthOneHalfRange();
   if ( _hfturn==NotInitialized || _hfturn!=hfturn ) {
@@ -66,9 +66,95 @@ Interval  RangeFinder2DNorm::arcLengthRange ( int hfturn )  const
  *  This function returns the phi range compatible with given tip and curv ranges and turns number.
  */
 
-AngularInterval  RangeFinder2DNorm::phiRange ( int hfturn )  const
+AngularInterval  RangeFinderNExact::phiRange ( int hfturn )  const
 {
   return ( hfturn<0 ) ? _backPhiRange : _forwPhiRange;
+}
+
+
+/*
+ *  This function returns the eta range compatible with given tip, curv, lip ranges and turns number.
+ */
+
+Interval  RangeFinderNExact::etaRange ( Interval lip, int hfturn )  const
+{
+  std::vector<Interval> alist = etaRangeGivenLipArcLength( lip, arcLengthRange(hfturn) );
+  assert( alist.size()<2 );
+  Interval avalue;
+  if ( alist.size()==1 ) avalue = alist[0];
+  return   avalue;
+}
+
+
+/*
+ *  This function returns the theta combinations compatible with given tip, curv, lip ranges and turns number.
+ */
+
+Interval  RangeFinderNExact::thetaRange ( Interval lip, int hfturn )  const
+{
+  std::vector<Interval> alist = thetaRangeGivenLipArcLength( lip, arcLengthRange(hfturn) );
+  assert( alist.size()<2 );
+  Interval avalue;
+  if ( alist.size()==1 ) avalue = alist[0];
+  return   avalue;
+}
+
+
+/*
+ *  This function returns a list of eta ranges as a function of range of normalized lip of the poca and the allowed arc lengths
+ *  in the transverse plane between the poca and the hit.
+ */
+
+std::vector<Interval>  RangeFinderNExact::etaRangeGivenLipArcLength ( Interval lip, Interval arcl )
+{
+  std::vector<Interval> alist;
+  Interval parcl = arcl;
+  parcl.setLowerBound(0.);
+  if ( !parcl.isEmpty() ) {
+    double min_eta = (   lip.upper() <0. ) ? etaGivenLipArcLength(lip.upper(),parcl.upper()) : 
+                     ( parcl.lower()!=0. ) ? etaGivenLipArcLength(lip.upper(),parcl.lower()) : -std::numeric_limits<float>::max();
+    double max_eta = (   lip.lower() >0. ) ? etaGivenLipArcLength(lip.lower(),parcl.upper()) : 
+                     ( parcl.lower()!=0. ) ? etaGivenLipArcLength(lip.lower(),parcl.lower()) :  std::numeric_limits<float>::max();
+    if ( min_eta<max_eta ) addToPairWiseDisjointIntervalSet(alist,Interval(min_eta,max_eta));
+  }
+  Interval narcl = arcl;
+  narcl.setUpperBound(0.);
+  if ( !narcl.isEmpty() ) {
+    double min_eta = (   lip.lower() >0. ) ? etaGivenLipArcLength(lip.lower(),narcl.lower()) :
+                     ( narcl.upper()!=0. ) ? etaGivenLipArcLength(lip.lower(),narcl.upper()) : -std::numeric_limits<float>::max();
+    double max_eta = (   lip.upper() <0. ) ? etaGivenLipArcLength(lip.upper(),narcl.lower()) : 
+                     ( narcl.upper()!=0. ) ? etaGivenLipArcLength(lip.upper(),narcl.upper()) :  std::numeric_limits<float>::max();
+    if ( min_eta<max_eta ) addToPairWiseDisjointIntervalSet(alist,Interval(min_eta,max_eta));
+  }
+  return alist;
+}
+
+
+/*
+ *  This function returns a list of theta ranges as a function of range of normalized lip of the poca and the allowed arc lengths
+ *  in the transverse plane between the poca and the hit.
+ */
+
+std::vector<Interval>  RangeFinderNExact::thetaRangeGivenLipArcLength ( Interval lip, Interval arcl )
+{
+  std::vector<Interval> alist;
+  Interval parcl = arcl;
+  parcl.setLowerBound(0.);
+  if ( !parcl.isEmpty() ) {
+    double max_theta = (  lip.upper() <0. ) ? thetaGivenLipArcLength(lip.upper(),parcl.upper()) : thetaGivenLipArcLength(lip.upper(),parcl.lower());
+    double min_theta = (  lip.lower() >0. ) ? thetaGivenLipArcLength(lip.lower(),parcl.upper()) : thetaGivenLipArcLength(lip.lower(),parcl.lower());
+    if ( min_theta<max_theta ) addToPairWiseDisjointIntervalSet(alist,Interval(min_theta,max_theta));
+  }
+  Interval narcl = arcl;
+  narcl.setUpperBound(0.);
+  if ( !narcl.isEmpty() ) {
+    double max_theta = (   lip.lower() >0. ) ? thetaGivenLipArcLength(lip.lower(),narcl.lower()) :
+                       ( narcl.upper()!=0. ) ? thetaGivenLipArcLength(lip.lower(),narcl.upper()) : -std::numeric_limits<float>::max();
+    double min_theta = (   lip.upper() <0. ) ? thetaGivenLipArcLength(lip.upper(),narcl.lower()) : 
+                       ( narcl.upper()!=0. ) ? thetaGivenLipArcLength(lip.upper(),narcl.upper()) :  std::numeric_limits<float>::max();
+    if ( min_theta<max_theta ) addToPairWiseDisjointIntervalSet(alist,Interval(min_theta,max_theta));
+  }
+  return alist;
 }
 
 
@@ -80,7 +166,7 @@ AngularInterval  RangeFinder2DNorm::phiRange ( int hfturn )  const
  *  sligthty approximated to best value. It returns a list of ranges. Null measure intervals are discarded.
  */
 
-void  RangeFinder2DNorm::cacheInitArcLengthOneHalfRange ( )  const
+void  RangeFinderNExact::cacheInitArcLengthOneHalfRange ( )  const
 {
   const double epsilon = 1e-15;
   double max_t = std::max( std::min(_tip.upper(),1.),-1.);
@@ -151,7 +237,7 @@ void  RangeFinder2DNorm::cacheInitArcLengthOneHalfRange ( )  const
 }
 
 
-void  RangeFinder2DNorm::cacheInitPhiRange ( )
+void  RangeFinderNExact::cacheInitPhiRange ( )
 {
   double min_t =  _tip.lower();
   double max_t =  _tip.upper();
@@ -188,6 +274,7 @@ void  RangeFinder2DNorm::cacheInitPhiRange ( )
 }
 
 
+
 /*  **************************************************************************************************************************  */
 
 /*
@@ -195,7 +282,7 @@ void  RangeFinder2DNorm::cacheInitPhiRange ( )
  *  arc length with respect to the curvature at fixed tip.
  */
 
-bool  RangeFinder2DNorm::arcLengthDerCurvSignGivenNormTipCurv ( double tip, double curv )
+bool  RangeFinderNExact::arcLengthDerCurvSignGivenNormTipCurv ( double tip, double curv )
 {
   const double arg0 = tip*curv;
   bool  pos = true;
@@ -213,7 +300,7 @@ bool  RangeFinder2DNorm::arcLengthDerCurvSignGivenNormTipCurv ( double tip, doub
  *  In other words it must be granted: -1<=tip<=1<=|tip-2./curv|, 1-tip*curv>=0.
  */
 
-double  RangeFinder2DNorm::arcLengthGivenNormTipCurv ( double tip, double curv )
+double  RangeFinderNExact::arcLengthGivenNormTipCurv ( double tip, double curv )
 {
   assert ( tip>=-1. );
   assert ( tip<= 1. );
@@ -237,7 +324,7 @@ double  RangeFinder2DNorm::arcLengthGivenNormTipCurv ( double tip, double curv )
  *  of the arc length at fixed tip. The estimate is better than 1e-8.
  */
 
-double   RangeFinder2DNorm::arcLengthMinimumEstimateGivenNormTip ( double tip )
+double   RangeFinderNExact::arcLengthMinimumEstimateGivenNormTip ( double tip )
 {
   double x = fabs(tip);
   assert ( x<=1. );
@@ -314,12 +401,26 @@ double   RangeFinder2DNorm::arcLengthMinimumEstimateGivenNormTip ( double tip )
 
 
 /*
+ *  This function return the pseudorapidity of the track given lip, the distance of hit from the poca in z, and arcl, the 
+ *  transverse plane arc length between poca and the hit. When arc length is positive, the track is assumed to go from the 
+ *  poca to the hit. When arc length is negative, the track is assumed to go from the hit to the poca.
+ */
+
+double  RangeFinderNExact::etaGivenLipArcLength ( double lip, double arcl )
+{
+  double ds = sqrt(arcl*arcl+lip*lip); 
+  if ( arcl<0. ) lip = -lip;
+  return 0.5*log((ds-lip)/(ds+lip));
+}
+
+
+/*
  *  This function return the sine of the angle between the direction of the charged particle transverse momentum and the direction 
  *  of the hit in the transverse plane. It assume tip and curv in adimensional units ( d/D, kD ) and assume -1<=tip<=1. 
  *  When there are no solutions, this function returns -1. for positive curvature and 1. for negative curvature.
  */
 
-double  RangeFinder2DNorm::sinPhiGivenNormTipCurv ( double tip, double curv )
+double  RangeFinderNExact::sinPhiGivenNormTipCurv ( double tip, double curv )
 {
   assert( tip>=-1. );
   assert( tip<= 1. );
@@ -333,3 +434,15 @@ double  RangeFinder2DNorm::sinPhiGivenNormTipCurv ( double tip, double curv )
 }
 
 
+/*
+ *  This function return the theta angle of the track given lip, the distance of hit from the poca in z, and arcl, the transverse 
+ *  plane arc length between poca and the hit. When arc length is positive, the track is assumed to go from the poca to the hit. 
+ *  When arc length is negative, the track is assumed to go from the hit to the poca.
+ */
+
+double  RangeFinderNExact::thetaGivenLipArcLength ( double lip, double arcl )
+{
+  double ds = sqrt(arcl*arcl+lip*lip); 
+  if ( arcl<0. ) lip = -lip;
+  return acos(-lip/ds);
+}

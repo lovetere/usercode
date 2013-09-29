@@ -1,7 +1,7 @@
-#ifndef HTTrackSeeding_RangeFinder2DNorm_H
-#define HTTrackSeeding_RangeFinder2DNorm_H
+#ifndef HTTrackSeeding_RangeFinderNExact_H
+#define HTTrackSeeding_RangeFinderNExact_H
 
-/*** \class  RangeFinder2DNorm
+/*** \class  RangeFinderNExact
   *
   *  Under development.
   *
@@ -12,19 +12,26 @@
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
 
 
-class RangeFinder2DNorm
+class RangeFinderNExact
 {
   public:
-    RangeFinder2DNorm ( Interval curv, Interval tip );
+    RangeFinderNExact ( Interval curv, Interval tip );
     Interval         arcLengthRange ( int hfturn =0 )  const;
-    AngularInterval  phiRange       ( int hfturn =0 )  const;
+    AngularInterval        phiRange ( int hfturn =0 )  const;
+    Interval               etaRange ( Interval lip  , int hfturn =0 )  const;
+    Interval             thetaRange ( Interval lip  , int hfturn =0 )  const;
+  private:
+    static std::vector<Interval>  etaRangeGivenLipArcLength   ( Interval lip, Interval arcl );
+    static std::vector<Interval>  thetaRangeGivenLipArcLength ( Interval lip, Interval arcl );
   private:
     void             cacheInitArcLengthOneHalfRange       ( )  const;
     void             cacheInitPhiRange                    ( );
     static bool      arcLengthDerCurvSignGivenNormTipCurv ( double tip, double curv );
     static double    arcLengthGivenNormTipCurv            ( double tip, double curv );
     static double    arcLengthMinimumEstimateGivenNormTip ( double tip  );
+    static double    etaGivenLipArcLength                 ( double   lip, double   arcl );
     static double    sinPhiGivenNormTipCurv               ( double tip, double curv );
+    static double    thetaGivenLipArcLength               ( double   lip, double   arcl );
   private:
     const int         NotInitialized = std::numeric_limits<int>::max(); 
     Interval         _curv;
@@ -37,4 +44,4 @@ class RangeFinder2DNorm
 };
 
 
-#endif // HTTrackSeeding_RangeFinder2DNorm_H
+#endif // HTTrackSeeding_RangeFinderNExact_H
