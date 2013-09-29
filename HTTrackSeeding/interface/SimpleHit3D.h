@@ -34,27 +34,24 @@ class SimpleHit3D
     double        z                    ( )  const { return _z;     }
     double        rho                  ( )  const { return sqrt(_x*_x+_y*_y) ; }
     double        phi                  ( )  const { return atan2(_y,_x);       }
-    void          dzdlRange            ( double min_phi, double max_phi, double min_k, double max_k, double min_d, double max_d, double min_z0, double max_z0, float & min_dzdl, float & max_dzdl )  const;
-    void          z0Range              ( double min_phi, double max_phi, double min_k, double max_k, double min_d, double max_d, double min_dzdl, double max_dzdl, float & min_z0, float & max_z0 )  const;
     void          setIndex             ( unsigned int index )  { _index = index; }
     void          setX                 ( double x           )  { _x = x;         }
     void          setY                 ( double y           )  { _y = y;         }
     void          setZ                 ( double z           )  { _z = z;         }
   public:
-    void          etaRange             ( double min_phi, double max_phi, double min_curv, double max_curv, double min_tip, double max_tip, double min_lip, double max_lip, float & min_eta, float & max_eta ) const
-      { min_eta =0.; max_eta =0.; }
-    void          lipRange             ( double min_phi, double max_phi, double min_curv, double max_curv, double min_tip, double max_tip, double min_eta, double max_eta, float & min_lip, float & max_lip ) const
-      { min_lip =0.; max_lip =0.; }
-    void          phiRange             ( Interval doca, Interval kappa, float & min_phi_1, float & max_phi_1, float & min_phi_2, float & max_phi_2 )                                                          const 
-      { min_phi_1 =0.; max_phi_1 =0.; min_phi_2 =0.; max_phi_2 =0.; }
-  private:
-    std::vector<std::pair<Interval,Interval> >                 etaAndPhiGivenTipAndCurv ( Interval tip, Interval curv, int hfturns, int hbturns );
-    std::vector<std::pair<AngularInterval,Interval> >    phiAndArcLengthGivenTipAndCurv ( Interval tip, Interval curv, int hfturns, int hbturns );
-  private:
-    static double                 etaGivenDzArcLength        ( double   dz , double   arcl );
-    static std::vector<Interval>  etaRangeGivenDzArcLength   ( Interval dz , Interval arcl );
-    static double                 thetaGivenDzArcLength      ( double   dz , double   arcl );
-    static std::vector<Interval>  thetaRangeGivenDzArcLength ( Interval dz , Interval arcl );
+    void          etaRange             ( double   min_phi  , double   max_phi   ,
+                                         double   min_curv , double   max_curv  ,
+                                         double   min_tip  , double   max_tip   ,
+                                         double   min_lip  , double   max_lip   ,
+                                         float &  min_eta  , float &  max_eta   )  const  { min_eta =0.; max_eta =0.; }
+    void          lipRange             ( double   min_phi  , double   max_phi   ,
+                                         double   min_curv , double   max_curv  ,
+                                         double   min_tip  , double   max_tip   ,
+                                         double   min_eta  , double   max_eta   ,
+                                         float &  min_lip  , float &  max_lip   )  const  { min_lip =0.; max_lip =0.; }
+    void          phiRange             ( Interval doca     , Interval kappa     ,
+                                         float &  min_phi_1, float &  max_phi_1 ,
+                                         float &  min_phi_2, float &  max_phi_2 )  const  { min_phi_1 =0.; max_phi_1 =0.; min_phi_2 =0.; max_phi_2 =0.; }
   private:  
     GlobalPoint    theRefPoint;
     double        _x;
