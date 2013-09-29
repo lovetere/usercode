@@ -10,37 +10,33 @@
 
 #include "MLoVetere/HTTrackSeeding/interface/AngularInterval.h"
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
+#include "MLoVetere/HTTrackSeeding/interface/RangeFinderNorm.h"
 
 
-class RangeFinderNExact
+class RangeFinderNExact : public RangeFinderNorm
 {
   public:
     RangeFinderNExact ( Interval curv, Interval tip );
-    Interval         arcLengthRange ( int hfturn =0 )  const;
-    AngularInterval        phiRange ( int hfturn =0 )  const;
-    Interval               etaRange ( Interval lip  , int hfturn =0 )  const;
-    Interval             thetaRange ( Interval lip  , int hfturn =0 )  const;
+    virtual AngularInterval  dPhi   ( int hfturn =0 )                const;
+    virtual Interval         dTal   ( int hfturn =0 )                const;
+    virtual Interval         dEta   ( Interval lip, int hfturn =0 )  const;
+    virtual Interval         dTheta ( Interval lip, int hfturn =0 )  const;
+  private:
+    virtual void      cacheInitArcLengthOneHalfRange ( )  const;
+    virtual void      cachePhiRange                  ( );
   private:
     static std::vector<Interval>  etaRangeGivenLipArcLength   ( Interval lip, Interval arcl );
     static std::vector<Interval>  thetaRangeGivenLipArcLength ( Interval lip, Interval arcl );
   private:
-    void             cacheInitArcLengthOneHalfRange       ( )  const;
-    void             cacheInitPhiRange                    ( );
-    static bool      arcLengthDerCurvSignGivenNormTipCurv ( double tip, double curv );
-    static double    arcLengthGivenNormTipCurv            ( double tip, double curv );
-    static double    arcLengthMinimumEstimateGivenNormTip ( double tip  );
-    static double    etaGivenLipArcLength                 ( double   lip, double   arcl );
-    static double    sinPhiGivenNormTipCurv               ( double tip, double curv );
-    static double    thetaGivenLipArcLength               ( double   lip, double   arcl );
-  private:
-    const int         NotInitialized = std::numeric_limits<int>::max(); 
-    Interval         _curv;
-    Interval         _tip;
-    AngularInterval  _forwPhiRange;
-    AngularInterval  _backPhiRange;
-    mutable int      _hfturn;
-    mutable Interval _arcLengthOneHalf;
-    mutable Interval _arcLength;
+    const int         NoCachePhi       = std::numeric_limits<int>::max(); 
+    const int         NoCacheArcLength = NoCachePhi-1;
+    const Interval    _curv;
+    const Interval    _tip;
+    AngularInterval   _forwPhiRange;
+    AngularInterval   _backPhiRange;
+    mutable int       _hfturn;
+    mutable Interval  _arcLengthOneHalf;
+    mutable Interval  _arcLength;
 };
 
 

@@ -23,7 +23,7 @@ std::vector<std::pair<AngularInterval,Interval> >  SimpleHit3D::phiAndArcLengthG
 {
   tip.scale(1./rho());
   curv.scale(rho());
-  RangeFinderNExact rangeFinder(tip,curv);
+  RangeFinderNExact finder(tip,curv);
   std::vector<std::pair<AngularInterval,Interval> > alist;
   /*
   std::vector<std::pair<AngularInterval,Interval> > alist = rangeFinder.phiAndArcLengthPhiGivenTipAndCurv(hfturns,hbturn);

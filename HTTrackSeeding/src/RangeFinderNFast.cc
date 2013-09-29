@@ -20,20 +20,30 @@
  */
 
 RangeFinderNFast::RangeFinderNFast ( Interval curv, Interval tip )
-  : _curv(curv), _tip(tip), _forwPhiRange(), _backPhiRange(), _hfturn(NotInitialized), _arcLengthOneHalf(), _arcLength()
+  : _curv(curv), _tip(tip), _forwPhiRange(), _backPhiRange(), _hfturn(NoCacheArcLength), _arcLengthOneHalf(), _arcLength()
 {
-  cacheInitPhiRange();
+  cachePhiRange();
 }
 
 
 /*
- *  This function returns the arc length compatible with given tip and curv  tip and curv ranges and turns number.
+ *  This function returns the phi range compatible with given tip and curv ranges and turns number.
  */
 
-Interval  RangeFinderNFast::arcLengthRange ( int hfturn )  const
+AngularInterval  RangeFinderNFast::dPhi ( int hfturn )  const
 {
-  if ( _hfturn==NotInitialized )  cacheInitArcLengthOneHalfRange();
-  if ( _hfturn==NotInitialized || _hfturn!=hfturn ) {
+  return ( hfturn<0 ) ? _backPhiRange : _forwPhiRange;
+}
+
+
+/*
+ *  This function returns the (trasverse) arc length compatible with given tip and curv  tip and curv ranges and turns number.
+ */
+
+Interval  RangeFinderNFast::dTal ( int hfturn )  const
+{
+  if ( _hfturn==NoCacheArcLength )  cacheArcLengthOneHalfRange();
+  if ( _hfturn==NoCacheArcLength || _hfturn!=hfturn ) {
     _arcLength = Interval();
     if ( !_forwPhiRange.isEmpty() && !_arcLengthOneHalf.isEmpty() ) {
       const double  epsilon = 1e-15;
@@ -58,14 +68,15 @@ Interval  RangeFinderNFast::arcLengthRange ( int hfturn )  const
   return _arcLength;
 }
 
+
 /*
  *  This function returns the eta range compatible with given tip, curv, lip ranges and turns number.
  */
 
-Interval  RangeFinderNFast::etaRange ( Interval lip, int hfturn )  const
+Interval  RangeFinderNFast::dEta ( Interval lip, int hfturn )  const
 {
   if ( lip.isEmpty() )  return Interval();
-  Interval  arclRange = arcLengthRange(hfturn);
+  Interval  arclRange = dTal(hfturn);
   if ( arclRange.isEmpty() ) return Interval();
   double  arcl = arclRange.center();
   if ( arcl==0 ) return Interval();
@@ -76,23 +87,13 @@ Interval  RangeFinderNFast::etaRange ( Interval lip, int hfturn )  const
 
 
 /*
- *  This function returns the phi range compatible with given tip and curv ranges and turns number.
- */
-
-AngularInterval  RangeFinderNFast::phiRange ( int hfturn )  const
-{
-  return ( hfturn<0 ) ? _backPhiRange : _forwPhiRange;
-}
-
-
-/*
  *  This function returns the theta combinations compatible with given tip, curv, lip ranges and turns number.
  */
 
-Interval  RangeFinderNFast::thetaRange ( Interval lip, int hfturn )  const
+Interval  RangeFinderNFast::dTheta ( Interval lip, int hfturn )  const
 {
   if ( lip.isEmpty() )  return Interval();
-  Interval  arclRange = arcLengthRange(hfturn);
+  Interval  arclRange = dTal(hfturn);
   if ( arclRange.isEmpty() ) return Interval();
   double  arcl = arclRange.center();
   if ( arcl==0 ) return Interval();
@@ -110,7 +111,7 @@ Interval  RangeFinderNFast::thetaRange ( Interval lip, int hfturn )  const
  *  sligthty approximated to best value. It returns a list of ranges. Null measure intervals are discarded.
  */
 
-void  RangeFinderNFast::cacheInitArcLengthOneHalfRange ( )  const
+void  RangeFinderNFast::cacheArcLengthOneHalfRange ( )  const
 {
   const double  epsilon = 1e-15;
   double  tip  =  _tip.center();
@@ -125,7 +126,7 @@ void  RangeFinderNFast::cacheInitArcLengthOneHalfRange ( )  const
 }
 
 
-void  RangeFinderNFast::cacheInitPhiRange ( )
+void  RangeFinderNFast::cachePhiRange ( )
 {
   const double  epsilon = 1e-15;
   double  tip  =  _tip.center();
@@ -136,80 +137,4 @@ void  RangeFinderNFast::cacheInitPhiRange ( )
   double  phi = asin(sinPhi);
   _forwPhiRange = AngularInterval( phi     -epsilon, phi     +epsilon );
   _backPhiRange = AngularInterval( M_PI-phi-epsilon, M_PI-phi+epsilon );
-}
-
-
-/*  **************************************************************************************************************************  */
-
-
-/*
- *  This function return the adimensional transverse plane arc length parameter between poca and the hit, given tip and curv.
- *  It assume tip and curv in adimensional units (d/D, kD). Unphysical situation must be handled before calling this function.
- *  In other words it must be granted: -1<=tip<=1<=|tip-2./curv|, 1-tip*curv>=0.
- */
-
-double  RangeFinderNFast::arcLengthGivenNormTipCurv ( double tip, double curv )
-{
-  assert ( tip>=-1. );
-  assert ( tip<= 1. );
-  assert ( tip== 1. || curv >= -2./(1.-tip) );
-  assert ( tip==-1. || curv <=  2./(1.+tip) );
-  if ( fabs(curv)>1e-15 ) {
-    double arg = (1.-tip*tip)/(1.-tip*curv);
-    arg = ( arg>0. ) ? curv/2.*sqrt(arg) : 0. ;
-    arg = std::max( std::min(arg,1.), -1. );
-    return 2./curv*asin(arg);
-  } else {
-    double arg = (1.-tip*tip);   
-    arg = ( arg>0. ) ? sqrt(arg) : 0. ;
-    return (1.+tip*curv/2.)*arg;
-  }
-}
-
-
-/*
- *  This function return the pseudorapidity of the track given lip, the distance of hit from the poca in z, and arcl, the 
- *  transverse plane arc length between poca and the hit. When arc length is positive, the track is assumed to go from the 
- *  poca to the hit. When arc length is negative, the track is assumed to go from the hit to the poca.
- */
-
-double  RangeFinderNFast::etaGivenLipArcLength ( double lip, double arcl )
-{
-  double ds = sqrt(arcl*arcl+lip*lip); 
-  if ( arcl<0. ) lip = -lip;
-  return 0.5*log((ds-lip)/(ds+lip));
-}
-
-
-/*
- *  This function return the sine of the angle between the direction of the charged particle transverse momentum and the direction 
- *  of the hit in the transverse plane. It assume tip and curv in adimensional units ( d/D, kD ) and assume -1<=tip<=1. 
- *  When there are no solutions, this function returns -1. for positive curvature and 1. for negative curvature.
- */
-
-double  RangeFinderNFast::sinPhiGivenNormTipCurv ( double tip, double curv )
-{
-  assert( tip>=-1. );
-  assert( tip<= 1. );
-  if ( tip>-1. && curv>= 2./(1.+tip) ) return -1.;
-  if ( tip< 1. && curv<=-2./(1.-tip) ) return  1.;
-  double ak = (2.*tip-tip*tip*curv-curv)/2.;
-  double sinphi = ak/(1.-tip*curv);
-  if ( sinphi> 1. ) sinphi= 1.;
-  if ( sinphi<-1. ) sinphi=-1.;
-  return sinphi;
-}
-
-
-/*
- *  This function return the theta angle of the track given lip, the distance of hit from the poca in z, and arcl, the transverse 
- *  plane arc length between poca and the hit. When arc length is positive, the track is assumed to go from the poca to the hit. 
- *  When arc length is negative, the track is assumed to go from the hit to the poca.
- */
-
-double  RangeFinderNFast::thetaGivenLipArcLength ( double lip, double arcl )
-{
-  double ds = sqrt(arcl*arcl+lip*lip); 
-  if ( arcl<0. ) lip = -lip;
-  return acos(-lip/ds);
 }

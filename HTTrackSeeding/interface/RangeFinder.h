@@ -18,6 +18,7 @@ class RangeFinder
   public:
     RangeFinder ( const SimpleHit3D & hit, Interval curv, Interval tip );
     AngularInterval  dPhi   ( int hfturn =0 )                const; 
+    Interval         dTal   ( int hfturn =0 )                const; 
     Interval         dEta   ( Interval lip, int hfturn =0 )  const;
     Interval         dTheta ( Interval lip, int hfturn =0 )  const;
   private:  
@@ -33,19 +34,25 @@ inline RangeFinder::RangeFinder( const SimpleHit3D & hit, Interval curv, Interva
 
 inline AngularInterval  RangeFinder::dPhi ( int hfturn )  const
 { 
-  return _finder.phiRange(hfturn).turnCounterClockWise( _hit.phi() );
+  return _finder.dPhi( hfturn ).turnCounterClockWise( _hit.phi() );
+}
+
+
+inline Interval  RangeFinder::dTal ( int hfturn )  const
+{ 
+  return _finder.dTal( hfturn ).scale( _hit.rho() );
 }
 
 
 inline Interval  RangeFinder::dEta ( Interval lip, int hfturn )  const
 { 
-  return _finder. etaRange( lip.shift(-_hit.z()).scale(1./_hit.rho()), hfturn );
+  return _finder.dEta( lip.shift(-_hit.z()).scale(1./_hit.rho()), hfturn );
 }
 
 
 inline Interval  RangeFinder::dTheta ( Interval lip, int hfturn )  const
 { 
-  return _finder.thetaRange( lip.shift(-_hit.z()).scale(1./_hit.rho()), hfturn );
+  return _finder.dTheta( lip.shift(-_hit.z()).scale(1./_hit.rho()), hfturn );
 }
 
 
