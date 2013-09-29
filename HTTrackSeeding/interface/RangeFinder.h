@@ -13,6 +13,7 @@
 #include "MLoVetere/HTTrackSeeding/interface/SimpleHit3D.h"
 
 
+template <class T>
 class RangeFinder
 {
   public:
@@ -23,34 +24,39 @@ class RangeFinder
     Interval         dTheta ( Interval lip, int hfturn =0 )  const;
   private:  
     const SimpleHit3D & _hit;
-    RangeFinderNExact   _finder;
+    T                _finder;
 };
 
 
-inline RangeFinder::RangeFinder( const SimpleHit3D & hit, Interval curv, Interval tip )
+template <class T>
+inline RangeFinder<T>::RangeFinder( const SimpleHit3D & hit, Interval curv, Interval tip )
   : _hit( hit ), _finder( curv.scale(hit.rho()), tip.scale(1./hit.rho()) ) 
 { }
 
 
-inline AngularInterval  RangeFinder::dPhi ( int hfturn )  const
+template <class T>
+inline AngularInterval  RangeFinder<T>::dPhi ( int hfturn )  const
 { 
   return _finder.dPhi( hfturn ).turnCounterClockWise( _hit.phi() );
 }
 
 
-inline Interval  RangeFinder::dTal ( int hfturn )  const
+template <class T>
+inline Interval  RangeFinder<T>::dTal ( int hfturn )  const
 { 
   return _finder.dTal( hfturn ).scale( _hit.rho() );
 }
 
 
-inline Interval  RangeFinder::dEta ( Interval lip, int hfturn )  const
+template <class T>
+inline Interval  RangeFinder<T>::dEta ( Interval lip, int hfturn )  const
 { 
   return _finder.dEta( lip.shift(-_hit.z()).scale(1./_hit.rho()), hfturn );
 }
 
 
-inline Interval  RangeFinder::dTheta ( Interval lip, int hfturn )  const
+template <class T>
+inline Interval  RangeFinder<T>::dTheta ( Interval lip, int hfturn )  const
 { 
   return _finder.dTheta( lip.shift(-_hit.z()).scale(1./_hit.rho()), hfturn );
 }

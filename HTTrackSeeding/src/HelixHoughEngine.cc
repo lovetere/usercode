@@ -2,6 +2,8 @@
 
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
 #include "MLoVetere/HTTrackSeeding/interface/RangeFinder.h"
+#include "MLoVetere/HTTrackSeeding/interface/RangeFinderNExact.h"
+#include "MLoVetere/HTTrackSeeding/interface/RangeFinderNFast.h"
 
 #include <algorithm>
 #include <cassert>
@@ -169,7 +171,7 @@ void HelixHoughEngine::vote ( const std::vector<SimpleHit3D> & hits )
     for ( unsigned int binCurv=0; binCurv<nCurv(); ++binCurv, curv.shift(curv_size) ) {
       Interval tip( range().minTip(), range().minTip()+tip_size );
       for ( unsigned int binTip=0; binTip<nTip(); ++binTip, tip.shift(tip_size) ) {
-        RangeFinder finder(hits[i],curv,tip);
+        RangeFinder<RangeFinderNExact> finder(hits[i],curv,tip);
         if ( finder.dPhi().isEmpty() ) continue;
  	for ( unsigned int hturn=-inHalfTurns(); hturn<outHalfTurns(); hturn++ ) {
           std::pair<BinRange,BinRange>  phiNRange = phi2bin(finder.dPhi(hturn));
