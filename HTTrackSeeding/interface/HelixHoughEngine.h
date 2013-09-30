@@ -69,8 +69,8 @@ class HelixHoughEngine : protected HelixHoughProxy, protected HelixHoughEngineBa
                                  float                              low_phi         ,
                                  float                              high_phi        ,
                                  float                              inv_phi_range   );
-    void  vote_eta             ( const std::vector<SimpleHit3D> &   hits            );
-    void  vote_lip             ( const std::vector<SimpleHit3D> &   hits            );
+    //void  vote_eta             ( const std::vector<SimpleHit3D> &   hits            );
+    //void  vote_lip             ( const std::vector<SimpleHit3D> &   hits            );
   private:
     std::unordered_multimap<HelixParBinId,unsigned int>  bins_vec;
 };

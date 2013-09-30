@@ -29,8 +29,13 @@ class AngularInterval {
     double    upper    ( )               const;
     bool      overlaps ( const AngularInterval & other ) const;
     Interval  sinRange ( )               const;
-    AngularInterval &  turnClockWise        ( double angle );
-    AngularInterval &  turnCounterClockWise ( double angle );
+    const AngularInterval  operator+ ( const AngularInterval & other )  const;
+    const AngularInterval  operator- ( const AngularInterval & other )  const;
+    const AngularInterval  operator- (                               )  const;
+    AngularInterval &      turnClockWise        ( double angle );
+    AngularInterval &      turnClockWise        ( AngularInterval other );
+    AngularInterval &      turnCounterClockWise ( double angle );
+    AngularInterval &      turnCounterClockWise ( AngularInterval other );
   private:
     double _mean;
     double _delta;
@@ -126,6 +131,28 @@ inline Interval  AngularInterval::sinRange()  const
 };
 
 
+inline const AngularInterval AngularInterval::operator+ ( const AngularInterval & other ) const
+{
+  if ( other.isEmpty() ) return *this;
+  if ( this->isEmpty() ) return other;
+  return AngularInterval( this->lower()+other.lower(), this->upper()+other.upper() );
+}
+
+
+inline const AngularInterval AngularInterval::operator- ( const AngularInterval & other ) const
+{
+  if ( other.isEmpty() ) return *this;
+  if ( this->isEmpty() ) return AngularInterval( -other.upper(), -other.lower() ) ;
+  return AngularInterval( this->lower()-other.upper(), this->upper()-other.lower() );
+}
+
+
+inline const AngularInterval AngularInterval::operator- ( ) const
+{
+  return AngularInterval( -this->upper(), -this->lower() );
+}
+
+
 inline AngularInterval &  AngularInterval::turnClockWise ( double angle )
 { 
   _mean -= angle;
@@ -134,10 +161,34 @@ inline AngularInterval &  AngularInterval::turnClockWise ( double angle )
 }
 
 
+inline AngularInterval &  AngularInterval::turnClockWise ( AngularInterval other )
+{ 
+  if ( isEmpty() || isFull() ) return *this;
+  if ( other.isEmpty() || other.isFull() ) {
+    *this = other;
+  } else {
+    *this = *this-other;
+  }
+  return *this;
+}
+
+
 inline AngularInterval &  AngularInterval::turnCounterClockWise ( double angle )
 { 
   _mean += angle;
   _mean  = std::fmod(_mean+M_PI,2*M_PI)-M_PI;
+  return *this;
+}
+
+
+inline AngularInterval &  AngularInterval::turnCounterClockWise (AngularInterval other )
+{ 
+  if ( isEmpty() || isFull() ) return *this;
+  if ( other.isEmpty() || other.isFull() ) {
+    *this = other;
+  } else {
+    *this = *this+other;
+  }
   return *this;
 }
 

@@ -36,6 +36,8 @@ class Interval {
     bool            overlaps  ( const Interval & other )  const;
     Interval &      scale     ( double factor );
     Interval &      shift     ( double factor );
+    Interval &      upScale   ( Interval factor );
+    Interval &      downScale ( Interval factor );
   private:
     double _inf;
     double _sup;
@@ -152,6 +154,32 @@ inline Interval &  Interval::shift ( double factor )
 { 
   _sup += factor; 
   _inf += factor; 
+  return *this; 
+}
+
+/*
+ *  This function assume other.min()>0
+ */
+
+inline Interval &  Interval::upScale ( Interval other )
+{ 
+  assert ( !other.isEmpty() );
+  assert ( other._inf>0. );
+  _sup *= other._sup; 
+  _inf *= other._inf; 
+  return *this; 
+}
+
+/*
+ *  This function assume other.min()>0
+ */
+
+inline Interval &  Interval::downScale ( Interval other )
+{ 
+  assert ( !other.isEmpty() );
+  assert ( other._inf>0. );
+  _sup /= other._inf; 
+  _inf /= other._sup; 
   return *this; 
 }
 
