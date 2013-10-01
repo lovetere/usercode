@@ -8,6 +8,8 @@
   *  \author Maurizio Lo Vetere
   */
 
+#include "MLoVetere/HTTrackSeeding/interface/SimpleHit3D.h"
+
 
 class SimpleTrack3D
 {

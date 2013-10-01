@@ -58,8 +58,8 @@ HTTripletGenerator::HTTripletGenerator( const edm::ParameterSet & cfg )
                << " theMaxResTip=" << theMaxRes.dTip () << "cm;"
                << " theMaxResLip=" << theMaxRes.dLip () << "cm" << std::endl; */
   edm::ParameterSet turnsPSet = cfg.getParameter<edm::ParameterSet>("HalfTurns");
-  thePHTurns = turnsPSet.getParameter<double>("positive");
-  theNHTurns = turnsPSet.getParameter<double>("negative");
+  thePHTurns = turnsPSet.getParameter<unsigned int>("positive");
+  theNHTurns = turnsPSet.getParameter<unsigned int>("negative");
   /* float decrease_per_zoom; 
    */
   theLayerBuilderName = cfg.getParameter<std::string>("SeedingLayers");
@@ -109,6 +109,9 @@ void  HTTripletGenerator::init( const edm::EventSetup & es, const TrackingRegion
 }
 
 
+#include "MLoVetere/HTTrackSeeding/interface/HelixHough.h"
+#include "MLoVetere/HTTrackSeeding/interface/SimpleTrack3D.h"
+
 void  HTTripletGenerator::hitTriplets ( const TrackingRegion & reg, OrderedHitTriplets & prs, const edm::Event & ev, const edm::EventSetup & es )
 {
   init(es, reg);
@@ -154,14 +157,16 @@ void  HTTripletGenerator::hitTriplets ( const TrackingRegion & reg, OrderedHitTr
             std::cout << " - invalid hit" << std::endl;
           nhit++;
         } */
-    // capire se possiamo avere hits con id diverso da DetId::Tracker o isValid false
-    // al momento ci conviene convertire la lista degli hits ad una lista adatta al nostro algoritmo successivamente torneremo indietro
-    // questa cosa conviene nasconderla dentro la classe HoughTransform ..... 
+
+    HelixHough finder( theRefPoint, theRange, theNumBins, theMinRes, theMaxRes );
+    std::vector<SimpleTrack3D> tracks;
+    int min_hits       = 0.;
+    int max_hits = 1000000.;
+    finder.findHelices( hits, min_hits, max_hits, tracks );
+
     //OrderedHitTriplet oht;
     //... qui dobbiamo trovare i tripletti
-    //prs.push_back(oht);
+    //prs.push_back(oht);  
   }
   std::cout << "ending with " << prs.size() << " triplets" << std::endl;
 }
-
-

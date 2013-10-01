@@ -61,7 +61,7 @@ class HelixHough
                                                     float max_eta  )                             const  { return 0.;     }
     virtual void   findTracks       ( const std::vector<SimpleHit3D>   & hits   ,
                                       std::vector<SimpleTrack3D>       & tracks ,
-                                      const HelixParRange              & range  )                =0;
+                                      const HelixParRange              & range  )                { }; //=0;
     virtual void   findSeededTracks ( const std::vector<SimpleTrack3D> & seeds  ,
                                       const std::vector<SimpleHit3D>   & hits   ,
                                       std::vector<SimpleTrack3D>       & tracks ,
