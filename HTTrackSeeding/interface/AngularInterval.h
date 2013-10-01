@@ -16,39 +16,43 @@
 #include <vector>
 
 
-class AngularInterval {
+template <typename T>
+class AngularIntervalBase {
   public:
-    AngularInterval    ( );
-    AngularInterval    ( double inf, double sup );
-    Interval  cosRange ( )               const;
-    bool      include  ( double angle )  const;
-    bool      isEmpty  ( )               const;
-    bool      isFull   ( )               const;
-    double    length   ( )               const;
-    double    lower    ( )               const;
-    double    upper    ( )               const;
-    bool      overlaps ( const AngularInterval & other ) const;
-    Interval  sinRange ( )               const;
-    const AngularInterval  operator+ ( const AngularInterval & other )  const;
-    const AngularInterval  operator- ( const AngularInterval & other )  const;
-    const AngularInterval  operator- (                               )  const;
-    AngularInterval &      turnClockWise        ( double angle );
-    AngularInterval &      turnClockWise        ( AngularInterval other );
-    AngularInterval &      turnCounterClockWise ( double angle );
-    AngularInterval &      turnCounterClockWise ( AngularInterval other );
+    AngularIntervalBase  ( );
+    AngularIntervalBase  ( T inf, T sup );
+    IntervalBase<T>           cosRange             ( )                               const;
+    bool                      include              ( T angle )                       const;
+    bool                      isEmpty              ( )                               const;
+    bool                      isFull               ( )                               const;
+    T                         length               ( )                               const;
+    T                         lower                ( )                               const;
+    T                         upper                ( )                               const;
+    IntervalBase<T>           sinRange             ( )                               const;
+    AngularIntervalBase<T>    operator+            ( AngularIntervalBase<T> other )  const;
+    AngularIntervalBase<T>    operator-            ( AngularIntervalBase<T> other )  const;
+    AngularIntervalBase<T>    operator-            ( )                               const;
+    bool                      overlaps             ( AngularIntervalBase<T> other )  const;
+    AngularIntervalBase<T> &  turnClockWise        ( T angle );
+    AngularIntervalBase<T> &  turnClockWise        ( AngularIntervalBase<T> other );
+    AngularIntervalBase<T> &  turnCounterClockWise ( T angle );
+    AngularIntervalBase<T> &  turnCounterClockWise ( AngularIntervalBase<T> other );
   private:
-    double _mean;
-    double _delta;
+    T   _mean;
+    T  _delta;
 };
 
 
-inline  AngularInterval::AngularInterval ( )
+template <typename T>
+inline  AngularIntervalBase<T>::AngularIntervalBase ( )
   : _mean(0.), _delta(0.)
 { }
 
+
 // Qui forse c'e' da sistemare qualche cosa
 
-inline  AngularInterval::AngularInterval ( double inf, double sup )
+template <typename T>
+inline  AngularIntervalBase<T>::AngularIntervalBase ( T inf, T sup )
 { 
   assert( sup>=inf );
   assert( sup<=inf+2*M_PI );
@@ -59,17 +63,19 @@ inline  AngularInterval::AngularInterval ( double inf, double sup )
 }
 
 
-inline Interval  AngularInterval::cosRange()  const
+template <typename T>
+inline IntervalBase<T>  AngularIntervalBase<T>::cosRange()  const
 {
-  double max = std::max(cos(_mean-_delta),cos(_mean+_delta));
-  double min = std::min(cos(_mean-_delta),cos(_mean+_delta));
+  T max = std::max(cos(_mean-_delta),cos(_mean+_delta));
+  T min = std::min(cos(_mean-_delta),cos(_mean+_delta));
   if ( include( 0   ) ) max= 1;
   if ( include(-M_PI) ) min=-1;
-  return Interval(min,max);
+  return IntervalBase<T>(min,max);
 };
 
 
-inline bool  AngularInterval::include ( double angle )  const
+template <typename T>
+inline bool  AngularIntervalBase<T>::include ( T angle )  const
 {
   if ( isEmpty() ) return false;
   if ( isFull () ) return true;
@@ -81,37 +87,43 @@ inline bool  AngularInterval::include ( double angle )  const
 }
 
 
-inline bool  AngularInterval::isEmpty ( )  const
+template <typename T>
+inline bool  AngularIntervalBase<T>::isEmpty ( )  const
 { 
   return _delta<=0; 
 } 
 
 
-inline bool  AngularInterval::isFull( )  const
+template <typename T>
+inline bool  AngularIntervalBase<T>::isFull( )  const
 { 
   return _delta>M_PI; 
 } 
 
 
-inline double  AngularInterval::length ( )  const
+template <typename T>
+inline T  AngularIntervalBase<T>::length ( )  const
 {
   return 2.*std::min(std::max(_delta,0.),M_PI);
 }
 
 
-inline double  AngularInterval::lower ( )  const
+template <typename T>
+inline T  AngularIntervalBase<T>::lower ( )  const
 {
   return _mean-_delta;
 }
 
 
-inline double  AngularInterval::upper ( )  const
+template <typename T>
+inline T  AngularIntervalBase<T>::upper ( )  const
 {
   return _mean+_delta;
 }
 
 
-inline bool  AngularInterval::overlaps ( const AngularInterval & other ) const { 
+template <typename T>
+inline bool  AngularIntervalBase<T>::overlaps ( AngularIntervalBase<T> other ) const { 
   if ( isEmpty() || other.isEmpty() ) return false;
   if ( isFull () || other.isFull () ) return true;
   if ( _mean>other._mean )
@@ -121,39 +133,44 @@ inline bool  AngularInterval::overlaps ( const AngularInterval & other ) const {
 }
 
 
-inline Interval  AngularInterval::sinRange()  const
+template <typename T>
+inline IntervalBase<T>  AngularIntervalBase<T>::sinRange()  const
 {
-  double max = std::max(sin(_mean-_delta),sin(_mean+_delta));
-  double min = std::min(sin(_mean-_delta),sin(_mean+_delta));
+  T max = std::max(sin(_mean-_delta),sin(_mean+_delta));
+  T min = std::min(sin(_mean-_delta),sin(_mean+_delta));
   if ( include( M_PI/2.) ) max= 1;
   if ( include(-M_PI/2.) ) min=-1;
-  return Interval(min,max);
+  return IntervalBase<T>(min,max);
 };
 
 
-inline const AngularInterval AngularInterval::operator+ ( const AngularInterval & other ) const
+template <typename T>
+inline AngularIntervalBase<T> AngularIntervalBase<T>::operator+ ( AngularIntervalBase<T> other ) const
 {
   if ( other.isEmpty() ) return *this;
   if ( this->isEmpty() ) return other;
-  return AngularInterval( this->lower()+other.lower(), this->upper()+other.upper() );
+  return AngularIntervalBase<T>( this->lower()+other.lower(), this->upper()+other.upper() );
 }
 
 
-inline const AngularInterval AngularInterval::operator- ( const AngularInterval & other ) const
+template <typename T>
+inline AngularIntervalBase<T> AngularIntervalBase<T>::operator- ( AngularIntervalBase<T> other ) const
 {
   if ( other.isEmpty() ) return *this;
-  if ( this->isEmpty() ) return AngularInterval( -other.upper(), -other.lower() ) ;
-  return AngularInterval( this->lower()-other.upper(), this->upper()-other.lower() );
+  if ( this->isEmpty() ) return AngularIntervalBase<T>( -other.upper(), -other.lower() ) ;
+  return AngularIntervalBase<T>( this->lower()-other.upper(), this->upper()-other.lower() );
 }
 
 
-inline const AngularInterval AngularInterval::operator- ( ) const
+template <typename T>
+inline AngularIntervalBase<T> AngularIntervalBase<T>::operator- ( ) const
 {
-  return AngularInterval( -this->upper(), -this->lower() );
+  return AngularIntervalBase<T>( -this->upper(), -this->lower() );
 }
 
 
-inline AngularInterval &  AngularInterval::turnClockWise ( double angle )
+template <typename T>
+inline AngularIntervalBase<T> &  AngularIntervalBase<T>::turnClockWise ( T angle )
 { 
   _mean -= angle;
   _mean  = std::fmod(_mean+M_PI,2*M_PI)-M_PI;
@@ -161,7 +178,8 @@ inline AngularInterval &  AngularInterval::turnClockWise ( double angle )
 }
 
 
-inline AngularInterval &  AngularInterval::turnClockWise ( AngularInterval other )
+template <typename T>
+inline AngularIntervalBase<T> &  AngularIntervalBase<T>::turnClockWise ( AngularIntervalBase<T> other )
 { 
   if ( isEmpty() || isFull() ) return *this;
   if ( other.isEmpty() || other.isFull() ) {
@@ -173,7 +191,8 @@ inline AngularInterval &  AngularInterval::turnClockWise ( AngularInterval other
 }
 
 
-inline AngularInterval &  AngularInterval::turnCounterClockWise ( double angle )
+template <typename T>
+inline AngularIntervalBase<T> &  AngularIntervalBase<T>::turnCounterClockWise ( T angle )
 { 
   _mean += angle;
   _mean  = std::fmod(_mean+M_PI,2*M_PI)-M_PI;
@@ -181,7 +200,8 @@ inline AngularInterval &  AngularInterval::turnCounterClockWise ( double angle )
 }
 
 
-inline AngularInterval &  AngularInterval::turnCounterClockWise (AngularInterval other )
+template <typename T>
+inline AngularIntervalBase<T> &  AngularIntervalBase<T>::turnCounterClockWise ( AngularIntervalBase<T> other )
 { 
   if ( isEmpty() || isFull() ) return *this;
   if ( other.isEmpty() || other.isFull() ) {
@@ -191,6 +211,9 @@ inline AngularInterval &  AngularInterval::turnCounterClockWise (AngularInterval
   }
   return *this;
 }
+
+
+typedef  AngularIntervalBase<double>  AngularInterval;
 
 
 #endif //  HTTrackSeeding_AngularInterval_H
