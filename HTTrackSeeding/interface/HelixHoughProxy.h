@@ -24,8 +24,8 @@ class HelixHoughProxy
     /*
      *  Stop recursion
      */
-    bool  breakRecursion ( const std::vector<SimpleHit3D> &  hits  ,
-                           const HelixParRange            &  range )  const { return _context.breakRecursion(hits,range); }
+    bool   breakRecursion    ( const std::vector<SimpleHit3D> &  hits  ,
+                               const HelixParRange            &  range )  const { return _context.breakRecursion(hits,range); }
 
     float  decreasePerZoom   ( )  const  { return _context.decreasePerZoom();   } 
 
@@ -58,7 +58,7 @@ class HelixHoughProxy
                       float                minEta ,
                       float                maxEta )  const  { return _context.phiError(hit,minCurv,maxCurv,minEta,maxEta); }
 
-    const HelixParRange      &  topRange          ( )  const  { return _context.topRange  ();        }
+    const HelixParRange &  topRange             ( )  const  { return _context.range  ();        }
 
     /*
      *  Simple timers to compute voting in 

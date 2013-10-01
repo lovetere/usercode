@@ -10,9 +10,9 @@
 #include <iostream>
 
 
-HelixHough::HelixHough( HelixParRange range, HelixParNBins nBins, HelixParResolution minResolution, HelixParResolution maxResolution ) 
-  :  _range(range), _nBins(nBins), _minimumResolution(minResolution), _maximumResolution(maxResolution), 
-     _decreasePerZoom(0.5), _printTimings(false), _voteTime(0), _voteTimeXY(0), _voteTimeZ(0)  
+HelixHough::HelixHough( GlobalPoint origin, HelixParRange range, HelixParNBins nBins, HelixParResolution minResolution, HelixParResolution maxResolution ) 
+  : _origin(origin), _range(range), _nBins(nBins), _minimumResolution(minResolution), _maximumResolution(maxResolution), 
+    _decreasePerZoom(0.5), _printTimings(false), _voteTime(0), _voteTimeXY(0), _voteTimeZ(0)  
 {
   _voteTime   = new SimpleTimer;
   _voteTimeXY = new SimpleTimer;
@@ -29,7 +29,7 @@ HelixHough::~HelixHough()
 }
 
 
-void  HelixHough::findHelices ( std::vector<SimpleHit3D>   & hits      ,
+void  HelixHough::findHelices ( const TrackingRegion::Hits & hits      ,
                                 unsigned int                 min_hits  ,
                                 unsigned int                 max_hits  ,
                                 std::vector<SimpleTrack3D> & tracks    ,
@@ -39,28 +39,22 @@ void  HelixHough::findHelices ( std::vector<SimpleHit3D>   & hits      ,
   voteTimeXY().reset();
   voteTimeZ ().reset();
 
-  // perche' qui c'e' e in findSeededHelices no?
-  std::vector<unsigned int> index_mapping(hits.size(), 0);
-  for ( unsigned int i=0; i<hits.size(); i++ ) {
-    index_mapping[i] = hits[i].index();
-    hits[i].setIndex(i);
+  std::vector<SimpleHit3D>  hitsList;
+  hitsList.reserve( hits.size() );
+  unsigned int i = 0;
+  for ( TrackingRegion::Hits::const_iterator hit =hits.begin(); hit!=hits.end(); hit++, i++ ) {
+     DetId hitId = (*hit)->geographicalId();
+     if ( hitId.det() != DetId::Tracker || !(*hit)->isValid() ) continue;
+     hitsList.push_back(SimpleHit3D((*hit),_origin,i));
   }
-  
-  initEvent(hits, min_hits);
+  assert( hitsList.size()==hits.size() );
+
+  initEvent(hitsList, min_hits);
   
   HelixHoughEngine engine(*this,_range,_nBins);
   std::vector<SimpleTrack3D> temp_tracks;
-  engine.findHelices(hits,min_hits,max_hits,temp_tracks,maxtracks);
+  engine.findHelices(hitsList,min_hits,max_hits,temp_tracks,maxtracks);
   
-  // perche' qui c'e' e in findSeededHelices no?
-  for ( unsigned int i=0; i<hits.size(); i++ )
-    // hits[i].setIndex(index_mapping[i]);
-    // in this way we are stable even in case of hits sorting
-    hits[i].setIndex(index_mapping[hits[i].index()]);
-  for ( unsigned int t=0; t<temp_tracks.size(); t++)
-    for ( unsigned int h=0; h<temp_tracks[t].hits.size(); h++)
-      temp_tracks[t].hits[h].setIndex(index_mapping[temp_tracks[t].hits[h].index()]);
-
   finalize(temp_tracks, tracks);
 
   if ( _printTimings ) {
@@ -72,7 +66,7 @@ void  HelixHough::findHelices ( std::vector<SimpleHit3D>   & hits      ,
 
 
 void HelixHough::findSeededHelices ( std::vector<SimpleTrack3D> & seeds     , 
-                                     std::vector<SimpleHit3D>   & hits      ,
+                                     const TrackingRegion::Hits & hits      ,
                                      unsigned int                 min_hits  ,
                                      unsigned int                 max_hits  ,
                                      std::vector<SimpleTrack3D> & tracks    ,
@@ -82,12 +76,22 @@ void HelixHough::findSeededHelices ( std::vector<SimpleTrack3D> & seeds     ,
   voteTimeXY().reset();
   voteTimeZ ().reset();
 
-  initEvent(hits, min_hits);
+  std::vector<SimpleHit3D>  hitsList;
+  hitsList.reserve( hits.size() );
+  unsigned int i = 0;
+  for ( TrackingRegion::Hits::const_iterator hit =hits.begin(); hit!=hits.end(); hit++, i++ ) {
+     DetId hitId = (*hit)->geographicalId();
+     if ( hitId.det() != DetId::Tracker || !(*hit)->isValid() ) continue;
+     hitsList.push_back(SimpleHit3D((*hit),_origin,i));
+  }
+  assert( hitsList.size()==hits.size() );
+
+  initEvent(hitsList, min_hits);
   initSeeding();
   
   HelixHoughEngine engine(*this,_range,_nBins);
   std::vector<SimpleTrack3D> temp_tracks;
-  engine.findSeededHelices(seeds,hits,min_hits,max_hits,temp_tracks,maxtracks);
+  engine.findSeededHelices(seeds,hitsList,min_hits,max_hits,temp_tracks,maxtracks);
   
   finalize(temp_tracks, tracks);
 
