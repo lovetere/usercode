@@ -49,23 +49,27 @@ inline  AngularIntervalBase<T>::AngularIntervalBase ( )
 { }
 
 
-// Qui forse c'e' da sistemare qualche cosa
-
 template <typename T>
 inline  AngularIntervalBase<T>::AngularIntervalBase ( T inf, T sup )
 { 
-  assert( sup>=inf );
-  assert( sup<=inf+2*M_PI );
-  //_delta = std::fmod(sup-inf,2*M_PI)/2.;
-  _delta = (sup-inf)/2.;
-  _mean  = inf+_delta;
-  _mean  = std::fmod(_mean+M_PI,2*M_PI)-M_PI;
+  if ( sup<inf ) {
+    _delta = 0.;
+    _mean  = 0.;
+  } else if ( sup>inf+2*M_PI ) {
+    _delta = M_PI;
+    _mean  = 0.;
+  } else {
+    _delta = (sup-inf)/2;
+    _mean  = (sup+inf)/2;
+    _mean  = std::fmod(_mean+M_PI,2*M_PI)-M_PI;
+  }
 }
 
 
 template <typename T>
 inline IntervalBase<T>  AngularIntervalBase<T>::cosRange()  const
 {
+  if ( _delta==0. ) return IntervalBase<T>();
   T max = std::max(cos(_mean-_delta),cos(_mean+_delta));
   T min = std::min(cos(_mean-_delta),cos(_mean+_delta));
   if ( include( 0   ) ) max= 1;
@@ -90,21 +94,21 @@ inline bool  AngularIntervalBase<T>::include ( T angle )  const
 template <typename T>
 inline bool  AngularIntervalBase<T>::isEmpty ( )  const
 { 
-  return _delta<=0; 
+  return _delta==0.; 
 } 
 
 
 template <typename T>
 inline bool  AngularIntervalBase<T>::isFull( )  const
 { 
-  return _delta>M_PI; 
+  return _delta==M_PI; 
 } 
 
 
 template <typename T>
 inline T  AngularIntervalBase<T>::length ( )  const
 {
-  return 2.*std::min(std::max(_delta,0.),M_PI);
+  return 2.*_delta;
 }
 
 
@@ -136,6 +140,7 @@ inline bool  AngularIntervalBase<T>::overlaps ( AngularIntervalBase<T> other ) c
 template <typename T>
 inline IntervalBase<T>  AngularIntervalBase<T>::sinRange()  const
 {
+  if ( _delta==0. ) return IntervalBase<T>();
   T max = std::max(sin(_mean-_delta),sin(_mean+_delta));
   T min = std::min(sin(_mean-_delta),sin(_mean+_delta));
   if ( include( M_PI/2.) ) max= 1;
@@ -165,6 +170,7 @@ inline AngularIntervalBase<T> AngularIntervalBase<T>::operator- ( AngularInterva
 template <typename T>
 inline AngularIntervalBase<T> AngularIntervalBase<T>::operator- ( ) const
 {
+  if ( isEmpty() || isFull() ) return *this;
   return AngularIntervalBase<T>( -this->upper(), -this->lower() );
 }
 
@@ -172,6 +178,7 @@ inline AngularIntervalBase<T> AngularIntervalBase<T>::operator- ( ) const
 template <typename T>
 inline AngularIntervalBase<T> &  AngularIntervalBase<T>::turnClockWise ( T angle )
 { 
+  if ( isEmpty() || isFull() ) return *this;
   _mean -= angle;
   _mean  = std::fmod(_mean+M_PI,2*M_PI)-M_PI;
   return *this;
@@ -194,6 +201,7 @@ inline AngularIntervalBase<T> &  AngularIntervalBase<T>::turnClockWise ( Angular
 template <typename T>
 inline AngularIntervalBase<T> &  AngularIntervalBase<T>::turnCounterClockWise ( T angle )
 { 
+  if ( isEmpty() || isFull() ) return *this;
   _mean += angle;
   _mean  = std::fmod(_mean+M_PI,2*M_PI)-M_PI;
   return *this;
