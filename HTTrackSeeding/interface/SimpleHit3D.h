@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iomanip>
 #include <utility>
 #include <vector>
 
@@ -28,7 +29,7 @@ class SimpleHit3D
     Interval           z       ( )  const { return _dz;    }
     unsigned int     index     ( )  const { return _index; }
     int              layer     ( )  const { return _layer; }
-    void             print     ( std::ostream&    s)  const;
+    void             print     ( std::ostream&    s )  const;
     void             setIndex  ( unsigned int index )  { _index = index; }
   private:
     bool             _isValid;
@@ -54,7 +55,7 @@ inline SimpleHit3D::SimpleHit3D ( const TrackingRegion::Hit & hit,  GlobalPoint 
   if ( !_isValid )   return;
   Vector3DBase<float,GlobalTag> p = hit->globalPosition()-origin;
   double    rho = p.perp();
-  double    phi = p.phi ();                                     // could be p.barePhi();
+  double    phi = p.phi ();                                 // could be p.barePhi();
   double    z   = p.z   ();
   GlobalError c = hit->globalPositionError();
   double   drho = sqrt( c.rerr  ( p+GlobalPoint(0.,0.,0.) ) );  // I'm cheating because p is not in the global reference but it is ok to get errors.
@@ -66,12 +67,13 @@ inline SimpleHit3D::SimpleHit3D ( const TrackingRegion::Hit & hit,  GlobalPoint 
 }
 
 
-inline void  SimpleHit3D::print (std::ostream& s)  const
+inline void  SimpleHit3D::print ( std::ostream& s )  const
 {
   if ( _isValid ) {
-    s <<   "r= [" << _rho.lower() << ", " << _rho.upper() << "], " 
-      << "phi= [" << _phi.lower() << ", " << _phi.upper() << "], " 
-      <<   "z= [" <<  _dz.lower() << ", " <<  _dz.upper() << "] "; 
+    s << std::fixed << std::setprecision(4) << std::setfill(' ')
+      <<   "r= [" << std::setw(7) << _rho.lower() << " cm, "  << std::setw(7) << _rho.upper() << " cm], " 
+      << "phi= [" << std::setw(7) << _phi.lower() << " rad, " << std::setw(7) << _phi.upper() << " rad], " 
+      <<   "z= [" << std::setw(9) <<  _dz.lower() << " cm, "  << std::setw(9) <<  _dz.upper() << " cm] "; 
   } else
     s << "invalid hit";
 }
