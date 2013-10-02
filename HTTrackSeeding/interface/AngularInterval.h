@@ -71,7 +71,7 @@ inline IntervalBase<T>  AngularIntervalBase<T>::cosRange()  const
   if ( include( 0   ) ) max= 1;
   if ( include(-M_PI) ) min=-1;
   return IntervalBase<T>(min,max);
-};
+}
 
 
 template <typename T>
@@ -141,7 +141,7 @@ inline IntervalBase<T>  AngularIntervalBase<T>::sinRange()  const
   if ( include( M_PI/2.) ) max= 1;
   if ( include(-M_PI/2.) ) min=-1;
   return IntervalBase<T>(min,max);
-};
+}
 
 
 template <typename T>

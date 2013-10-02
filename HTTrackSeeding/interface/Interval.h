@@ -74,7 +74,7 @@ inline T  IntervalBase<T>::normalize ( T value )  const
   if ( value <= _inf ) return 0.;
   if ( value >= _sup ) return 1.;
   return (value-_inf)/(_sup-_inf);
-};
+}
 
 
 template <typename T>
@@ -83,7 +83,7 @@ inline IntervalBase<T>  IntervalBase<T>::normalize ( IntervalBase<T> value )  co
   value.setBound(*this);
   if ( isEmpty() || value.isEmpty() ) return IntervalBase<T>();
   return value.shift(-_inf).scale(1./length());
-};
+}
 
 
 template <typename T>
