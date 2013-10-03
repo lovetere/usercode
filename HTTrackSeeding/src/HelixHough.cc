@@ -45,9 +45,8 @@ void  HelixHough::findHelices ( const TrackingRegion::Hits & hits      ,
   hitsList.reserve( hits.size() );
   unsigned int i = 0;
   for ( TrackingRegion::Hits::const_iterator hit =hits.begin(); hit!=hits.end(); hit++, i++ ) {
-     DetId hitId = (*hit)->geographicalId();
-     if ( hitId.det() != DetId::Tracker || !(*hit)->isValid() ) continue;
      SimpleHit3D ahit ((*hit),_origin,i);
+     if ( !ahit.isValid() )  continue;
      edm::LogVerbatim("TrackerHTSeeds") << ahit;
      hitsList.push_back(ahit);
   }
@@ -85,9 +84,8 @@ void HelixHough::findSeededHelices ( std::vector<SimpleTrack3D> & seeds     ,
   hitsList.reserve( hits.size() );
   unsigned int i = 0;
   for ( TrackingRegion::Hits::const_iterator hit =hits.begin(); hit!=hits.end(); hit++, i++ ) {
-     DetId hitId = (*hit)->geographicalId();
-     if ( hitId.det() != DetId::Tracker || !(*hit)->isValid() ) continue;
      SimpleHit3D ahit ((*hit),_origin,i);
+     if ( !ahit.isValid() )  continue;
      edm::LogVerbatim("TrackerHTSeeds") << ahit;
      hitsList.push_back(ahit);
   }

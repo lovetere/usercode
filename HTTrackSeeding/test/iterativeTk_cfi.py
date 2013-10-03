@@ -48,6 +48,19 @@ from RecoLocalTracker.Configuration.RecoLocalTracker_cff import *
 from RecoTracker.IterativeTracking.iterativeTk_cff import *
 from MLoVetere.HTTrackSeeding.HoughTransformStep_cfi import *
 
+process.load("FWCore.MessageLogger.MessageLogger_cfi")
+process.MessageLogger = cms.Service("MessageLogger",
+       destinations   = cms.untracked.vstring('cout'),
+       categories     = cms.untracked.vstring('TrackerHTSeeds'),
+       debugModules   = cms.untracked.vstring('*'),
+       cout           = cms.untracked.PSet(
+                        threshold  = cms.untracked.string('INFO'),
+                        INFO           = cms.untracked.PSet ( limit = cms.untracked.int32(0) ),
+                        DEBUG          = cms.untracked.PSet ( limit = cms.untracked.int32(0) ),
+                        TrackerHTSeeds = cms.untracked.PSet ( limit = cms.untracked.int32(10000000) )
+       )
+)
+
 process.p = cms.Path(siPixelRecHits*
                      siStripMatchedRecHits*
                      InitialStep*

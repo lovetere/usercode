@@ -9,6 +9,13 @@
   */
 
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
+#include "DataFormats/SiPixelDetId/interface/PXBDetId.h"
+#include "DataFormats/SiPixelDetId/interface/PXFDetId.h"
+#include "DataFormats/SiStripDetId/interface/TIBDetId.h"
+#include "DataFormats/SiStripDetId/interface/TOBDetId.h"
+#include "DataFormats/SiStripDetId/interface/TIDDetId.h"
+#include "DataFormats/SiStripDetId/interface/TECDetId.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "MLoVetere/HTTrackSeeding/interface/AngularInterval.h"
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
 #include "RecoTracker/TkTrackingRegions/interface/TrackingRegion.h"
@@ -23,14 +30,14 @@
 class SimpleHit3D
 {
   public:
-    SimpleHit3D ( const TrackingRegion::Hit & hit,  GlobalPoint origin, unsigned int index =0, int layer =-1 );
-    Interval           rho     ( )  const { return _rho;   }
-    AngularInterval    phi     ( )  const { return _phi;   }
-    Interval           z       ( )  const { return _dz;    }
-    unsigned int     index     ( )  const { return _index; }
-    int              layer     ( )  const { return _layer; }
-    void             print     ( std::ostream&    s )  const;
-    void             setIndex  ( unsigned int index )  { _index = index; }
+    SimpleHit3D ( const TrackingRegion::Hit & hit,  GlobalPoint origin, unsigned int index =0 );
+    Interval           rho   ( )  const  { return _rho;     }
+    AngularInterval    phi   ( )  const  { return _phi;     }
+    Interval           z     ( )  const  { return _dz;      }
+    unsigned int     index   ( )  const  { return _index;   }
+    bool             isValid ( )  const  { return _isValid; }
+    int              layer   ( )  const  { return _layer;   }
+    void             print   ( std::ostream&    s )  const;
   private:
     bool             _isValid;
     Interval         _rho;
@@ -48,14 +55,46 @@ inline std::ostream& operator<<(std::ostream& s, const SimpleHit3D hit)
 }
 
 
-inline SimpleHit3D::SimpleHit3D ( const TrackingRegion::Hit & hit,  GlobalPoint origin, unsigned int index, int layer ) 
-  : _layer(layer), _index(index)  
+inline SimpleHit3D::SimpleHit3D ( const TrackingRegion::Hit & hit,  GlobalPoint origin, unsigned int index ) 
+  : _isValid(false), _index(index)  
 {
+  DetId id = hit->geographicalId();
+  if ( id.det() != DetId::Tracker )  {
+    edm::LogWarning("TrackerHTSeeds") << "Cannot generate a valid SimpleHit3D - detId doesn't belong to the tracker";
+    return;
+  };
+  switch ( id.subdetId() ) { 
+    case PixelSubdetector::PixelBarrel:
+      _layer = PXBDetId(id).layer();
+      break;
+    case PixelSubdetector::PixelEndcap:
+      _layer = PXFDetId(id).disk();
+      break;
+    case StripSubdetector::TIB:
+      _layer = TIBDetId(id).layer();
+      break;
+    case  StripSubdetector::TID:
+      _layer = TIDDetId(id).wheel();
+      break;
+    case StripSubdetector::TOB:
+      _layer = TOBDetId(id).layer();
+      break;
+    case StripSubdetector::TEC:
+      _layer = TECDetId(id).wheel();
+      break;
+    default:
+      edm::LogWarning("TrackerHTSeeds") << "Cannot generate a valid SimpleHit3D - subdetId doesn't belong to the tracker";
+      return;      
+  }
+  _layer |= (id.subdetId() << 4);
   _isValid = hit->isValid();
-  if ( !_isValid )   return;
+  if ( !_isValid ) {
+    edm::LogWarning("TrackerHTSeeds") << "Cannot generate a valid SimpleHit3D - invalid hit";
+    return;
+  }
   Vector3DBase<float,GlobalTag> p = hit->globalPosition()-origin;
   double    rho = p.perp();
-  double    phi = p.phi ();                                 // could be p.barePhi();
+  double    phi = p.phi ();                                     // could be p.barePhi();
   double    z   = p.z   ();
   GlobalError c = hit->globalPositionError();
   double   drho = sqrt( c.rerr  ( p+GlobalPoint(0.,0.,0.) ) );  // I'm cheating because p is not in the global reference but it is ok to get errors.
