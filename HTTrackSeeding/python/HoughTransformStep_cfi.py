@@ -44,6 +44,10 @@ HoughTransformSeedGeneratorPset = cms.PSet(
         resTip  = cms.double(1.00),
         resLip  = cms.double(8.00)
     ),
+    HalfTurns = cms.PSet(
+        positive = cms.uint32(1),
+        negative = cms.uint32(0)
+    ),
 )
 import RecoTracker.TkSeedGenerator.GlobalSeedsFromTriplets_cff
 houghTransformStepSeeds = RecoTracker.TkSeedGenerator.GlobalSeedsFromTriplets_cff.globalSeedsFromTriplets.clone()
