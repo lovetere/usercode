@@ -1,5 +1,6 @@
 #include "MLoVetere/HTTrackSeeding/interface/HelixHough.h"
 
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixHoughEngine.h"
 #include "MLoVetere/HTTrackSeeding/interface/SimpleHit3D.h"
 #include "MLoVetere/HTTrackSeeding/interface/SimpleTrack3D.h"
@@ -12,7 +13,7 @@
 
 HelixHough::HelixHough( GlobalPoint origin, HelixParRange range, HelixParNBins nBins, HelixParResolution minResolution, HelixParResolution maxResolution ) 
   : _origin(origin), _range(range), _nBins(nBins), _minimumResolution(minResolution), _maximumResolution(maxResolution), 
-    _decreasePerZoom(0.5), _printTimings(false), _voteTime(0), _voteTimeXY(0), _voteTimeZ(0)  
+    _decreasePerZoom(0.5), _voteTime(0), _voteTimeXY(0), _voteTimeZ(0)  
 {
   _voteTime   = new SimpleTimer;
   _voteTimeXY = new SimpleTimer;
@@ -39,6 +40,7 @@ void  HelixHough::findHelices ( const TrackingRegion::Hits & hits      ,
   voteTimeXY().reset();
   voteTimeZ ().reset();
 
+  edm::LogInfo("TrackerHTSeeds") << "Hits in input to HelixHough findHelices";
   std::vector<SimpleHit3D>  hitsList;
   hitsList.reserve( hits.size() );
   unsigned int i = 0;
@@ -46,7 +48,7 @@ void  HelixHough::findHelices ( const TrackingRegion::Hits & hits      ,
      DetId hitId = (*hit)->geographicalId();
      if ( hitId.det() != DetId::Tracker || !(*hit)->isValid() ) continue;
      SimpleHit3D ahit ((*hit),_origin,i);
-     std::cout << ahit << std::endl;
+     edm::LogVerbatim("TrackerHTSeeds") << ahit;
      hitsList.push_back(ahit);
   }
   assert( hitsList.size()==hits.size() );
@@ -60,11 +62,10 @@ void  HelixHough::findHelices ( const TrackingRegion::Hits & hits      ,
   
   finalize(temp_tracks, tracks);
 
-  if ( _printTimings ) {
-    std::cout <<    "vote time = " << voteTime  ().lapse() << std::endl;
-    std::cout << "xy vote time = " << voteTimeXY().lapse() << std::endl;
-    std::cout <<  "z vote time = " << voteTimeZ ().lapse() << std::endl;
-  }
+  edm::LogInfo("TrackerHTSeeds") << "Time spent in seeding";
+  edm::LogVerbatim("TrackerHTSeeds")  << "   vote time = " << voteTime  ().lapse();
+  edm::LogVerbatim("TrackerHTSeeds")  << "xy vote time = " << voteTimeXY().lapse();
+  edm::LogVerbatim("TrackerHTSeeds")  << " z vote time = " << voteTimeZ ().lapse();
 }
 
 
@@ -79,13 +80,16 @@ void HelixHough::findSeededHelices ( std::vector<SimpleTrack3D> & seeds     ,
   voteTimeXY().reset();
   voteTimeZ ().reset();
 
+  edm::LogInfo("TrackerHTSeeds") << "Hits in input to HelixHough findSeededHelices";
   std::vector<SimpleHit3D>  hitsList;
   hitsList.reserve( hits.size() );
   unsigned int i = 0;
   for ( TrackingRegion::Hits::const_iterator hit =hits.begin(); hit!=hits.end(); hit++, i++ ) {
      DetId hitId = (*hit)->geographicalId();
      if ( hitId.det() != DetId::Tracker || !(*hit)->isValid() ) continue;
-     hitsList.push_back(SimpleHit3D((*hit),_origin,i));
+     SimpleHit3D ahit ((*hit),_origin,i);
+     edm::LogVerbatim("TrackerHTSeeds") << ahit;
+     hitsList.push_back(ahit);
   }
   assert( hitsList.size()==hits.size() );
   if ( hitsList.size()<3 ) return;
@@ -99,9 +103,8 @@ void HelixHough::findSeededHelices ( std::vector<SimpleTrack3D> & seeds     ,
   
   finalize(temp_tracks, tracks);
 
-  if ( _printTimings ) {
-    std::cout <<    "vote time = " << voteTime  ().lapse() << std::endl;
-    std::cout << "xy vote time = " << voteTimeXY().lapse() << std::endl;
-    std::cout <<  "z vote time = " << voteTimeZ ().lapse() << std::endl;
-  }
+  edm::LogInfo("TrackerHTSeeds") << "Time spent in seeding";
+  edm::LogVerbatim("TrackerHTSeeds")  << "   vote time = " << voteTime  ().lapse();
+  edm::LogVerbatim("TrackerHTSeeds")  << "xy vote time = " << voteTimeXY().lapse();
+  edm::LogVerbatim("TrackerHTSeeds")  << " z vote time = " << voteTimeZ ().lapse();
 }

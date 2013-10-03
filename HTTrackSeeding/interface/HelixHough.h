@@ -38,7 +38,6 @@ class HelixHough
                                unsigned int                 max_hits     ,
                                std::vector<SimpleTrack3D> & tracks       ,
                                unsigned int                 maxtracks =0 );
-    void  setPrintTimings    ( bool  value )  { _printTimings    = value; }
     void  setDecreasePerZoom ( float value )  { _decreasePerZoom = value; }    
   public:
     virtual bool                breakRecursion    ( const std::vector<SimpleHit3D>   & hits   ,
@@ -80,7 +79,6 @@ class HelixHough
     HelixParResolution  _minimumResolution;
     HelixParResolution  _maximumResolution;
     float               _decreasePerZoom;
-    bool                _printTimings;    
     SimpleTimer      *  _voteTime;
     SimpleTimer      *  _voteTimeXY;
     SimpleTimer      *  _voteTimeZ;
