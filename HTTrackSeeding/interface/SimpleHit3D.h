@@ -60,7 +60,7 @@ inline SimpleHit3D::SimpleHit3D ( const TrackingRegion::Hit & hit,  GlobalPoint 
 {
   DetId id = hit->geographicalId();
   if ( id.det() != DetId::Tracker )  {
-    edm::LogWarning("TrackerHTSeeds") << "Cannot generate a valid SimpleHit3D - detId doesn't belong to the tracker";
+    edm::LogWarning("HTTrackSeeding") << "Cannot generate a valid SimpleHit3D - detId doesn't belong to the tracker";
     return;
   };
   switch ( id.subdetId() ) { 
@@ -83,13 +83,13 @@ inline SimpleHit3D::SimpleHit3D ( const TrackingRegion::Hit & hit,  GlobalPoint 
       _layer = TECDetId(id).wheel();
       break;
     default:
-      edm::LogWarning("TrackerHTSeeds") << "Cannot generate a valid SimpleHit3D - subdetId doesn't belong to the tracker";
+      edm::LogWarning("HTTrackSeeding") << "Cannot generate a valid SimpleHit3D - subdetId doesn't belong to the tracker";
       return;      
   }
   _layer |= (id.subdetId() << 4);
   _isValid = hit->isValid();
   if ( !_isValid ) {
-    edm::LogWarning("TrackerHTSeeds") << "Cannot generate a valid SimpleHit3D - invalid hit";
+    edm::LogWarning("HTTrackSeeding") << "Cannot generate a valid SimpleHit3D - invalid hit";
     return;
   }
   Vector3DBase<float,GlobalTag> p = hit->globalPosition()-origin;

@@ -30,38 +30,42 @@ HTTripletGenerator::HTTripletGenerator( const edm::ParameterSet & cfg )
   theNumBins.nPhi ( nBinsPSet.getParameter<unsigned int>("nBinsPhi" ) );
   theNumBins.nTip ( nBinsPSet.getParameter<unsigned int>("nBinsTip" ) );
   theNumBins.nLip ( nBinsPSet.getParameter<unsigned int>("nBinsLip" ) );
-  /* std::cout << "theDivCurv="  << theNumBins.nCurv()
-               << "; theDivEta=" << theNumBins.nEta ()
-               << "; theDivPhi=" << theNumBins.nPhi ()
-               << "; theDivTip=" << theNumBins.nTip ()
-               << "; theDivLip=" << theNumBins.nLip () << std::endl; */
+  LogTrace("HTTrackSeeding") 
+    << "theDivCurv="  << theNumBins.nCurv()
+    << "; theDivEta=" << theNumBins.nEta ()
+    << "; theDivPhi=" << theNumBins.nPhi ()
+    << "; theDivTip=" << theNumBins.nTip ()
+    << "; theDivLip=" << theNumBins.nLip ();
   edm::ParameterSet minResPSet = cfg.getParameter<edm::ParameterSet>("MinResPSet");
   theMinRes.dCurv( minResPSet.getParameter<double>("resCurv") );
   theMinRes.dEta ( minResPSet.getParameter<double>("resEta" ) );
   theMinRes.dPhi ( minResPSet.getParameter<double>("resPhi" ) );
   theMinRes.dTip ( minResPSet.getParameter<double>("resTip" ) );
   theMinRes.dLip ( minResPSet.getParameter<double>("resLip" ) );
-  /* std::cout << "theMinResCurv=" << theMinRes.dCurv() << "cm-1;" 
-               << " theMinResEta=" << theMinRes.dEta () << ";"
-               << " theMinResPhi=" << theMinRes.dPhi () << "rad;"
-               << " theMinResTip=" << theMinRes.dTip () << "cm;"
-               << " theMinResLip=" << theMinRes.dLip () << "cm" << std::endl; */
+  LogTrace("HTTrackSeeding") 
+    << "theMinResCurv=" << theMinRes.dCurv() << "cm-1;" 
+    << " theMinResEta=" << theMinRes.dEta () << ";"
+    << " theMinResPhi=" << theMinRes.dPhi () << "rad;"
+    << " theMinResTip=" << theMinRes.dTip () << "cm;"
+    << " theMinResLip=" << theMinRes.dLip () << "cm";
   edm::ParameterSet maxResPSet = cfg.getParameter<edm::ParameterSet>("MaxResPSet");
   theMaxRes.dCurv( maxResPSet.getParameter<double>("resCurv") );
   theMaxRes.dEta ( maxResPSet.getParameter<double>("resEta" ) );
   theMaxRes.dPhi ( maxResPSet.getParameter<double>("resPhi" ) );
   theMaxRes.dTip ( maxResPSet.getParameter<double>("resTip" ) );
   theMaxRes.dLip ( maxResPSet.getParameter<double>("resLip" ) );
-  /* std::cout << "theMaxResCurv=" << theMaxRes.dCurv() << "cm-1;"  
-               << " theMaxResEta=" << theMaxRes.dEta () << ";"
-               << " theMaxResPhi=" << theMaxRes.dPhi () << "rad;"
-               << " theMaxResTip=" << theMaxRes.dTip () << "cm;"
-               << " theMaxResLip=" << theMaxRes.dLip () << "cm" << std::endl; */
+  LogTrace("HTTrackSeeding") 
+    << "theMaxResCurv=" << theMaxRes.dCurv() << "cm-1;"  
+    << " theMaxResEta=" << theMaxRes.dEta () << ";"
+    << " theMaxResPhi=" << theMaxRes.dPhi () << "rad;"
+    << " theMaxResTip=" << theMaxRes.dTip () << "cm;"
+    << " theMaxResLip=" << theMaxRes.dLip () << "cm";
   edm::ParameterSet turnsPSet = cfg.getParameter<edm::ParameterSet>("HalfTurns");
   thePHTurns = turnsPSet.getParameter<unsigned int>("positive");
   theNHTurns = turnsPSet.getParameter<unsigned int>("negative");
-  /* float decrease_per_zoom; 
-   */
+  LogTrace("HTTrackSeeding")
+    << "thePHTurns=" << thePHTurns
+    << " theNHTurns=" << theNHTurns;
   theLayerBuilderName = cfg.getParameter<std::string>("SeedingLayers");
 }
 
@@ -74,13 +78,13 @@ void  HTTripletGenerator::init( const edm::EventSetup & es, const TrackingRegion
   edm::ESHandle<MagneticField > fieldESH;
   es.get<IdealMagneticFieldRecord>().get(fieldESH);
   theField = fieldESH->inTesla(GlobalPoint(0,0,0)).z() * 2.99792458e-3F;  // GeV/cm units
-  /* int i=0;
-     for ( ctfseeding::SeedingLayerSets::const_iterator aSet = theLayerSets.begin(); aSet != theLayerSets.end(); aSet++ ) {
-       std::cout << "SeedingLayerSet number " << ++i << std::endl;
-       for ( ctfseeding::SeedingLayers::const_iterator aLayer = aSet->begin(); aLayer != aSet->end(); aLayer++ )
-         std::cout << "  " << aLayer->name() << std::endl;
-     }
-     std::cout << "Initialisation done " << std::endl; */
+  LogDebug("HTTrackSeeding") << "SeedingLayerSets";
+  int i=0;
+  for ( ctfseeding::SeedingLayerSets::const_iterator aSet = theLayerSets.begin(); aSet != theLayerSets.end(); aSet++ ) {
+    LogTrace("HTTrackSeeding") << "SeedingLayerSet number " << ++i;
+    for ( ctfseeding::SeedingLayers::const_iterator aLayer = aSet->begin(); aLayer != aSet->end(); aLayer++ )
+      LogTrace("HTTrackSeeding") << "  " << aLayer->name();
+  }
   theRefPoint      = reg.origin();
   float aCurvBound = theField/reg.ptMin();  // curv in [ -aCurvBound, aCurvBound ]
   float aZBound    = reg.originZBound();    // lip  in [ -aZBound   , aZBound    ]
@@ -95,11 +99,12 @@ void  HTTripletGenerator::init( const edm::EventSetup & es, const TrackingRegion
     aEtaRange = TrackingRegion::Range( -2.5, 2.5);
     aPhiRange = TrackingRegion::Range(-M_PI,M_PI);
   }
-  /* std::cout << "X=" << theRefPoint.x() << "cm; Y=" << theRefPoint.y() << "cm; Z=" << theRefPoint.z() << "cm" << std::endl
-               << "theCurvBound=" << aCurvBound << "cm^-1; " 
-               << "theZBound="    << aZBound << "cm; " 
-               << "theRBound="    << aRBound << "cm; "
-               << "theEtaRange="  << aEtaRange << "; thePhiRange=" << aPhiRange << "rad" << std::endl; */
+  LogTrace("HTTrackSeeding") 
+    << "X=" << theRefPoint.x() << "cm; Y=" << theRefPoint.y() << "cm; Z=" << theRefPoint.z() << "cm; " << std::endl
+    << "theCurvBound=" << aCurvBound << "cm^-1; " 
+    << "theZBound="    << aZBound << "cm; " 
+    << "theRBound="    << aRBound << "cm; "
+    << "theEtaRange="  << aEtaRange << "; thePhiRange=" << aPhiRange << "rad";
   theRange = HelixParRange( -aCurvBound     , aCurvBound     , 
                              aEtaRange.min(), aEtaRange.max(),
                             -aZBound        , aZBound        ,

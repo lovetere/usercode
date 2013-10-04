@@ -51,13 +51,13 @@ from MLoVetere.HTTrackSeeding.HoughTransformAloneStep_cfi import *
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger = cms.Service("MessageLogger", 
        destinations   = cms.untracked.vstring('cout'),
-       categories     = cms.untracked.vstring('TrackerHTSeeds'),
+       categories     = cms.untracked.vstring('HTTrackSeeding'),
        debugModules   = cms.untracked.vstring('houghTransformStepSeeds'),
        cout           = cms.untracked.PSet(
                         threshold  = cms.untracked.string('DEBUG'),
                         INFO           = cms.untracked.PSet ( limit = cms.untracked.int32(0) ),
                         DEBUG          = cms.untracked.PSet ( limit = cms.untracked.int32(0) ),
-                        TrackerHTSeeds = cms.untracked.PSet ( limit = cms.untracked.int32(10000000) )
+                        HTTrackSeeding = cms.untracked.PSet ( limit = cms.untracked.int32(10000000) ),
        )
 )
 
