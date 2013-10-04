@@ -40,14 +40,14 @@ void  HelixHough::findHelices ( const TrackingRegion::Hits & hits      ,
   voteTimeXY().reset();
   voteTimeZ ().reset();
 
-  edm::LogInfo("TrackerHTSeeds") << "Hits in input to HelixHough findHelices";
+  LogDebug("TrackerHTSeeds") << "Hits in input to HelixHough findHelices";
   std::vector<SimpleHit3D>  hitsList;
   hitsList.reserve( hits.size() );
   unsigned int i = 0;
   for ( TrackingRegion::Hits::const_iterator hit =hits.begin(); hit!=hits.end(); hit++, i++ ) {
      SimpleHit3D ahit ((*hit),_origin,i);
      if ( !ahit.isValid() )  continue;
-     edm::LogVerbatim("TrackerHTSeeds") << ahit;
+     LogTrace("TrackerHTSeeds") << ahit;
      hitsList.push_back(ahit);
   }
   assert( hitsList.size()==hits.size() );
@@ -61,10 +61,10 @@ void  HelixHough::findHelices ( const TrackingRegion::Hits & hits      ,
   
   finalize(temp_tracks, tracks);
 
-  edm::LogInfo("TrackerHTSeeds") << "Time spent in seeding";
-  edm::LogVerbatim("TrackerHTSeeds")  << "   vote time = " << voteTime  ().lapse();
-  edm::LogVerbatim("TrackerHTSeeds")  << "xy vote time = " << voteTimeXY().lapse();
-  edm::LogVerbatim("TrackerHTSeeds")  << " z vote time = " << voteTimeZ ().lapse();
+  LogDebug("TrackerHTSeeds") << "Time spent in seeding";
+  LogTrace("TrackerHTSeeds")  << "   vote time = " << voteTime  ().lapse();
+  LogTrace("TrackerHTSeeds")  << "xy vote time = " << voteTimeXY().lapse();
+  LogTrace("TrackerHTSeeds")  << " z vote time = " << voteTimeZ ().lapse();
 }
 
 
@@ -79,14 +79,14 @@ void HelixHough::findSeededHelices ( std::vector<SimpleTrack3D> & seeds     ,
   voteTimeXY().reset();
   voteTimeZ ().reset();
 
-  edm::LogInfo("TrackerHTSeeds") << "Hits in input to HelixHough findSeededHelices";
+  LogDebug("TrackerHTSeeds") << "Hits in input to HelixHough findSeededHelices";
   std::vector<SimpleHit3D>  hitsList;
   hitsList.reserve( hits.size() );
   unsigned int i = 0;
   for ( TrackingRegion::Hits::const_iterator hit =hits.begin(); hit!=hits.end(); hit++, i++ ) {
      SimpleHit3D ahit ((*hit),_origin,i);
      if ( !ahit.isValid() )  continue;
-     edm::LogVerbatim("TrackerHTSeeds") << ahit;
+     LogTrace("TrackerHTSeeds") << ahit;
      hitsList.push_back(ahit);
   }
   assert( hitsList.size()==hits.size() );
@@ -101,8 +101,8 @@ void HelixHough::findSeededHelices ( std::vector<SimpleTrack3D> & seeds     ,
   
   finalize(temp_tracks, tracks);
 
-  edm::LogInfo("TrackerHTSeeds") << "Time spent in seeding";
-  edm::LogVerbatim("TrackerHTSeeds")  << "   vote time = " << voteTime  ().lapse();
-  edm::LogVerbatim("TrackerHTSeeds")  << "xy vote time = " << voteTimeXY().lapse();
-  edm::LogVerbatim("TrackerHTSeeds")  << " z vote time = " << voteTimeZ ().lapse();
+  LogDebug("TrackerHTSeeds") << "Time spent in seeding";
+  LogTrace("TrackerHTSeeds")  << "   vote time = " << voteTime  ().lapse();
+  LogTrace("TrackerHTSeeds")  << "xy vote time = " << voteTimeXY().lapse();
+  LogTrace("TrackerHTSeeds")  << " z vote time = " << voteTimeZ ().lapse();
 }
