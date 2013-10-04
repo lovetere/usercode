@@ -106,3 +106,11 @@ void HelixHough::findSeededHelices ( std::vector<SimpleTrack3D> & seeds     ,
   LogTrace("HTTrackSeeding")  << "xy vote time = " << voteTimeXY().lapse();
   LogTrace("HTTrackSeeding")  << " z vote time = " << voteTimeZ ().lapse();
 }
+
+
+bool  HelixHough::breakRecursion ( const std::vector<SimpleHit3D>   & hits   ,
+                                   const HelixParRange              & range  )  const
+{ 
+  int layers = numberOfLayers( hits );
+  return layers<100;
+}

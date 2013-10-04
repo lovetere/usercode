@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -30,28 +31,38 @@
 class SimpleHit3D
 {
   public:
+    typedef int TrkLayerKey;
     SimpleHit3D ( const TrackingRegion::Hit & hit,  GlobalPoint origin, unsigned int index =0 );
     Interval           rho   ( )  const  { return _rho;     }
     AngularInterval    phi   ( )  const  { return _phi;     }
     Interval           z     ( )  const  { return _dz;      }
     unsigned int     index   ( )  const  { return _index;   }
     bool             isValid ( )  const  { return _isValid; }
-    int              layer   ( )  const  { return _layer;   }
+    TrkLayerKey      layer   ( )  const  { return _layer;   }
     void             print   ( std::ostream&    s )  const;
   private:
     bool             _isValid;
     Interval         _rho;
     AngularInterval  _phi;
     Interval         _dz;
-    int              _layer;
+    TrkLayerKey       _layer;
     unsigned int     _index;
 };
 
 
-inline std::ostream& operator<<(std::ostream& s, const SimpleHit3D hit)
+inline std::ostream& operator<< ( std::ostream& s, const SimpleHit3D hit )
 { 
   hit.print(s);
   return s;
+}
+
+
+inline int numberOfLayers ( const std::vector<SimpleHit3D> & hits )
+{ 
+  std::map<SimpleHit3D::TrkLayerKey,int> table;
+  for ( std::vector<SimpleHit3D>::const_iterator hit = hits.begin();  hit != hits.end(); hit++ ) 
+    table[hit->layer()]++;
+  return table.size();
 }
 
 

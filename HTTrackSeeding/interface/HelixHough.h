@@ -41,7 +41,7 @@ class HelixHough
     void  setDecreasePerZoom ( float value )  { _decreasePerZoom = value; }    
   public:
     virtual bool                breakRecursion    ( const std::vector<SimpleHit3D>   & hits   ,
-                                                    const HelixParRange              & range  )  const  { return false;  }
+                                                    const HelixParRange              & range  )  const;
     float                       decreasePerZoom   ( )                                            const  { return _decreasePerZoom;   }
     const HelixParResolution &  maximumResolution ( )                                            const  { return _maximumResolution; }
     const HelixParResolution &  minimumResolution ( )                                            const  { return _minimumResolution; }
