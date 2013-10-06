@@ -32,6 +32,7 @@ class HTTripletGenerator : public HitTripletGenerator {
     HelixParResolution            theMaxRes;
     unsigned int                  thePHTurns;
     unsigned int                  theNHTurns;
+    unsigned int                  theRequiredLayers;
     std::string                   theLayerBuilderName;
     ctfseeding::SeedingLayerSets  theLayerSets;
     float                         theField;
