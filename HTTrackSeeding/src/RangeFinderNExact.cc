@@ -65,7 +65,6 @@ Interval  RangeFinderNExact::dTal ( int hfturn )  const
       }
       hfturn<0 ? _arcLength.setUpperBound(0.) : _arcLength.setLowerBound(0.);
       _hfturn    = hfturn;
-      _arcLength = Interval();
     }
   } 
   return _arcLength;
