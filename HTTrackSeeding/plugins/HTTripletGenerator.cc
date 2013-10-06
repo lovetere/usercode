@@ -66,6 +66,9 @@ HTTripletGenerator::HTTripletGenerator( const edm::ParameterSet & cfg )
   LogTrace("HTTrackSeeding")
     << "thePHTurns=" << thePHTurns
     << " theNHTurns=" << theNHTurns;
+  theRequiredLayers = cfg.getParameter<unsigned int>("RequiredLayers");
+  LogTrace("HTTrackSeeding")
+    << "theRequiredLayers=" << theRequiredLayers;
   theLayerBuilderName = cfg.getParameter<std::string>("SeedingLayers");
 }
 
@@ -162,16 +165,11 @@ void  HTTripletGenerator::hitTriplets ( const TrackingRegion & reg, OrderedHitTr
             std::cout << " - invalid hit" << std::endl;
           nhit++;
         } */
-
-    HelixHough finder( theRefPoint, theRange, theNumBins, theMinRes, theMaxRes );
+    HelixHough finder( theRefPoint, theRange, theNumBins, theMinRes, theMaxRes, theRequiredLayers );
     std::vector<SimpleTrack3D> tracks;
-    int min_hits       = 0.;
-    int max_hits = 1000000.;
-    finder.findHelices( hits, min_hits, max_hits, tracks );
-
-    //OrderedHitTriplet oht;
-    //... qui dobbiamo trovare i tripletti
-    //prs.push_back(oht);  
+    int min_hits =  3;
+    int max_hits = 10;
+    finder.findHelices( hits, min_hits, max_hits, prs );
   }
   std::cout << "ending with " << prs.size() << " triplets" << std::endl;
 }

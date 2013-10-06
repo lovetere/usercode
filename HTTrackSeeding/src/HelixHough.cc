@@ -9,10 +9,18 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <map>
+#include <unordered_map>
+#include <vector>
 
 
-HelixHough::HelixHough( GlobalPoint origin, HelixParRange range, HelixParNBins nBins, HelixParResolution minResolution, HelixParResolution maxResolution ) 
-  : _origin(origin), _range(range), _nBins(nBins), _minimumResolution(minResolution), _maximumResolution(maxResolution), 
+HelixHough::HelixHough( GlobalPoint        origin         ,
+                        HelixParRange      range          ,
+                        HelixParNBins      nBins          ,
+                        HelixParResolution minResolution  ,
+                        HelixParResolution maxResolution  ,
+                        unsigned int       requiredLayers ) 
+  : _origin(origin), _range(range), _nBins(nBins), _minimumResolution(minResolution), _maximumResolution(maxResolution), _requiredLayers(requiredLayers),
     _decreasePerZoom(0.5), _voteTime(0), _voteTimeXY(0), _voteTimeZ(0)  
 {
   _voteTime   = new SimpleTimer;
@@ -33,7 +41,7 @@ HelixHough::~HelixHough()
 void  HelixHough::findHelices ( const TrackingRegion::Hits & hits      ,
                                 unsigned int                 min_hits  ,
                                 unsigned int                 max_hits  ,
-                                std::vector<SimpleTrack3D> & tracks    ,
+                                OrderedHitTriplets         & tracks    ,
                                 unsigned int                 maxtracks )
 {
   voteTime  ().reset();
@@ -59,7 +67,7 @@ void  HelixHough::findHelices ( const TrackingRegion::Hits & hits      ,
   std::vector<SimpleTrack3D> temp_tracks;
   engine.findHelices(hitsList,min_hits,max_hits,temp_tracks,maxtracks);
   
-  finalize(temp_tracks, tracks);
+  finalize(hits,temp_tracks,tracks);
 
   LogDebug("HTTrackSeeding") << "Time spent in seeding";
   LogTrace("HTTrackSeeding")  << "   vote time = " << voteTime  ().lapse();
@@ -72,7 +80,7 @@ void HelixHough::findSeededHelices ( std::vector<SimpleTrack3D> & seeds     ,
                                      const TrackingRegion::Hits & hits      ,
                                      unsigned int                 min_hits  ,
                                      unsigned int                 max_hits  ,
-                                     std::vector<SimpleTrack3D> & tracks    ,
+                                     OrderedHitTriplets         & tracks    ,
                                      unsigned int                 maxtracks )
 {
   voteTime  ().reset();
@@ -99,7 +107,7 @@ void HelixHough::findSeededHelices ( std::vector<SimpleTrack3D> & seeds     ,
   std::vector<SimpleTrack3D> temp_tracks;
   engine.findSeededHelices(seeds,hitsList,min_hits,max_hits,temp_tracks,maxtracks);
   
-  finalize(temp_tracks, tracks);
+  finalize(hits,temp_tracks,tracks);
 
   LogDebug("HTTrackSeeding") << "Time spent in seeding";
   LogTrace("HTTrackSeeding")  << "   vote time = " << voteTime  ().lapse();
@@ -111,6 +119,109 @@ void HelixHough::findSeededHelices ( std::vector<SimpleTrack3D> & seeds     ,
 bool  HelixHough::breakRecursion ( const std::vector<SimpleHit3D>   & hits   ,
                                    const HelixParRange              & range  )  const
 { 
-  int layers = numberOfLayers( hits );
-  return layers<100;
+  unsigned int  layers = numberOfLayers( hits );
+  return layers<_requiredLayers;
+}
+
+
+/*
+ *  Dovrei sistemare i parametri e gli indici di traccia, sempre che abbiano un senso
+ */
+
+void  HelixHough::findTracks ( const std::vector<SimpleHit3D>   & hits   ,
+                               std::vector<SimpleTrack3D>       & tracks ,
+                               const HelixParRange              & range  )
+{
+  //LogDebug("HTTrackSeeding") << "Track seeding";
+  std::multimap<SimpleHit3D::TrkLayerKey,const SimpleHit3D*> layers;
+  for ( auto hit = hits.begin(); hit != hits.end(); hit++ )
+    layers.insert( std::pair<SimpleHit3D::TrkLayerKey,const SimpleHit3D*>( hit->layer(), &(*hit) ) );
+  unsigned int  count = 0;
+  for ( auto iter = layers.begin(); iter != layers.end(); iter = layers.equal_range(iter->first).second )
+     count++ ;
+  if ( count<_requiredLayers ) return;
+  std::vector<SimpleTrack3D> newTracks;
+  /*
+  // qui la faccio piu' semplice al momento
+  SimpleTrack3D track;
+  track.curv = range.curv().center();
+  track.eta  = range.eta ().center();
+  track.lip  = range.lip ().center();
+  track.phi  = range.phi ().center();
+  track.tip  = range.tip ().center();
+  for ( auto hit = hits.begin(); hit != hits.end(); hit++ )
+    track.hits.push_back(*hit);
+  newTracks.push_back( track );
+
+  LogTrace("HTTrackSeeding") << std::fixed << std::setprecision(4) << std::setfill(' ')
+                             << " [" << std::setw(7) << range.curv().lower() << "," << std::setw(7) << range.curv().upper() << "]"
+                             << " [" << std::setw(7) << range.eta ().lower() << "," << std::setw(7) << range.eta ().upper() << "]"
+                             << " [" << std::setw(8) << range.lip ().lower() << "," << std::setw(8) << range.lip ().upper() << "]"
+                             << " [" << std::setw(7) << range.phi ().lower() << "," << std::setw(7) << range.phi ().upper() << "]"
+                             << " [" << std::setw(7) << range.tip ().lower() << "," << std::setw(7) << range.tip ().upper() << "]"
+			     << " with " << track.hits.size() << " hits";
+
+  // fine modifica 
+  */
+
+  // generate ntuples keeping hits in the first _requiredLayers; higher index layers are generally outer
+  // don't use two hits from the same layer in each ntuple
+  unsigned int nlayers =0;
+  for ( auto itk = layers.begin(); itk != layers.end() && nlayers<_requiredLayers ; nlayers++) {
+    auto  itv = layers.equal_range(itk->first);
+    if ( newTracks.empty() ) {
+      SimpleTrack3D track;
+      track.curv = range.curv().center();
+      track.eta  = range.eta ().center();
+      track.lip  = range.lip ().center();
+      track.phi  = range.phi ().center();
+      track.tip  = range.tip ().center();
+      newTracks.push_back( track );
+    }
+    std::vector<SimpleTrack3D> list;
+    list.reserve( newTracks.size()*std::distance(itv.first,itv.second) );
+    for ( auto hit = itv.first; hit != itv.second; hit++ )
+      for ( auto track = newTracks.begin(); track!= newTracks.end(); track++ ) {
+	SimpleTrack3D trk = *track;
+        trk.hits.push_back(*(hit->second));
+        list.push_back(trk);
+      }
+    std::swap(newTracks,list);
+    itk = itv.second;
+  }
+  tracks.insert(tracks.end(),newTracks.begin(),newTracks.end());
+}
+
+
+void  HelixHough::finalize ( const TrackingRegion::Hits & hits, const std::vector<SimpleTrack3D> & input, OrderedHitTriplets & output )
+{
+  LogDebug("HTTrackSeeding") << "Track seeds found "  << input.size();
+  /*
+  int j = 0;
+  for ( auto track = input.begin(); track!= input.end(); track++, j++ ) {
+    LogTrace("HTTrackSeeding") << "Track number " << j << " with " << track->hits.size() << " hits";
+    for ( auto hit = track->hits.begin(); hit != track->hits.end(); hit++ )
+      LogTrace("HTTrackSeeding") << "  " << hit->index();
+  }
+  */
+  std::set<int> aset;
+  for ( auto track = input.begin(); track!= input.end(); track++ ) {
+    int code = 0;
+    for ( auto hit = track->hits.begin(); hit != track->hits.end(); hit++ )
+      code = ( code<<10 ) | hit->index();
+    aset.insert( code );
+  }
+  LogDebug("HTTrackSeeding") << "Track seeds after duplicate removal "  << aset.size();
+  int i = 0;
+  for ( auto iter = aset.begin(); iter != aset.end(); iter++, i++ ) {
+    int index1 = (*iter)>>20 & 0x3ff;
+    int index2 = (*iter)>>10 & 0x3ff;
+    int index3 = (*iter)     & 0x3ff;
+    output.push_back( OrderedHitTriplet(hits[index1],hits[index2],hits[index3]) );
+    LogTrace("HTTrackSeeding") << std::fixed << std::setfill(' ')
+                               << "Track number " << std::setw(4) << i
+                               << " -> " << std::setw(3) << index1
+                               << " "    << std::setw(3) << index2
+                               << " "    <<std::setw(4) << index3;
+  }
 }

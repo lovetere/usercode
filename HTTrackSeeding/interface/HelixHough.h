@@ -14,7 +14,7 @@
 #include "MLoVetere/HTTrackSeeding/interface/SimpleHit3D.h"
 #include "MLoVetere/HTTrackSeeding/interface/SimpleTimer.h"
 #include "MLoVetere/HTTrackSeeding/interface/SimpleTrack3D.h"
-
+#include "RecoPixelVertexing/PixelTriplets/interface/OrderedHitTriplets.h"
 
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 #include "RecoTracker/TkTrackingRegions/interface/TrackingRegion.h"
@@ -25,18 +25,23 @@
 class HelixHough
 {
   public:
-    HelixHough               ( GlobalPoint origin, HelixParRange range,  HelixParNBins nbins, HelixParResolution minResolution, HelixParResolution maxResolution );
+    HelixHough               ( GlobalPoint        origin         ,
+                               HelixParRange      range          ,
+                               HelixParNBins      nbins          ,
+                               HelixParResolution minResolution  ,
+                               HelixParResolution maxResolution  ,
+                               unsigned int       requiredLayers );
     virtual  ~HelixHough     ( );
     void  findHelices        ( const TrackingRegion::Hits & hits         ,
                                unsigned int                 min_hits     ,
                                unsigned int                 max_hits     ,
-                               std::vector<SimpleTrack3D> & tracks       ,
+                               OrderedHitTriplets         & tracks       ,
                                unsigned int                 maxtracks =0 );
     void  findSeededHelices  ( std::vector<SimpleTrack3D> & seeds        ,
                                const TrackingRegion::Hits & hits         ,
                                unsigned int                 min_hits     ,
                                unsigned int                 max_hits     ,
-                               std::vector<SimpleTrack3D> & tracks       ,
+                               OrderedHitTriplets         & tracks       ,
                                unsigned int                 maxtracks =0 );
     void  setDecreasePerZoom ( float value )  { _decreasePerZoom = value; }    
   public:
@@ -60,7 +65,7 @@ class HelixHough
                                                     float max_eta  )                             const  { return 0.;     }
     virtual void   findTracks       ( const std::vector<SimpleHit3D>   & hits   ,
                                       std::vector<SimpleTrack3D>       & tracks ,
-                                      const HelixParRange              & range  )                { }; //=0;
+                                      const HelixParRange              & range  );
     virtual void   findSeededTracks ( const std::vector<SimpleTrack3D> & seeds  ,
                                       const std::vector<SimpleHit3D>   & hits   ,
                                       std::vector<SimpleTrack3D>       & tracks ,
@@ -71,13 +76,14 @@ class HelixHough
   private:
     virtual void  initEvent   ( std::vector<SimpleHit3D> & hits, unsigned int min_hits )                   { }
     virtual void  initSeeding ( )                                                                          { }    
-    virtual void  finalize    ( std::vector<SimpleTrack3D> & input, std::vector<SimpleTrack3D> & output )  { }
+    virtual void  finalize    ( const TrackingRegion::Hits & hits, const std::vector<SimpleTrack3D> & input, OrderedHitTriplets & output );
   private:
     GlobalPoint         _origin;
     HelixParRange       _range;
     HelixParNBins       _nBins;
     HelixParResolution  _minimumResolution;
     HelixParResolution  _maximumResolution;
+    unsigned int        _requiredLayers;
     float               _decreasePerZoom;
     SimpleTimer      *  _voteTime;
     SimpleTimer      *  _voteTimeXY;

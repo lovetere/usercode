@@ -1,5 +1,7 @@
 #include "MLoVetere/HTTrackSeeding/interface/HelixHoughEngine.h"
 
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "MLoVetere/HTTrackSeeding/interface/HelixParBinId.h"
 #include "MLoVetere/HTTrackSeeding/interface/Interval.h"
 #include "MLoVetere/HTTrackSeeding/interface/RangeFinder.h"
 
@@ -171,11 +173,23 @@ void HelixHoughEngine::vote ( const std::vector<SimpleHit3D> & hits )
       for ( unsigned int binTip=0; binTip<nTip(); ++binTip, tip.shift(tip_size) ) {
         RangeFinderExact finder(hits[i],curv,tip);
         if ( finder.dPhi().isEmpty() ) continue;
- 	for ( unsigned int hturn=-inHalfTurns(); hturn<outHalfTurns(); hturn++ ) {
+  	for ( unsigned int hturn=-inHalfTurns(); hturn<outHalfTurns(); hturn++ ) {
           std::pair<BinRange,BinRange>  phiNRange = phi2bin(finder.dPhi(hturn));
+          /*
+          LogTrace("HTTrackSeeding") << std::fixed << std::setprecision(4) << std::setfill(' ')
+                                     << " " << std::setw(7) << finder.dPhi().lower() << " " << std::setw(7) << finder.dPhi().upper()
+                                     << " [" << phiNRange.first .first << "," << phiNRange.first .second << "]"
+                                     << " [" << phiNRange.second.first << "," << phiNRange.second.second << "]";
+	  */
           Interval lip( range().minLip(), range().minLip()+lip_size );
 	  for ( unsigned int binLip=0; binLip<nLip(); ++binLip, lip.shift(lip_size) ) {
             BinRange  etaNRange = eta2bin(finder.dEta(lip,hturn));
+            /*
+            LogTrace("HTTrackSeeding") << std::fixed << std::setprecision(4) << std::setfill(' ')
+                                       << "*" << std::setw(9) << lip.lower() << " " << std::setw(9) << lip.upper()
+                                       << " " << std::setw(7) << finder.dEta(lip,hturn).lower() << " " << std::setw(7) << finder.dEta(lip,hturn).upper()
+                                       << " [" << etaNRange.first << "," << etaNRange.second << "]";
+	    */
             for ( unsigned int binEta = etaNRange.first; binEta<etaNRange.second; binEta++ ) {
               for ( unsigned int binPhi = phiNRange.first.first; binPhi<phiNRange.first.second; binPhi++ )
                 bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(binCurv,binEta,binLip,binPhi,binTip), i ) );
@@ -189,6 +203,24 @@ void HelixHoughEngine::vote ( const std::vector<SimpleHit3D> & hits )
   }
   voteTimeXY().stop();
   voteTimeZ ().stop();
+  /*
+  LogDebug("HTTrackSeeding") << "Voting matrix";
+  for ( unsigned int binCurv =0; binCurv<nCurv(); binCurv++ )
+    for ( unsigned int binEta =0; binEta<nEta(); binEta++ )
+      for ( unsigned int binLip =0; binLip<nLip(); binLip++ )
+        for ( unsigned int binPhi =0; binPhi<nPhi(); binPhi++ )
+          for ( unsigned int binTip =0; binTip<nTip(); binTip++ ) {
+	    HelixParBinId bin(binCurv,binEta,binLip,binPhi,binTip);
+            int count = bins_vec.count(bin);
+            if ( count>2 )  LogTrace("HTTrackSeeding") << std::setfill(' ')
+                                                       << " " << std::setw(2) << binCurv
+                                                       << " " << std::setw(2) << binEta
+                                                       << " " << std::setw(2) << binLip 
+                                                       << " " << std::setw(2) << binPhi
+                                                       << " " << std::setw(2) << binTip
+                                                       << "  -> " << std::setw(5) << count;
+          }
+  */
 }
 
 
