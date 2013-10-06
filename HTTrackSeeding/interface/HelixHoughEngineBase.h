@@ -8,6 +8,7 @@
   *  \author Maurizio Lo Vetere
   */
 
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParBinId.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParNBins.h"
 #include "MLoVetere/HTTrackSeeding/interface/HelixParRange.h"
@@ -67,41 +68,41 @@ class HelixHoughEngineBase
 
 inline int  HelixHoughEngineBase::curv2bin( float value )  const
 {
-   if ( !Interval(_range.minCurv(),_range.maxCurv()).include(value) ) return -1;
-   int  bin = (int) ( nCurv() * _range.rCurv(value) );
-   return bin;
+  if ( !Interval(_range.minCurv(),_range.maxCurv()).include(value) ) return -1;
+  int  bin = (int) ( nCurv() * _range.rCurv(value) );
+  return bin;
 }
 
 
 inline int  HelixHoughEngineBase::eta2bin( float value )  const
 {
-   if ( !Interval(_range.minEta(),_range.maxEta()).include(value) ) return -1;
-   int  bin = (int) ( nEta() * _range.rEta(value) );
-   return bin;
+  if ( !Interval(_range.minEta(),_range.maxEta()).include(value) ) return -1;
+  int  bin = (int) ( nEta() * _range.rEta(value) );
+  return bin;
 }
 
 
 inline int  HelixHoughEngineBase::lip2bin( float value )  const
 {
-   if ( !Interval(_range.minLip(),_range.maxLip()).include(value) ) return -1;
-   int  bin = (int) ( nLip() * _range.rLip(value) );
-   return bin;
+  if ( !Interval(_range.minLip(),_range.maxLip()).include(value) ) return -1;
+  int  bin = (int) ( nLip() * _range.rLip(value) );
+  return bin;
 }
 
 
 inline int  HelixHoughEngineBase::phi2bin ( float value )  const
 {
-   if ( !AngularInterval(_range.minPhi(),_range.maxPhi()).include(value) ) return -1;
-   int  bin = (int) ( nPhi() * _range.rPhi(value) );                                           // qui e' da sistemare
-   return bin;
+  if ( !AngularInterval(_range.minPhi(),_range.maxPhi()).include(value) ) return -1;
+  int  bin = (int) ( nPhi() * _range.rPhi(value) );
+  return bin;
 }
 
 
 inline int  HelixHoughEngineBase::tip2bin( float value )  const
 {
-   if ( !Interval(_range.minTip(),_range.maxTip()).include(value) ) return -1;
-   int  bin = (int) ( nTip() * _range.rTip(value) );
-   return bin;
+  if ( !Interval(_range.minTip(),_range.maxTip()).include(value) ) return -1;
+  int  bin = (int) ( nTip() * _range.rTip(value) );
+  return bin;
 }
 
 
@@ -111,7 +112,7 @@ inline HelixHoughEngineBase::BinRange  HelixHoughEngineBase::curv2bin( Interval 
   if ( value.isEmpty() ) return BinRange(0,0);
   unsigned int low  = (unsigned int) ( nCurv() * value.lower() );
   unsigned int high = (unsigned int) ( nCurv() * value.upper() );
-  return BinRange( low, std::min(nCurv()+1,high+1) );
+  return BinRange( low, std::min(nCurv(),high+1) );
 }
 
 
@@ -121,7 +122,7 @@ inline HelixHoughEngineBase::BinRange  HelixHoughEngineBase::eta2bin( Interval v
   if ( value.isEmpty() ) return BinRange(0,0);
   unsigned int low  = (unsigned int) ( nEta() * value.lower() );
   unsigned int high = (unsigned int) ( nEta() * value.upper() );
-  return BinRange( low, std::min(nEta()+1,high+1) );
+  return BinRange( low, std::min(nEta(),high+1) );
 }
 
 
@@ -131,18 +132,38 @@ inline HelixHoughEngineBase::BinRange  HelixHoughEngineBase::lip2bin( Interval v
   if ( value.isEmpty() ) return BinRange(0,0);
   unsigned int low  = (unsigned int) ( nLip() * value.lower() );
   unsigned int high = (unsigned int) ( nLip() * value.upper() );
-  return BinRange( low, std::min(nLip()+1,high+1) );
+  return BinRange( low, std::min(nLip(),high+1) );
 }
 
 
-inline std::pair<HelixHoughEngineBase::BinRange,HelixHoughEngineBase::BinRange> HelixHoughEngineBase::phi2bin( AngularInterval value )  const
+inline std::pair<HelixHoughEngineBase::BinRange,HelixHoughEngineBase::BinRange>  HelixHoughEngineBase::phi2bin( AngularInterval value )  const
 {
-  // value = _range.rCurv(value);
-  // if ( value.isEmpty() ) return BinRange(0,0);
-  // unsigned int low  = (unsigned int) ( nCurv() * value.lower() );
-  // unsigned int high = (unsigned int) ( nCurv() * value.upper() );
-  // return BinRange( low, std::min(nCurv()+1,high+1) );
-  return std::pair<BinRange,BinRange>(BinRange(0,0),BinRange(0,0));
+  std::pair<Interval,Interval>  data = _range.rPhi(value);
+  BinRange first, second;
+  if ( data.first.isEmpty() ) {
+    first = BinRange(0,0);
+  } else {
+    unsigned int low  = (unsigned int) ( nPhi() * data.first.lower() );
+    unsigned int high = (unsigned int) ( nPhi() * data.first.upper() );
+    first = BinRange( low, std::min(nPhi(),high+1) );
+  }
+  if ( data.second.isEmpty() ) {
+    second = BinRange(0,0);
+  } else {
+    unsigned int low  = (unsigned int) ( nPhi() * data.second.lower() );
+    unsigned int high = (unsigned int) ( nPhi() * data.second.upper() );
+    second = BinRange( low, std::min(nPhi(),high+1) );
+  }
+  /*
+  LogTrace("HTTrackSeeding") << std::fixed << std::setprecision(4) << std::setfill(' ')
+                             << " " << std::setw(9) << 180./M_PI*_range.phi().lower() << " " << std::setw(9) << 180./M_PI*_range.phi().upper()
+                             << " " << std::setw(9) << 180./M_PI*value.lower()        << " " << std::setw(9) << 180./M_PI*value.upper()
+                             << " " << std::setw(9) << data.first .lower()  << " " << std::setw(9) << data.first .upper()
+                             << " [" << first .first << "," << first .second << "]"
+                             << " " << std::setw(7) << data.second.lower() << " " << std::setw(7) << data.second.upper()
+                             << " [" << second.first << "," << second.second << "]";
+  */
+  return std::pair<BinRange,BinRange>(first,second);
 }
 
 
@@ -152,9 +173,8 @@ inline HelixHoughEngineBase::BinRange  HelixHoughEngineBase::tip2bin( Interval v
   if ( value.isEmpty() ) return BinRange(0,0);
   unsigned int low  = (unsigned int) ( nTip() * value.lower() );
   unsigned int high = (unsigned int) ( nTip() * value.upper() );
-  return BinRange( low, std::min(nTip()+1,high+1) );
+  return BinRange( low, std::min(nTip(),high+1) );
 }
-
 
 
 template <typename T> 
