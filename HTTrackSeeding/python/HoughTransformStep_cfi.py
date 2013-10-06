@@ -48,6 +48,7 @@ HoughTransformSeedGeneratorPset = cms.PSet(
         positive = cms.uint32(1),
         negative = cms.uint32(0)
     ),
+    RequiredLayers = cms.uint32(3)
 )
 import RecoTracker.TkSeedGenerator.GlobalSeedsFromTriplets_cff
 houghTransformStepSeeds = RecoTracker.TkSeedGenerator.GlobalSeedsFromTriplets_cff.globalSeedsFromTriplets.clone()

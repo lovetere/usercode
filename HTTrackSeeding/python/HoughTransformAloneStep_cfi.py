@@ -24,36 +24,37 @@ from MLoVetere.HTTrackSeeding.HoughTransformSeedLayersNC_cfi import *
 # SEEDS
 HoughTransformSeedGeneratorPset = cms.PSet(
     DivPSet = cms.PSet(
-        nBinsCurv = cms.uint32(4),
-        nBinsEta  = cms.uint32(4),
-        nBinsPhi  = cms.uint32(4),
-        nBinsTip  = cms.uint32(4),
-        nBinsLip  = cms.uint32(4)
+        nBinsCurv = cms.uint32(3),
+        nBinsEta  = cms.uint32(5),
+        nBinsPhi  = cms.uint32(6),
+        nBinsTip  = cms.uint32(5),
+        nBinsLip  = cms.uint32(7)
     ),
     MinResPSet = cms.PSet(
         resCurv = cms.double(1e-2),
-        resEta  = cms.double(1.00),
-        resPhi  = cms.double(3.14), 
-        resTip  = cms.double(10.0),
-        resLip  = cms.double(10.0)
+        resEta  = cms.double(0.50),
+        resPhi  = cms.double(0.31), 
+        resTip  = cms.double(1.00),
+        resLip  = cms.double(1.00)
     ),
     MaxResPSet = cms.PSet(
         resCurv = cms.double(3e-4),
         resEta  = cms.double(0.09),
         resPhi  = cms.double(0.03),
-        resTip  = cms.double(1.00),
-        resLip  = cms.double(8.00)
+        resTip  = cms.double(0.30),
+        resLip  = cms.double(0.10)
     ),
     HalfTurns = cms.PSet(
         positive = cms.uint32(1),
         negative = cms.uint32(0)
     ),
+    RequiredLayers = cms.uint32(3)
 )
 import RecoTracker.TkSeedGenerator.GlobalSeedsFromTriplets_cff
 houghTransformStepSeeds = RecoTracker.TkSeedGenerator.GlobalSeedsFromTriplets_cff.globalSeedsFromTriplets.clone()
-houghTransformStepSeeds.RegionFactoryPSet.RegionPSet.ptMin = 0.4
-houghTransformStepSeeds.RegionFactoryPSet.RegionPSet.originHalfLength = 15.0
-houghTransformStepSeeds.RegionFactoryPSet.RegionPSet.originRadius = 1.5
+houghTransformStepSeeds.RegionFactoryPSet.RegionPSet.ptMin = 0.6
+houghTransformStepSeeds.RegionFactoryPSet.RegionPSet.originHalfLength = 25.0
+houghTransformStepSeeds.RegionFactoryPSet.RegionPSet.originRadius = 2.5
 houghTransformStepSeeds.OrderedHitsFactoryPSet = cms.PSet(
         HoughTransformSeedGeneratorPset,
         ComponentName = cms.string('HTTripletGenerator'),
