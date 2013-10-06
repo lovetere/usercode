@@ -23,7 +23,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
-#include <map>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -57,12 +57,12 @@ inline std::ostream& operator<< ( std::ostream& s, const SimpleHit3D hit )
 }
 
 
-inline int numberOfLayers ( const std::vector<SimpleHit3D> & hits )
+inline unsigned int numberOfLayers ( const std::vector<SimpleHit3D> & hits )
 { 
-  std::map<SimpleHit3D::TrkLayerKey,int> table;
+  std::set<SimpleHit3D::TrkLayerKey> layers;
   for ( std::vector<SimpleHit3D>::const_iterator hit = hits.begin();  hit != hits.end(); hit++ ) 
-    table[hit->layer()]++;
-  return table.size();
+    layers.insert( hit->layer() );
+  return layers.size();
 }
 
 
