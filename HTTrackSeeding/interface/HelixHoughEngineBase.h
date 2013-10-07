@@ -30,8 +30,10 @@ class HelixHoughEngineBase
       : _range(range), _nbins(nbins)  { }
     HelixParRange          range ( )  const { return _range; }
     HelixParRange          range ( HelixParBinId bin )  const;
-    template <typename T>  void  map ( const std::vector<T> & vec, std::unordered_multimap<HelixParBinId,const T*> & map )  const;
-    template <typename T>  void  map (       std::vector<T> & vec, std::unordered_multimap<HelixParBinId,      T*> & map )  const;
+    template <typename T>  void  map  ( const std::vector<T> & vec, std::unordered_multimap<HelixParBinId,const T*> & map )  const;
+    template <typename T>  void  map  (       std::vector<T> & vec, std::unordered_multimap<HelixParBinId,      T*> & map )  const;
+    template <typename T>  void  map2 ( const std::vector<T> & vec, std::unordered_multimap<HelixParBinId,const T*> & map )  const;
+    template <typename T>  void  map2 (       std::vector<T> & vec, std::unordered_multimap<HelixParBinId,      T*> & map )  const;
   public:
     float         DCurv ( )  const  { return  _range.DCurv();     }
     float         DEta  ( )  const  { return  _range.DEta ();     }
@@ -203,6 +205,54 @@ inline void  HelixHoughEngineBase::map ( std::vector<T> & vec, std::unordered_mu
     int  phi_bin =  phi2bin(elem->phi );  if (  phi_bin<0 ) continue;
     int  tip_bin =  tip2bin(elem->tip );  if (  tip_bin<0 ) continue;
     map.insert( std::pair<HelixParBinId,T*>( HelixParBinId(curv_bin,eta_bin,lip_bin,phi_bin,tip_bin), &(*elem) ) );
+  }  
+}
+
+
+template <typename T> 
+inline void  HelixHoughEngineBase::map2 ( const std::vector<T> & vec, std::unordered_multimap<HelixParBinId,const T*> & map )  const
+{
+  // map.resize doesn't exist; maybe we should do something similar
+  for ( auto elem = vec.begin(); elem != vec.end(); elem++ ) {
+    BinRange                     curv_bin = curv2bin(elem->curv);
+    BinRange                     eta_bin  =  eta2bin(elem->eta );
+    BinRange                     lip_bin  =  lip2bin(elem->lip );
+    std::pair<BinRange,BinRange> phi_bin  =  phi2bin(elem->phi );
+    BinRange                     tip_bin  =  tip2bin(elem->tip );
+    for ( auto i = curv_bin.first; i<curv_bin.second; i++ )
+      for ( auto j =  eta_bin.first; j< eta_bin.second; j++ )
+        for ( auto k =  lip_bin.first; k< lip_bin.second; k++ ) {
+          for ( auto l =  phi_bin.first .first; l< phi_bin.first .second; l++ )
+            for ( auto m =  tip_bin.first; m< tip_bin.second; m++ )
+              map.insert( std::pair<HelixParBinId,const T*>( HelixParBinId(i,j,k,l,m), &(*elem) ) );
+          for ( auto l =  phi_bin.second.first; l< phi_bin.second.second; l++ )
+            for ( auto m =  tip_bin.first; m< tip_bin.second; m++ )
+              map.insert( std::pair<HelixParBinId,const T*>( HelixParBinId(i,j,k,l,m), &(*elem) ) );
+        }
+  }  
+}
+
+
+template <typename T> 
+inline void  HelixHoughEngineBase::map2 ( std::vector<T> & vec, std::unordered_multimap<HelixParBinId,T*> & map )  const
+{
+  // map.resize doesn't exist; maybe we should do something similar
+  for ( auto elem = vec.begin(); elem != vec.end(); elem++ ) {
+    BinRange                     curv_bin = curv2bin(elem->curv);
+    BinRange                     eta_bin  =  eta2bin(elem->eta );
+    BinRange                     lip_bin  =  lip2bin(elem->lip );
+    std::pair<BinRange,BinRange> phi_bin  =  phi2bin(elem->phi );
+    BinRange                     tip_bin  =  tip2bin(elem->tip );
+    for ( auto i = curv_bin.first; i<curv_bin.second; i++ )
+      for ( auto j =  eta_bin.first; j< eta_bin.second; j++ )
+        for ( auto k =  lip_bin.first; k< lip_bin.second; k++ ) {
+          for ( auto l =  phi_bin.first .first; l< phi_bin.first .second; l++ )
+            for ( auto m =  tip_bin.first; m< tip_bin.second; m++ )
+              map.insert( std::pair<HelixParBinId,T*>( HelixParBinId(i,j,k,l,m), &(*elem) ) );
+          for ( auto l =  phi_bin.second.first; l< phi_bin.second.second; l++ )
+            for ( auto m =  tip_bin.first; m< tip_bin.second; m++ )
+              map.insert( std::pair<HelixParBinId,T*>( HelixParBinId(i,j,k,l,m), &(*elem) ) );
+        }
   }  
 }
 

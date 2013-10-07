@@ -171,11 +171,11 @@ void  HelixHough::findTracks ( const std::vector<SimpleHit3D>   & hits   ,
     auto  itv = layers.equal_range(itk->first);
     if ( newTracks.empty() ) {
       SimpleTrack3D track;
-      track.curv = range.curv().center();
-      track.eta  = range.eta ().center();
-      track.lip  = range.lip ().center();
-      track.phi  = range.phi ().center();
-      track.tip  = range.tip ().center();
+      track.curv = range.curv();
+      track.eta  = range.eta ();
+      track.lip  = range.lip ();
+      track.phi  = range.phi ();
+      track.tip  = range.tip ();
       newTracks.push_back( track );
     }
     std::vector<SimpleTrack3D> list;

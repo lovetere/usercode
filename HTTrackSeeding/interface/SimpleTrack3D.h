@@ -8,25 +8,25 @@
   *  \author Maurizio Lo Vetere
   */
 
+#include "MLoVetere/HTTrackSeeding/interface/AngularInterval.h"
+#include "MLoVetere/HTTrackSeeding/interface/Interval.h"
 #include "MLoVetere/HTTrackSeeding/interface/SimpleHit3D.h"
 
 
 class SimpleTrack3D
 {
   public:
-    SimpleTrack3D ( float phi0=0., float tip0=0., float curv0=0., float eta0=0., float lip0=0., unsigned int idx=0 )
-      : curv(curv0), eta(eta0), lip(lip0), phi(phi0), tip(tip0), index(index) { }
-   ~SimpleTrack3D ( ) {}
+    SimpleTrack3D ( ) { }
+    SimpleTrack3D ( Interval curv_0, Interval eta_0, Interval lip_0, AngularInterval phi_0, Interval tip_0 ) 
+      :  curv(curv_0), eta(eta_0), lip(lip_0), phi(phi_0), tip(tip_0) { }
+   ~SimpleTrack3D ( ) { }
   public: 
     std::vector<SimpleHit3D>  hits;
-    float  curv;
-    float  eta;
-    float  lip;
-    float  phi;
-    float  tip;
-    unsigned int   index;
-    // this is old stuff left here in order to compile 
-    float  kappa, d, z0, dzdl;
+    Interval         curv;
+    Interval         eta;
+    Interval         lip;
+    AngularInterval  phi;
+    Interval         tip;
 };
 
 
