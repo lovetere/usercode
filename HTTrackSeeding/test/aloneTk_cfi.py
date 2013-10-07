@@ -7,7 +7,7 @@ process.MessageLogger = cms.Service("MessageLogger")
 
 # process.Tracer = cms.Service("Tracer")
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 
 ### conditions
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
@@ -52,16 +52,25 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger = cms.Service("MessageLogger", 
        destinations   = cms.untracked.vstring('cout'),
        categories     = cms.untracked.vstring('HTTrackSeeding'),
-       debugModules   = cms.untracked.vstring('houghTransformStepSeeds'),
+    #  debugModules   = cms.untracked.vstring('houghTransformStepSeeds'),
        cout           = cms.untracked.PSet(
                         threshold  = cms.untracked.string('DEBUG'),
                         INFO           = cms.untracked.PSet ( limit = cms.untracked.int32(0) ),
                         DEBUG          = cms.untracked.PSet ( limit = cms.untracked.int32(0) ),
-                        HTTrackSeeding = cms.untracked.PSet ( limit = cms.untracked.int32(10000000) ),
+    #                   HTTrackSeeding = cms.untracked.PSet ( limit = cms.untracked.int32(10000000) ),
        )
 )
 
+process.houghcheck = cms.EDAnalyzer('HoughCheckAllHits',
+#                                    tracks    = cms.InputTag('generalTracks'),
+#                                    tracks    = cms.InputTag('TrackRefitter'),
+                                     tracks    = cms.InputTag('houghTransformStepTracks'),
+                                     algoSel   = cms.vuint32(0),
+                                     verbosity = cms.untracked.uint32(1)
+                                    )
+
 process.p = cms.Path(siPixelRecHits*
                      siStripMatchedRecHits*
-                     HoughTransformStep
+                     HoughTransformStep*
+                     process.houghcheck
 )
