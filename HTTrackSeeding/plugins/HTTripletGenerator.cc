@@ -171,5 +171,5 @@ void  HTTripletGenerator::hitTriplets ( const TrackingRegion & reg, OrderedHitTr
     int max_hits = 10;
     finder.findHelices( hits, min_hits, max_hits, prs );
   }
-  std::cout << "ending with " << prs.size() << " triplets" << std::endl;
+  std::cout << "Triplet generator ending with " << prs.size() << " triplets" << std::endl;
 }
