@@ -58,19 +58,6 @@ class HelixHoughEngine : protected HelixHoughProxy, protected HelixHoughEngineBa
                                  AngularInterval                    phi,
                                  unsigned int                       tip             );
     void  vote                 ( const std::vector<SimpleHit3D> &   hits            );
-    // deprecated
-    void  fillBins             ( float                              min_phi         ,
-                                 float                              max_phi         ,
-                                 const SimpleHit3D &                four_hits       ,
-                                 const std::vector<std::pair<unsigned int,unsigned int> > & z_bins, 
-                                 unsigned int                       index           ,
-                                 unsigned int                       tip_bin         ,
-                                 unsigned int                       curv_bin        ,
-                                 float                              low_phi         ,
-                                 float                              high_phi        ,
-                                 float                              inv_phi_range   );
-    //void  vote_eta             ( const std::vector<SimpleHit3D> &   hits            );
-    //void  vote_lip             ( const std::vector<SimpleHit3D> &   hits            );
   private:
     std::unordered_multimap<HelixParBinId,unsigned int>  bins_vec;
 };

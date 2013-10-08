@@ -177,6 +177,7 @@ void HelixHoughEngine::vote ( const std::vector<SimpleHit3D> & hits )
           std::pair<BinRange,BinRange>  phiNRange = phi2bin(finder.dPhi(hturn));
           /*
           LogTrace("HTTrackSeeding") << std::fixed << std::setprecision(4) << std::setfill(' ')
+                                     << "Track no " << std::setw(3) << hits[i].index() << "  "
                                      << " " << std::setw(7) << finder.dPhi().lower() << " " << std::setw(7) << finder.dPhi().upper()
                                      << " [" << phiNRange.first .first << "," << phiNRange.first .second << "]"
                                      << " [" << phiNRange.second.first << "," << phiNRange.second.second << "]";
@@ -186,6 +187,7 @@ void HelixHoughEngine::vote ( const std::vector<SimpleHit3D> & hits )
             BinRange  etaNRange = eta2bin(finder.dEta(lip,hturn));
             /*
             LogTrace("HTTrackSeeding") << std::fixed << std::setprecision(4) << std::setfill(' ')
+                                       << "Track no " << std::setw(3) << hits[i].index() << "  "
                                        << "*" << std::setw(9) << lip.lower() << " " << std::setw(9) << lip.upper()
                                        << " " << std::setw(7) << finder.dEta(lip,hturn).lower() << " " << std::setw(7) << finder.dEta(lip,hturn).upper()
                                        << " [" << etaNRange.first << "," << etaNRange.second << "]";
@@ -221,51 +223,4 @@ void HelixHoughEngine::vote ( const std::vector<SimpleHit3D> & hits )
                                                        << "  -> " << std::setw(5) << count;
           }
   */
-}
-
-
-/*
- *  Deprecated functions
- */
-
-void  HelixHoughEngine::fillBins ( float min_phi, float max_phi, const SimpleHit3D & hit, const std::vector<std::pair<unsigned int,unsigned int> > & z_bins, 
-                                   unsigned int index, unsigned int tip_bin, unsigned int curv_bin, float low_phi, float high_phi, float inv_phi_range )
-{
-  if ( min_phi>=0. ) {
-    if ( (max_phi<low_phi) || (min_phi>high_phi) ) return;
-    unsigned int  low_bin = 0;
-    unsigned int high_bin = (nPhi()-1);
-    if ( min_phi>low_phi  )  low_bin = (unsigned int)(((min_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
-    if ( max_phi<high_phi ) high_bin = (unsigned int)(((max_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
-    for ( unsigned int b=low_bin; b<=high_bin; ++b )
-      for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-        bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin].first,z_bins[zbin].second,b,tip_bin), index ) );
-  } else {
-    if ( ( high_phi<(min_phi+2.*M_PI) ) && (low_phi> max_phi) ) return;
-    if ( ( high_phi<(min_phi+2.*M_PI) ) && (low_phi<=max_phi) ) {
-      unsigned int  low_bin = 0;
-      unsigned int high_bin = (unsigned int)(((max_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
-      for ( unsigned int b=low_bin; b<=high_bin; ++b )
-        for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin].first,z_bins[zbin].second,b,tip_bin), index ) );
-    } else if ( ( high_phi>=(min_phi+2.*M_PI) ) && (low_phi>max_phi) ) {
-      unsigned int high_bin = (nPhi()-1);
-      unsigned int low_bin = (unsigned int)(((2.*M_PI+min_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
-      for ( unsigned int b=low_bin; b<=high_bin; ++b )
-        for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin].first,z_bins[zbin].second,b,tip_bin), index ) );
-    } else {
-      //split into two sets of bins
-      unsigned int high_bin = (nPhi()-1);
-      unsigned int low_bin = (unsigned int)(((2.*M_PI+min_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
-      for ( unsigned int b=low_bin; b<=high_bin; ++b )
-        for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin].first,z_bins[zbin].second,b,tip_bin), index ) );
-       low_bin = 0;
-      high_bin = (unsigned int)(((max_phi-low_phi)*inv_phi_range)*((float)(nPhi())));
-      for ( unsigned int b=low_bin; b<=high_bin; ++b )
-        for ( unsigned int zbin=0; zbin<z_bins.size(); ++zbin )
-          bins_vec.insert( std::pair<HelixParBinId,unsigned int>( HelixParBinId(curv_bin,z_bins[zbin].first,z_bins[zbin].second,b,tip_bin), index ) );
-    }
-  }
 }
