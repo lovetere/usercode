@@ -18,26 +18,27 @@ class IntervalBase {
   public:
     IntervalBase ( )              : _inf( 0.), _sup( 0.) { }
     IntervalBase ( T inf, T sup ) : _inf(inf), _sup(sup) { }
-    T                   length        ( )                         const  { return std::max(_sup-_inf,0.); }
-    T                   lower         ( )                         const  { return _inf; }
-    T                   upper         ( )                         const  { return _sup; }
-    T                   center        ( )                         const  { return (_sup+_inf)/2.; }
-    bool                isEmpty       ( )                         const  { return _sup<=_inf; }
-    bool                include       ( T  value )                const;
-    T                   normalize     ( T  value )                const;
-    IntervalBase<T>     normalize     ( IntervalBase<T> value  )  const;
-    bool                operator<     ( IntervalBase<T> other  )  const;
-    IntervalBase<T>     operator+     ( IntervalBase<T> other  )  const;
-    IntervalBase<T>     operator-     ( IntervalBase<T> other  )  const;
-    IntervalBase<T>     operator-     ( )                         const;
-    bool                overlaps      ( IntervalBase<T> other  )  const;
-    IntervalBase<T> &   downScale     ( IntervalBase<T> factor );
-    IntervalBase<T> &   scale         ( T factor );
-    IntervalBase<T> &   setBound      ( IntervalBase range     );
-    IntervalBase<T> &   setLowerBound ( T  value );
-    IntervalBase<T> &   setUpperBound ( T  value );
-    IntervalBase<T> &   shift         ( T factor );
-    IntervalBase<T> &   upScale       ( IntervalBase<T> factor );
+    T                   center            ( )                         const  { return (_sup+_inf)/2.; }
+    bool                include           ( T  value )                const;
+    bool                isEmpty           ( )                         const  { return _sup<=_inf; }
+    T                   length            ( )                         const  { return std::max(_sup-_inf,0.); }
+    T                   lower             ( )                         const  { return _inf; }
+    T                   normalize         ( T  value )                const;
+    IntervalBase<T>     normalize         ( IntervalBase<T> value  )  const;
+    bool                operator<         ( IntervalBase<T> other  )  const;
+    IntervalBase<T>     operator+         ( IntervalBase<T> other  )  const;
+    IntervalBase<T>     operator-         ( IntervalBase<T> other  )  const;
+    IntervalBase<T>     operator-         ( )                         const;
+    bool                overlaps          ( IntervalBase<T> other  )  const;
+    IntervalBase<T>     smallestCovering  ( IntervalBase<T> other  )  const;
+    T                   upper             ( )                         const  { return _sup; }
+    IntervalBase<T> &   downScale         ( IntervalBase<T> factor );
+    IntervalBase<T> &   scale             ( T factor );
+    IntervalBase<T> &   setBound          ( IntervalBase range     );
+    IntervalBase<T> &   setLowerBound     ( T  value );
+    IntervalBase<T> &   setUpperBound     ( T  value );
+    IntervalBase<T> &   shift             ( T  value );
+    IntervalBase<T> &   upScale           ( IntervalBase<T> factor );
   private:
     T _inf;
     T _sup;
@@ -56,6 +57,13 @@ template <typename T>
 inline static IntervalBase<T> intersection( IntervalBase<T> first, IntervalBase<T> second ) 
 {
   return first.setBound(second);
+}
+
+
+template <typename T>
+inline static IntervalBase<T>  smallestCovering( IntervalBase<T> first, IntervalBase<T> second ) 
+{
+  return first.smallestCovering(second);
 }
 
 
@@ -127,6 +135,15 @@ inline bool  IntervalBase<T>::overlaps ( IntervalBase<T> other ) const
 }
 
 
+template <typename T>
+inline IntervalBase<T>  IntervalBase<T>::smallestCovering ( IntervalBase<T> other  )  const
+{
+  if ( isEmpty()       ) return other;
+  if ( other.isEmpty() ) return *this;
+  return IntervalBase<T>( std::min(lower(),other.lower()), std::max(upper(),other.upper()) ); 
+}
+
+
 /*
  *  This function assume other.min()>0
  */
@@ -179,10 +196,10 @@ inline IntervalBase<T> &  IntervalBase<T>::setUpperBound ( T value )
 }
 
 template <typename T>
-inline IntervalBase<T> &  IntervalBase<T>::shift ( T factor )
+inline IntervalBase<T> &  IntervalBase<T>::shift ( T value )
 { 
-  _sup += factor; 
-  _inf += factor; 
+  _sup += value; 
+  _inf += value; 
   return *this; 
 }
 

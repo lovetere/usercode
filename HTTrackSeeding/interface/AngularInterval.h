@@ -38,6 +38,7 @@ class AngularIntervalBase {
     AngularIntervalBase<T>    operator-            ( )                               const;
     bool                      overlaps             ( AngularIntervalBase<T> other )  const;
     IntervalBase<T>           sinRange             ( )                               const;
+    AngularIntervalBase<T>    smallestCovering     ( AngularIntervalBase<T> other )  const;
     T                         upper                ( )                               const;
     AngularIntervalBase<T> &  turnClockWise        ( T angle );
     AngularIntervalBase<T> &  turnClockWise        ( AngularIntervalBase<T> other );
@@ -47,6 +48,14 @@ class AngularIntervalBase {
     T   _mean;
     T  _delta;
 };
+
+
+
+template <typename T>
+inline static AngularIntervalBase<T>  smallestCovering( AngularIntervalBase<T> first, AngularIntervalBase<T> second ) 
+{
+  return first.smallestCovering(second);
+}
 
 
 template <typename T>
@@ -210,6 +219,25 @@ inline IntervalBase<T>  AngularIntervalBase<T>::sinRange()  const
   if ( include( M_PI/2.) ) max= 1;
   if ( include(-M_PI/2.) ) min=-1;
   return IntervalBase<T>(min,max);
+}
+
+
+template <typename T>
+inline AngularIntervalBase<T>  AngularIntervalBase<T>::smallestCovering ( AngularIntervalBase<T> other )  const
+{
+  if ( isEmpty()       ) return other;
+  if ( other.isEmpty() ) return *this;
+  if ( center()>other.center() ) {
+    if ( center()-other.center()<M_PI )
+      return AngularIntervalBase<T>( std::min(lower(),other.lower()), std::max(upper(),other.upper()) );
+    else
+      return AngularIntervalBase<T>( std::min(lower(),other.lower()+2*M_PI), std::max(upper(),other.upper()+2*M_PI) );							    
+  } else {
+    if ( other.center()-center()<M_PI )
+      return AngularIntervalBase<T>( std::min(lower(),other.lower()), std::max(upper(),other.upper()) );
+    else
+      return AngularIntervalBase<T>( std::min(lower()+2*M_PI,other.lower()), std::max(upper()+2*M_PI,other.upper()) );							    
+  }
 }
 
 
