@@ -66,7 +66,6 @@ template <class T>
 inline Interval  RangeFinder<T>::dTheta ( Interval lip, int hfturn )  const
 { 
   lip  = lip - _hit.z();
-  //
   return _finder.dTheta( lip.downScale( _hit.rho()), hfturn );
 }
 

@@ -70,7 +70,7 @@ class HelixHoughEngineBase
 
 inline int  HelixHoughEngineBase::curv2bin( float value )  const
 {
-  if ( !Interval(_range.minCurv(),_range.maxCurv()).include(value) ) return -1;
+  if ( !_range.curv().include(value) ) return -1;
   int  bin = (int) ( nCurv() * _range.rCurv(value) );
   return bin;
 }
@@ -78,7 +78,7 @@ inline int  HelixHoughEngineBase::curv2bin( float value )  const
 
 inline int  HelixHoughEngineBase::eta2bin( float value )  const
 {
-  if ( !Interval(_range.minEta(),_range.maxEta()).include(value) ) return -1;
+  if ( !_range.eta().include(value) ) return -1;
   int  bin = (int) ( nEta() * _range.rEta(value) );
   return bin;
 }
@@ -86,7 +86,7 @@ inline int  HelixHoughEngineBase::eta2bin( float value )  const
 
 inline int  HelixHoughEngineBase::lip2bin( float value )  const
 {
-  if ( !Interval(_range.minLip(),_range.maxLip()).include(value) ) return -1;
+  if ( !_range.lip().include(value) ) return -1;
   int  bin = (int) ( nLip() * _range.rLip(value) );
   return bin;
 }
@@ -94,7 +94,7 @@ inline int  HelixHoughEngineBase::lip2bin( float value )  const
 
 inline int  HelixHoughEngineBase::phi2bin ( float value )  const
 {
-  if ( !AngularInterval(_range.minPhi(),_range.maxPhi()).include(value) ) return -1;
+  if ( !_range.phi().include(value) ) return -1;
   int  bin = (int) ( nPhi() * _range.rPhi(value) );
   return bin;
 }
@@ -102,7 +102,7 @@ inline int  HelixHoughEngineBase::phi2bin ( float value )  const
 
 inline int  HelixHoughEngineBase::tip2bin( float value )  const
 {
-  if ( !Interval(_range.minTip(),_range.maxTip()).include(value) ) return -1;
+  if ( !_range.tip().include(value) ) return -1;
   int  bin = (int) ( nTip() * _range.rTip(value) );
   return bin;
 }
