@@ -19,10 +19,9 @@ class HelixParRange
 {
   public:
     HelixParRange ( ) { }
-    HelixParRange ( Interval rCurv, Interval rEta, Interval rLip , AngularInterval rPhi, Interval rTip,
+    HelixParRange ( Interval curv, Interval eta, Interval lip , AngularInterval phi, Interval tip,
                     unsigned int pHTurns =1, unsigned int nHTurns =0 )
-      : _rCurv(rCurv), _rEta (rEta ), _rLip (rLip ), _rPhi (rPhi ), _rTip (rTip ),
-        _pHTurns(pHTurns), _nHTurns(nHTurns)
+      : _rCurv(curv), _rEta(eta), _rLip(lip), _rPhi(phi), _rTip(tip), _pHTurns(pHTurns), _nHTurns(nHTurns)
     { }
     HelixParRange ( float minCurv, float maxCurv,
                     float minEta , float maxEta ,
