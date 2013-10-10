@@ -20,7 +20,7 @@
  */
 
 RangeFinderNFast::RangeFinderNFast ( Interval curv, Interval tip )
-  : _curv(curv), _tip(tip), _forwPhiRange(), _backPhiRange(), _hfturn(NoCacheArcLength), _arcLengthOneHalf(), _arcLength()
+  : _curv(curv), _tip(tip), _hfturn(NoCacheArcLengthOneHalf)
 {
   cachePhiRange();
 }
@@ -42,27 +42,27 @@ AngularInterval  RangeFinderNFast::dPhi ( int hfturn )  const
 
 Interval  RangeFinderNFast::dTal ( int hfturn )  const
 {
-  if ( _hfturn==NoCacheArcLength )  cacheArcLengthOneHalfRange();
+  if ( _forwPhiRange.isEmpty() )     return Interval();
+  cacheArcLengthOneHalfRange();
+  if ( _arcLengthOneHalf.isEmpty() ) return Interval();
   if ( _hfturn==NoCacheArcLength || _hfturn!=hfturn ) {
     _arcLength = Interval();
-    if ( !_forwPhiRange.isEmpty() && !_arcLengthOneHalf.isEmpty() ) {
-      const double  epsilon = 1e-15;
-      double  curv = _curv.center();
-      div_t res = std::div(hfturn+1,2);
-      assert( res.rem==0 || res.rem==1     );   // make sure it doesn't do sylly things on negative numbers
-      assert( hfturn+1==2*res.quot+res.rem );   // make sure it doesn't do sylly things on negative numbers
-      if ( res.rem==1 ) {
-        _arcLength =   _arcLengthOneHalf; 
-      } else {
-        _arcLength = - _arcLengthOneHalf;
-      }
-      if ( res.quot!=0 ) {
-        double length = ( curv!=0 ) ? 1./std::abs(curv) : std::numeric_limits<float>::max();
-        _arcLength = _arcLength + Interval(length-epsilon,length+epsilon).scale(2*M_PI*res.quot);
-      }
-      hfturn<0 ? _arcLength.setUpperBound(0.) : _arcLength.setLowerBound(0.);
-      _hfturn    = hfturn;
+    const double  epsilon = 1e-15;
+    double  curv = _curv.center();
+    div_t res = std::div(hfturn+1,2);
+    assert( res.rem==0 || res.rem==1     );   // make sure it doesn't do sylly things on negative numbers
+    assert( hfturn+1==2*res.quot+res.rem );   // make sure it doesn't do sylly things on negative numbers
+    if ( res.rem==1 ) {
+      _arcLength =   _arcLengthOneHalf; 
+    } else {
+      _arcLength = - _arcLengthOneHalf;
     }
+    if ( res.quot!=0 ) {
+      double length = ( curv!=0 ) ? 1./std::abs(curv) : std::numeric_limits<float>::max();
+      _arcLength = _arcLength + Interval(length-epsilon,length+epsilon).scale(2*M_PI*res.quot);
+    }
+    hfturn<0 ? _arcLength.setUpperBound(0.) : _arcLength.setLowerBound(0.);
+    //_hfturn    = hfturn;
   } 
   return _arcLength;
 }
@@ -112,6 +112,7 @@ Interval  RangeFinderNFast::dTheta ( Interval lip, int hfturn )  const
 
 void  RangeFinderNFast::cacheArcLengthOneHalfRange ( )  const
 {
+  //if ( _hfturn!=NoCacheArcLengthOneHalf ) return;
   const double  epsilon = 1e-15;
   double  tip  =  _tip.center();
   double  curv = _curv.center();
@@ -121,7 +122,10 @@ void  RangeFinderNFast::cacheArcLengthOneHalfRange ( )  const
   if ( (inf_c<curv) && (curv<sup_c) ) {
     double length = arcLengthGivenNormTipCurv(tip,curv);
     _arcLengthOneHalf = Interval( length-epsilon, length+epsilon ); 
-  } 
+  } else
+    _arcLengthOneHalf = Interval();
+  _arcLength = Interval();
+  _hfturn = NoCacheArcLength;
 }
 
 
@@ -132,7 +136,7 @@ void  RangeFinderNFast::cachePhiRange ( )
   double  curv = _curv.center();
   if ( (tip>=1.) || (tip<=-1.) ) return;
   double  sinPhi = sinPhiGivenNormTipCurv(tip,curv);
-  if ( (sinPhi>=1.) || (sinPhi<-1.) ) return; 
+  if ( (sinPhi>=1.) || (sinPhi<=-1.) ) return; 
   double  phi = asin(sinPhi);
   _forwPhiRange = AngularInterval( phi     -epsilon, phi     +epsilon );
   _backPhiRange = AngularInterval( M_PI-phi-epsilon, M_PI-phi+epsilon );

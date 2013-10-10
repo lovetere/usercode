@@ -25,8 +25,8 @@ class RangeFinderNFast : public RangeFinderNorm
     virtual void      cacheArcLengthOneHalfRange ( )  const;
     virtual void      cachePhiRange              ( );
   private:
-    const int         NoCachePhi       = std::numeric_limits<int>::max(); 
-    const int         NoCacheArcLength = NoCachePhi-1;
+    const int         NoCacheArcLengthOneHalf = std::numeric_limits<int>::max(); 
+    const int         NoCacheArcLength        = NoCacheArcLengthOneHalf-1;
     const Interval    _curv;
     const Interval    _tip;
     AngularInterval   _forwPhiRange;
