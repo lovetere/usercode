@@ -35,8 +35,7 @@ typedef RangeFinder<RangeFinderNFast >  RangeFinderFast;
 
 template <class T>
 inline RangeFinder<T>::RangeFinder( const SimpleHit3D & hit, Interval curv, Interval tip )
-  : _hit( hit ), 
-  _finder( curv.upScale(hit.rho()), tip.downScale(hit.rho()) ) 
+  : _hit( hit ), _finder( curv.upScale(hit.rho()), tip.downScale(hit.rho()) ) 
 { }
 
 
@@ -53,10 +52,13 @@ inline Interval  RangeFinder<T>::dTal ( int hfturn )  const
   return _finder.dTal( hfturn ).upScale( _hit.rho() );
 }
 
+#include <iostream>
 
 template <class T>
 inline Interval  RangeFinder<T>::dEta ( Interval lip, int hfturn )  const
 { 
+  assert( !lip.isEmpty() );
+  assert( !_hit.z().isEmpty() );
   lip  = lip - _hit.z();
   return _finder.dEta( lip.downScale( _hit.rho()), hfturn );
 }
