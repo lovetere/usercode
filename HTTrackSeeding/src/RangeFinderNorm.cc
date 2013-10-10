@@ -37,11 +37,12 @@ bool  RangeFinderNorm::arcLengthDerCurvSignGivenNormTipCurv ( double tip, double
 
 double  RangeFinderNorm::arcLengthGivenNormTipCurv ( double tip, double curv )
 {
+  const double epsilon = 1e-15;
   assert ( tip>=-1. );
   assert ( tip<= 1. );
   assert ( tip== 1. || curv >= -2./(1.-tip) );
   assert ( tip==-1. || curv <=  2./(1.+tip) );
-  if ( fabs(curv)>1e-15 ) {
+  if ( fabs(curv)>epsilon ) {
     double arg = (1.-tip*tip)/(1.-tip*curv);
     arg = ( arg>0. ) ? curv/2.*sqrt(arg) : 0. ;
     arg = std::max( std::min(arg,1.), -1. );
