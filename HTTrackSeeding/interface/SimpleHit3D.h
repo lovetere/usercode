@@ -35,7 +35,7 @@ class SimpleHit3D
     SimpleHit3D ( const TrackingRegion::Hit & hit,  GlobalPoint origin, unsigned int index =0 );
     Interval           rho   ( )  const  { return _rho;     }
     AngularInterval    phi   ( )  const  { return _phi;     }
-    Interval           z     ( )  const  { return _dz;      }
+    Interval           z     ( )  const  { return _z;       }
     unsigned int     index   ( )  const  { return _index;   }
     bool             isValid ( )  const  { return _isValid; }
     TrkLayerKey      layer   ( )  const  { return _layer;   }
@@ -44,7 +44,7 @@ class SimpleHit3D
     bool             _isValid;
     Interval         _rho;
     AngularInterval  _phi;
-    Interval         _dz;
+    Interval         _z;
     TrkLayerKey       _layer;
     unsigned int     _index;
 };
@@ -111,9 +111,13 @@ inline SimpleHit3D::SimpleHit3D ( const TrackingRegion::Hit & hit,  GlobalPoint 
   double   drho = sqrt( c.rerr  ( p+GlobalPoint(0.,0.,0.) ) );  // I'm cheating because p is not in the global reference but it is ok to get errors.
   double   dphi = sqrt( c.phierr( p+GlobalPoint(0.,0.,0.) ) );  // I'm cheating because p is not in the global reference but it is ok to get errors.
   double   dz   = sqrt( c.czz()     );
+  // Workaround to cope with missing errors case
+  drho = std::max(drho,0.00001);
+  dphi = std::max(dphi,0.00001);
+  dz   = std::max(dz  ,0.00001);
   _rho = Interval( std::max(0.,rho-drho), rho+drho );
   _phi = AngularInterval( phi-dphi, phi+dphi );
-  _dz  = Interval( z-dz, z+dz );
+  _z   = Interval( z-dz, z+dz );
 }
 
 
@@ -123,7 +127,7 @@ inline void  SimpleHit3D::print ( std::ostream& s )  const
     s << std::fixed << std::setprecision(4) << std::setfill(' ')
       <<   "r= [" << std::setw(7) << _rho.lower() << " cm, "  << std::setw(7) << _rho.upper() << " cm], " 
       << "phi= [" << std::setw(7) << _phi.lower() << " rad, " << std::setw(7) << _phi.upper() << " rad], " 
-      <<   "z= [" << std::setw(9) <<  _dz.lower() << " cm, "  << std::setw(9) <<  _dz.upper() << " cm] "; 
+      <<   "z= [" << std::setw(9) <<   _z.lower() << " cm, "  << std::setw(9) <<   _z.upper() << " cm] "; 
   } else
     s << "invalid hit";
 }
