@@ -16,9 +16,9 @@
 class SimpleTrack3D
 {
   public:
-    SimpleTrack3D ( ) { }
+  SimpleTrack3D ( ) : nlayers(0), nhits(0), shared(0)  { };
     SimpleTrack3D ( Interval curv_0, Interval eta_0, Interval lip_0, AngularInterval phi_0, Interval tip_0 ) 
-      :  curv(curv_0), eta(eta_0), lip(lip_0), phi(phi_0), tip(tip_0) { }
+      :  curv(curv_0), eta(eta_0), lip(lip_0), phi(phi_0), tip(tip_0), nlayers(0), nhits(0), shared(0)  { }
    ~SimpleTrack3D ( ) { }
   public: 
     std::vector<SimpleHit3D>  hits;
@@ -27,6 +27,9 @@ class SimpleTrack3D
     Interval         lip;
     AngularInterval  phi;
     Interval         tip;
+    int              nlayers;
+    int              nhits;
+    int              shared;
 };
 
 
