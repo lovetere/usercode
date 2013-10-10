@@ -166,7 +166,6 @@ void  HTTripletGenerator::hitTriplets ( const TrackingRegion & reg, OrderedHitTr
           nhit++;
         } */
     HelixHough finder( theRefPoint, theRange, theNumBins, theMinRes, theMaxRes, theRequiredLayers );
-    std::vector<SimpleTrack3D> tracks;
     int min_hits =  3;
     int max_hits = 10;
     finder.findHelices( hits, min_hits, max_hits, prs );
