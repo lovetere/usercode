@@ -10,6 +10,7 @@
 #include <cmath>
 #include <iostream>
 #include <map>
+#include <set>
 #include <unordered_map>
 #include <vector>
 
@@ -171,11 +172,19 @@ void  HelixHough::findTracks ( const std::vector<SimpleHit3D>   & hits   ,
     auto  itv = layers.equal_range(itk->first);
     if ( newTracks.empty() ) {
       SimpleTrack3D track;
-      track.curv = range.curv();
-      track.eta  = range.eta ();
-      track.lip  = range.lip ();
-      track.phi  = range.phi ();
-      track.tip  = range.tip ();
+      track.curv    = range.curv();
+      track.eta     = range.eta ();
+      track.lip     = range.lip ();
+      track.phi     = range.phi ();
+      track.tip     = range.tip ();
+      track.nlayers = count;
+      track.nhits   = hits.size ();
+      track.shared  = 1;
+      assert( !track.curv.isEmpty() );
+      assert( !track.eta .isEmpty() );
+      assert( !track.lip .isEmpty() );
+      assert( !track.phi .isEmpty() );
+      assert( !track.tip .isEmpty() );
       newTracks.push_back( track );
     }
     std::vector<SimpleTrack3D> list;
@@ -204,24 +213,47 @@ void  HelixHough::finalize ( const TrackingRegion::Hits & hits, const std::vecto
       LogTrace("HTTrackSeeding") << "  " << hit->index();
   }
   */
-  std::set<int> aset;
+  std::map<int,SimpleTrack3D> mapper;
   for ( auto track = input.begin(); track!= input.end(); track++ ) {
     int code = 0;
     for ( auto hit = track->hits.begin(); hit != track->hits.end(); hit++ )
       code = ( code<<10 ) | hit->index();
-    aset.insert( code );
+    SimpleTrack3D atrack=mapper[code];
+    atrack.curv = smallestCovering(atrack.curv,track->curv); 
+    atrack.eta  = smallestCovering(atrack.eta ,track->eta ); 
+    atrack.lip  = smallestCovering(atrack.lip ,track->lip );
+    atrack.phi  = smallestCovering(atrack.phi ,track->phi );
+    atrack.tip  = smallestCovering(atrack.tip ,track->tip ); 
+    assert( !atrack.curv.isEmpty() );
+    assert( !atrack.eta .isEmpty() );
+    assert( !atrack.lip .isEmpty() );
+    assert( !atrack.phi .isEmpty() );
+    assert( !atrack.tip .isEmpty() );
+    atrack.nlayers = std::max(track->nlayers,atrack.nlayers);
+    atrack.nhits   = std::max(track->nhits  ,atrack.nhits  );
+    atrack.shared++;
+    mapper[code] = atrack;
   }
-  LogDebug("HTTrackSeeding") << "Track seeds after duplicate removal "  << aset.size();
+
+  LogDebug("HTTrackSeeding") << "Track seeds after duplicate removal "  << mapper.size();
   int i = 0;
-  for ( auto iter = aset.begin(); iter != aset.end(); iter++, i++ ) {
-    int index1 = (*iter)>>20 & 0x3ff;
-    int index2 = (*iter)>>10 & 0x3ff;
-    int index3 = (*iter)     & 0x3ff;
+  for ( auto iter = mapper.begin(); iter != mapper.end(); iter++, i++ ) {
+    int index1 = (iter->first)>>20 & 0x3ff;
+    int index2 = (iter->first)>>10 & 0x3ff;
+    int index3 = (iter->first)     & 0x3ff;
     output.push_back( OrderedHitTriplet(hits[index1],hits[index2],hits[index3]) );
-    LogTrace("HTTrackSeeding") << std::fixed << std::setfill(' ')
+    LogTrace("HTTrackSeeding") << std::fixed << std::setprecision(4) << std::setfill(' ')
                                << "Track number " << std::setw(4) << i
                                << " -> " << std::setw(3) << index1
                                << " "    << std::setw(3) << index2
-                               << " "    <<std::setw(4) << index3;
+                               << " "    << std::setw(4) << index3 << "  "
+                               << " [" << std::setw(9) << iter->second.curv.lower() << "," << std::setw(9) << iter->second.curv.upper() << "]"
+                               << " [" << std::setw(9) << iter->second.eta .lower() << "," << std::setw(9) << iter->second.eta .upper() << "]"
+                               << " [" << std::setw(9) << iter->second.lip .lower() << "," << std::setw(9) << iter->second.lip .upper() << "]"
+                               << " [" << std::setw(9) << iter->second.phi .lower() << "," << std::setw(9) << iter->second.phi .upper() << "]"
+                               << " [" << std::setw(9) << iter->second.tip .lower() << "," << std::setw(9) << iter->second.tip .upper() << "]"
+                               << "  " << std::setw(3) << iter->second.nlayers
+                               << " "  << std::setw(3) << iter->second.nhits
+                               << " "  << std::setw(5) << iter->second.shared;
   }
 }
