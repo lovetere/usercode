@@ -24,25 +24,25 @@ from MLoVetere.HTTrackSeeding.HoughTransformSeedLayersNC_cfi import *
 # SEEDS
 HoughTransformSeedGeneratorPset = cms.PSet(
     DivPSet = cms.PSet(
-        nBinsCurv = cms.uint32(3),
-        nBinsEta  = cms.uint32(5),
-        nBinsPhi  = cms.uint32(6),
-        nBinsTip  = cms.uint32(5),
-        nBinsLip  = cms.uint32(7)
+        nBinsCurv = cms.uint32(4),
+        nBinsEta  = cms.uint32(4),
+        nBinsLip  = cms.uint32(4),
+        nBinsPhi  = cms.uint32(4),
+        nBinsTip  = cms.uint32(4)
     ),
     MinResPSet = cms.PSet(
-        resCurv = cms.double(1e-2),
-        resEta  = cms.double(0.50),
+        resCurv = cms.double(3e-3),
+        resEta  = cms.double(1e-2),
+        resLip  = cms.double(1.00),
         resPhi  = cms.double(0.31), 
-        resTip  = cms.double(1.00),
-        resLip  = cms.double(1.00)
+        resTip  = cms.double(0.30)
     ),
     MaxResPSet = cms.PSet(
         resCurv = cms.double(3e-4),
-        resEta  = cms.double(0.09),
+        resEta  = cms.double(1e-3),
+        resLip  = cms.double(0.10),
         resPhi  = cms.double(0.03),
-        resTip  = cms.double(0.30),
-        resLip  = cms.double(0.10)
+        resTip  = cms.double(0.30)
     ),
     HalfTurns = cms.PSet(
         positive = cms.uint32(1),
